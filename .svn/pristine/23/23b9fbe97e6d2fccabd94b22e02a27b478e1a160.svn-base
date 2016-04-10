@@ -1,0 +1,61 @@
+from django import forms
+from healthnet.core.users.patient import Patient
+from healthnet.models import Appointment
+from django.http import request
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(label="Username", max_length=25)
+    password = forms.CharField(widget=forms.PasswordInput())
+
+
+class RegistrationForm(forms.ModelForm):
+    # TODO: need to be able to add an address
+    # TODO: make password use password input instead
+    # TODO: properly order fields, HEALTH INSURANCE # first
+    class Meta:
+        model = Patient
+        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'address', 'age', 'sex', 'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider', 'primary_care_provider','doctors', 'height', 'weight', 'cholesterol']
+        exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
+
+    def __init__(self, *args, **kwargs):
+        super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.fields['height'].required = False
+        self.fields['weight'].required = False
+        self.fields['cholesterol'].required = False
+        self.fields['dob'].required = False
+        self.fields['address'].required = False
+        self.fields['home_phone'].required = False
+        self.fields['work_phone'].required = False
+        self.fields['age'].required = False
+        self.fields['sex'].required = False
+        self.fields['marital_status'].required = False
+        self.fields['health_insurance_provider'].required = False
+        self.fields['doctors'].required = False
+        self.fields['primary_care_provider'].required = False
+
+
+class EditPatientInfoForm(forms.ModelForm):
+    class Meta:
+        model = Patient
+        exclude = ['dob', 'sex']
+
+    @staticmethod
+    def edit_patient_info(pk):
+        patient = Patient.objects.get(pk)
+        patient_form = EditPatientInfoForm(request.POST, instance=patient)
+        patient_form.save()
+        return patient_form
+
+
+class AppointmentForm(forms.ModelForm):
+    class Meta:
+        model = Appointment
+        fields = ['name', 'description', 'tstart', 'tend', 'attendees']
+
+    @staticmethod
+    def edit_appointment(pk):
+        appointment = Appointment.objects.get(pk)
+        appointment_form = AppointmentForm(request.POST, instance=appointment)
+        appointment_form.save()
+        return appointment_form

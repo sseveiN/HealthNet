@@ -1,0 +1,115 @@
+from django.db import models
+from django_enumfield import enum
+
+# Import External Models
+from healthnet.core.logging import Logging
+from healthnet.core.users.user import User, UserType
+from healthnet.core.users.patient import Patient, Gender, MaritalStatus
+from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.nurse import Nurse
+from healthnet.core.users.administrator import Administrator
+from healthnet.core.utils import time_in_range
+
+
+class LogLevel(enum.Enum):
+    Info = 0
+    Warning = 1
+    Error = 2
+
+
+class Address(models.Model):
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    zipcode = models.CharField(max_length=255)
+
+
+class Hospital(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.OneToOneField('Address')
+
+
+class Calendar(models.Model):
+    @staticmethod
+    def create_appointment(attendees, name, desc, start, end):
+        apt = Appointment(name=name, description=desc, attendees=attendees, tstart=start, tend=tend)
+        if Calendar.has_conflict(attendees, start, end):
+            return False, 'Appointment could not be created because there was a conflict.'
+        apt.save()
+
+        Logging.info("Created appointment '%s'" % name)
+
+        return True, apt
+
+    @staticmethod
+    def update_appointment(appointment, attendees=None, name=None, desc=None, start=None, end=None):
+        if type(appointment) == int:
+            appointment = Appointment.objects.get(pk=appointment)
+
+        if type(appointment) != Appointment:
+            return False, 'Appointment could not be updated by the provided appointment is not an appointment'
+
+        if attendees is not None:
+            appointment.attendees = attendees
+        if name is not None:
+            appointment.name = name
+        if desc is not None:
+            appointment.desc = desc
+        if start is not None:
+            appointment.start = start
+        if end is not None:
+            appointment.end = end
+
+        return True, 'Appointment updated'
+
+    @staticmethod
+    def remove_appointment(appointment):
+        if type(appointment) == int:
+            appointment = Appointment.objects.get(pk=appointment)
+
+        if type(appointment) != Appointment:
+            return False, 'Appointment could not be updated by the provided appointment is not an appointment'
+
+        appointment.delete()
+
+        return True, 'Appointment deleted'
+
+    @staticmethod
+    def has_conflict(attendees, start, end):
+        attendees = set(attendees)
+
+        for apt in Appointment.objects.all():
+            if set(apt.attendees).intersection(attendees):
+                if (apt.tstart > start) and (apt.tstart < end) or \
+                                (apt.tend > start) and (apt.tstart < end) or \
+                                (apt.tstart < start) and (apt.tend > end):
+                    return True
+        return False
+
+
+class Appointment(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    tstart = models.DateTimeField()
+    tend = models.DateTimeField()
+    attendees = models.ManyToManyField(User)
+
+
+class Prescription(models.Model):
+    patient = models.OneToOneField('Patient')
+    doctor = models.OneToOneField('Doctor')
+    address = models.OneToOneField('Address')
+    name = models.CharField(max_length=255)
+    expiration_date = models.DateField()
+    refills = models.IntegerField()
+
+
+class MedicalRecord(models.Model):
+    pass
+
+
+class LogEntry(models.Model):
+    datetime = models.DateTimeField()
+    level = enum.EnumField(LogLevel, default=LogLevel.Info)
+    message = models.TextField()

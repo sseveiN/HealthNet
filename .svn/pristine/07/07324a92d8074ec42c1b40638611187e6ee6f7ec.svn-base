@@ -1,0 +1,57 @@
+html, body {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: "Lucida Grande", Helvetica, Arial, Verdana, sans-serif;
+    font-size: 14px;
+    padding-top: 70px;
+}
+
+#log .log-entry-info {
+
+}
+
+#log .log-entry-warning {
+    background: yellow;
+}
+
+#log .log-entry-error {
+    background: red;
+    color: white;
+}
+table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.dataTable thead .sorting {
+    background-image: none !important;
+}
+
+.calendar_day {
+    margin-top: 10px;
+}
+
+.calendar_day .appointment {
+    padding: 10px 10px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-bottom: none;
+}
+
+.calendar_day .appointment .name {
+    color: black;
+    font-weight: bold;
+    padding: 0;
+    margin: 0;
+    text-transform: capitalize;
+}
+
+.calendar_day .appointment:nth-child(even) {
+    background: white !important;
+}
+
+.calendar_day .appointment:last-of-type {
+    border-bottom: 1px solid #ddd;
+}
+
+.calendar_day .edit_controls {
+    margin-top: 10px;
+}

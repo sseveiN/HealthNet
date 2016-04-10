@@ -1,0 +1,38 @@
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.db import models
+from django_enumfield import enum
+
+
+class UserType(enum.Enum):
+    Administrator = 0
+    Doctor = 1
+    Nurse = 2
+    Patient = 3
+    User = 4
+
+
+class User(AbstractBaseUser):
+    username = models.CharField(max_length=25, null=False)
+    first_name = models.CharField(max_length=50, null=False)
+    last_name = models.CharField(max_length=50, null=False)
+    user_type = enum.EnumField(UserType, default=UserType.User)
+
+    USERNAME_FIELD = 'username'
+
+    def create_user(self,username, first_name, last_name, password=None):
+        """
+        Creates and saves a User with the given email, date of
+        birth and password.
+        """
+        if not username:
+            raise ValueError('Users must have an email address')
+
+        user = self.model(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user

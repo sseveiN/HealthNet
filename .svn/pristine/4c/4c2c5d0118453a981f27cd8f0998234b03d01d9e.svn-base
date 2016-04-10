@@ -1,0 +1,139 @@
+from datetime import datetime
+
+from django.contrib.auth import authenticate
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, redirect
+from healthnet.core.forms import LoginForm, RegistrationForm
+from healthnet.core.logging import LogEntry
+from healthnet.core.users.user import User, UserType
+from healthnet.core.users.patient import Patient
+from healthnet.models import Calendar
+from healthnet.core.logging import Logging
+
+
+
+def index(request):
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        login_form = LoginForm(request.POST)
+
+        if login_form.is_valid():
+            user = User.login(request, request.POST['username'], request.POST['password'])
+
+            if user is not None:
+                # creds valid; redirect to dashboard
+                return HttpResponseRedirect('dashboard')
+            else:
+                # TODO: error msg
+                pass
+    else:
+        login_form = LoginForm()
+
+    context = {
+        'login_form': login_form
+    }
+
+    return render(request, 'home.html', context)
+
+
+def dashboard(request):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get list of appointments in json form
+    appointments_json = Calendar.get_appointments_json(user)
+
+    context = {
+        'appointments_json': appointments_json,
+        'username': request.user.username
+    }
+
+    return render(request, 'dashboard.html', context)
+
+
+def registration(request):
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        registration_form = RegistrationForm(request.POST)
+
+        if registration_form.is_valid():
+
+            # TODO: create user
+            username = registration_form.cleaned_data['username']
+            password = registration_form.cleaned_data['password']
+
+            new_user = RegistrationForm(request.POST)
+            new_patient = new_user.save()
+            new_patient.is_patient = True
+            new_patient.set_password(password)
+            new_patient.save()
+            Logging.info("User '%s' created" % username)
+
+
+
+            if new_user is not None:
+                # creds valid; redirect to dashboard
+                User.login(request, username, password)
+                return HttpResponseRedirect('/dashboard')
+            else:
+                # TODO: error msg
+                pass
+            # TODO: login user
+            return HttpResponseRedirect('dashboard')
+    else:
+        registration_form = RegistrationForm(request.POST)
+
+    context = {
+        'registration_form': registration_form
+    }
+
+    return render(request, 'register.html', context)
+
+
+def logout(request):
+    User.logout(request)
+    return redirect('index')
+
+
+def log(request):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Check user type
+    if not user.is_type(UserType.Administrator):
+        # TODO: style this
+        return HttpResponse("Access Denied!")
+
+    context = {
+        'log_entries': LogEntry.objects.all()
+    }
+
+    return render(request, 'log.html', context)
+
+
+# DEBUG VIEWS
+def create_test_user(request):
+    r, o = User.create_user('test', 'test', UserType.Patient, 'Test', 'User')
+    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+
+
+def create_admin_user(request):
+    r, o = User.create_user('admin', 'admin', UserType.Administrator, 'Admin', 'User')
+    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+

@@ -1,0 +1,9 @@
+class EnumField(object):
+    def __init__(self, *string_list):
+        self.__dict__.update([(string, number) for (number, string) in enumerate(string_list)])
+
+    def get_choices(self):
+        return tuple(enumerate(self.__dict__.keys()))
+
+    def choices(self):
+        return self.get_choices()

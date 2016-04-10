@@ -1,0 +1,77 @@
+from django.db import models
+from django_enumfield import enum
+
+# Import External Models
+from healthnet.core.users.user import User, UserType
+from healthnet.core.users.patient import Patient, Gender, MaritalStatus
+from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.nurse import Nurse
+from healthnet.core.users.administrator import Administrator
+
+
+class LogLevel(enum.Enum):
+    Info = 0
+    Warning = 1
+    Error = 2
+
+
+class Address(models.Model):
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    state = models.CharField(max_length=255)
+    zipcode = models.CharField(max_length=255)
+
+
+class Hospital(models.Model):
+    name = models.CharField(max_length=255)
+    address = models.OneToOneField('Address')
+
+
+class Calendar(models.Model):
+    def createAppointment(self, name, desc, datetime):
+        Appointment(name=name,
+                    description=desc,
+                    datetime=datetime,
+                    calendar=self).save()
+
+    def editAppointent(self, name, desc, datetime, appointment):#to edit, delete old one, make new one in same place?
+        if type(appointment) == int:
+            Appointment.get(pk=appointment).delete()
+        else:
+            appointment.delete()
+            Appointment(name=name,
+                        description=desc,
+                        datetime=datetime,
+                        calendar=self).save()
+
+    def removeAppointment(self, appointment):
+        if type(appointment) == int:
+            Appointment.get(pk=appointment).delete()
+        else:
+            appointment.delete()
+
+class Appointment(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.CharField(max_length=255)
+    datetime = models.DateTimeField()
+    calendar = models.ForeignKey(Calendar)
+
+
+class Prescription(models.Model):
+    patient = models.OneToOneField('Patient')
+    doctor = models.OneToOneField('Doctor')
+    address = models.OneToOneField('Address')
+    name = models.CharField(max_length=255)
+    expiration_date = models.DateField()
+    refills = models.IntegerField()
+
+
+class MedicalRecord(models.Model):
+    pass
+
+
+class LogEntry(models.Model):
+    datetime = models.DateTimeField()
+    level = enum.EnumField(LogLevel, default=LogLevel.Info)
+    message = models.TextField()

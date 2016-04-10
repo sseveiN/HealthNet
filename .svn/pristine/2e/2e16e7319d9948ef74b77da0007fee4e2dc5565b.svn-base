@@ -1,0 +1,155 @@
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import UserManager
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.db import models
+from django.http import HttpResponseRedirect
+from healthnet.core.enumfield import EnumField
+
+from healthnet.core.logging import Logging
+
+class UserType(EnumField):
+    Administrator = 0
+    Doctor = 1
+    Nurse = 2
+    Patient = 3
+
+
+class User(AbstractBaseUser):
+    username = models.CharField(max_length=25, null=False, unique=True)
+    first_name = models.CharField(max_length=50)
+    last_name = models.CharField(max_length=50)
+
+    is_admin = models.BooleanField(default=False)
+    is_doctor = models.BooleanField(default=False)
+    is_patient = models.BooleanField(default=False)
+    is_nurse = models.BooleanField(default=False)
+
+    appointments = models.ManyToManyField('Appointment', blank=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+
+    @staticmethod
+    def create_user(username, password, usertype: UserType, first_name="", last_name=""):
+        try:
+            user = User.objects.get(username=username)
+            if user is not None:
+                return False, "A user with that name already exists"
+        except User.DoesNotExist:
+            pass
+
+        if usertype == UserType.Administrator:
+            user = Administrator(username=username, first_name=first_name, last_name=last_name)
+            user.is_admin = True
+        elif usertype == UserType.Doctor:
+            user = Doctor(username=username, first_name=first_name, last_name=last_name)
+            user.is_doctor = True
+        elif usertype == UserType.Nurse:
+            user = Nurse(username=username, first_name=first_name, last_name=last_name)
+            user.is_nurse = True
+        elif usertype == UserType.Patient:
+            user = Patient(username=username, first_name=first_name, last_name=last_name)
+            user.is_patient = True
+        else:
+            user = User(username=username, first_name=first_name, last_name=last_name)
+
+        user.set_password(password)
+        user.save()
+
+        Logging.info("User '%s' created" % username)
+
+        return True, user
+
+    def is_type(self, usertype: UserType):
+        return self.get_user_type() == usertype
+
+    @staticmethod
+    def login(request, username, password):
+        user = authenticate(username=username, password=password)
+
+        if user is None:
+            return None
+
+        request.session['current_user_pk'] = user.pk
+        request.session['current_user_username'] = username
+        request.session['current_user_is_admin'] = user.is_admin
+        request.session['current_user_is_nurse'] = user.is_nurse
+        request.session['current_user_is_doctor'] = user.is_doctor
+        request.session['current_user_is_patient'] = user.is_patient
+        request.session['current_user_display_name'] = user.get_display_name()
+        return user
+
+    @staticmethod
+    def logout(request):
+        if 'current_user_pk' in request.session:
+            del request.session['current_user_pk']
+        if 'current_user_username' in request.session:
+            del request.session['current_user_username']
+        if 'current_user_is_admin' in request.session:
+            del request.session['current_user_is_admin']
+        if 'current_user_is_nurse' in request.session:
+            del request.session['current_user_is_nurse']
+        if 'current_user_is_doctor' in request.session:
+            del request.session['current_user_is_doctor']
+        if 'current_user_is_patient' in request.session:
+            del request.session['current_user_is_patient']
+        if 'current_user_display_name' in request.session:
+            del request.session['current_user_display_name']
+
+    @staticmethod
+    def get_logged_in(request):
+        try:
+            if request.session['current_user_pk'] is None:
+                return None
+        except KeyError:
+            return None
+
+        return User.objects.get(pk=request.session['current_user_pk'])
+
+    def get_display_name(self):
+        name = self.get_full_name()
+        if not name:
+            return self.get_short_name()
+        return name
+
+    def get_full_name(self):
+        return ('%s %s' % (self.first_name, self.last_name)).strip()
+
+    def get_short_name(self):
+        return self.username
+
+    def get_user_type(self):
+        if self.is_admin:
+            return UserType.Administrator
+        if self.is_doctor:
+            return UserType.Doctor
+        if self.is_nurse:
+            return UserType.Nurse
+        if self.is_patient:
+            return UserType.Patient
+
+
+class UserBackend(object):
+    def authenticate(self, username=None, password=None):
+        try:
+            user = User.objects.get(username=username)
+            if user.check_password(password):
+                Logging.info("Authenticated user '%s'" % username)
+                return user
+            else:
+                return None
+        except User.DoesNotExist:
+            return None
+
+    def get_user(self, user_id):
+        try:
+            return User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return None
+
+# Resolve cyclic dependencies
+from healthnet.core.users.administrator import Administrator
+from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.nurse import Nurse
+from healthnet.core.users.patient import Patient

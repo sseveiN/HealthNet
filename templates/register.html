@@ -1,0 +1,18 @@
+{% extends "main_template.html" %}
+
+{% block title %} Register {% endblock title %}
+
+{% block content %}
+
+{% load bootstrap3 %}
+<form action="" method="post" class="form">
+    {% csrf_token %}
+    {% bootstrap_form registration_form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "star" %} Register
+        </button>
+    {% endbuttons %}
+</form>
+
+{% endblock content %}

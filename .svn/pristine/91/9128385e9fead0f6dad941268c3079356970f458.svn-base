@@ -1,0 +1,11 @@
+from django.db import models
+
+from healthnet.core.users.user import User, UserType
+
+
+class Doctor(User):
+    User.is_doctor = models.BooleanField(default=True)
+    patients = models.ManyToManyField('Patient')
+    nurses = models.ManyToManyField('Nurse')
+    hospitals = models.ForeignKey('Hospital')
+
