@@ -1,1 +1,0 @@
-from healthnet.models import User

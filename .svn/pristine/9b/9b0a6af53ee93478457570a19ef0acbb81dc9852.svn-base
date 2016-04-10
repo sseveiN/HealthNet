@@ -1,9 +1,0 @@
-from django.db import models
-from django_enumfield import enum
-
-from healthnet.core.users.user import UserType, User
-
-
-class Nurse(User):
-    User.user_type = enum.EnumField(UserType, default=UserType.Nurse)
-    doctors = models.ManyToManyField('Doctor')
