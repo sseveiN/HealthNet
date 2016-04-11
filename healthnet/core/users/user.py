@@ -1,11 +1,13 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import UserManager
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.http import HttpResponseRedirect
 from healthnet.core.enumfield import EnumField
 
 from healthnet.core.logging import Logging
+
 
 class UserType(EnumField):
     """

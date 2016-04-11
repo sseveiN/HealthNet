@@ -16,6 +16,15 @@
         <p>You have no additional appointments today.</p>
     {% endif %}
 
+    {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse %}
+        <h1>My Patients</h1>
+        {%  if patients %}
+            {% include "fragments/patients.html" with patients=patients %}
+        {% else %}
+            <p>You have no patients.</p>
+        {% endif %}
+    {% endif %}
+
     <h1>Calendar</h1>
     <p>Click on any appointment to edit it.</p>
     <div id="calendar"></div>
@@ -37,6 +46,18 @@
                 defaultView: 'agendaWeek',
                 events: events,
                 eventLimit: true
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('#patients').DataTable({
+                "order": [[3, "asc"]],
+                "iDisplayLength": 10,
+                "aoColumnDefs": [
+                  { 'bSortable': false, 'aTargets': [5] }
+               ]
             });
         });
     </script>

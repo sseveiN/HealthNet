@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^appointment/', views.appointment, name="appointment"),
     url(r'^edit_info/', views.edit_info, name="edit_info"),
     url(r'^edit_appointment/(?P<pk>\d+)/', views.edit_appointment, name="edit_appointment"),
+    url(r'^toggle_admit/(?P<pk>\d+)/$', views.toggle_admit, name="toggle_admit"),
 
 
 

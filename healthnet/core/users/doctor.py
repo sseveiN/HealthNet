@@ -10,5 +10,7 @@ class Doctor(User):
     User.is_doctor = models.BooleanField(default=True)
     patients = models.ManyToManyField('Patient', blank=True)
     nurses = models.ManyToManyField('Nurse', blank=True)
-    hospitals = models.ManyToManyField('Hospital', blank=True)
+    hospitals = models.ForeignKey('Hospital', null=True, blank=True)
 
+    def get_patients(self):
+        return self.patients.all()

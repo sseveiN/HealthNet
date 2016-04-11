@@ -31,5 +31,5 @@ class Patient(User):
     doctors = models.ManyToManyField('Doctor', blank=True)
     primary_care_provider = models.OneToOneField('Doctor', related_name="primary_care_provider", blank=True, null=True)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
-
-
+    hospital = models.OneToOneField('Hospital', null=True, blank=True, default=None)
+    is_admitted = models.BooleanField(default=False)

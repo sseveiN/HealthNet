@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm
 from healthnet.core.logging import LogEntry
+from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.user import User, UserType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.doctor import Doctor
@@ -68,8 +69,16 @@ def dashboard(request):
     context = {
         'appointments': appointments,
         'appointments_json': appointments_json,
-        'username': request.user.username
+        'username': request.user.username,
+        'patients': []
     }
+
+    # Get list of patients if user is doctor or nurse
+    if user.is_type(UserType.Doctor):
+        context['patients'] = Doctor.objects.get(username=user.username).get_patients()
+
+    if user.is_type(UserType.Nurse):
+        context['patients'] = Nurse.objects.get(username=user.username).get_patients()
 
     return render(request, 'dashboard.html', context)
 
@@ -312,6 +321,38 @@ def edit_appointment(request, pk):
         }
         return render(request, 'edit_appointment.html', context)
 
+
+def toggle_admit(request, pk):
+    """
+    Toggles a users admittance status
+    :param request: http request
+    :param pk: The patients pk
+    :return: If no User, index page
+                Otherwise, go back to the page the user was at before
+    """
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get patient based on pk argument
+    patient = Patient.objects.get(pk=pk)
+
+    # User can only admit if they are nuirse or doctor
+    if not user.is_type(UserType.Doctor) and not User.is_type(UserType.Nurse):
+        messages.error(request, "You aren't allowed to admit/discharge this patient!")
+    else:
+        # noinspection PyBroadException
+        try:
+            patient.is_admitted = not patient.is_admitted
+            patient.save()
+            Logging.info("'%s' admittance status changed to '%s' by '%s'" % (patient.username, str(patient.is_admitted), user.username))
+            messages.success(request, "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
+        except:
+            messages.error(request, "There was an error %s this patient!" % ('admitting' if patient.is_admitted else 'discharging'))
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 # DEBUG VIEWS
 def create_test_user(request):

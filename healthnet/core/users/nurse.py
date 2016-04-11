@@ -9,3 +9,8 @@ class Nurse(User):
     """
     User.is_nurse = models.BooleanField(default=True)
     doctors = models.ManyToManyField('Doctor')
+    hospital = models.OneToOneField('Hospital', blank=True, null=True)
+
+    def get_patients(self):
+        return self.hospital.patients.all()
+

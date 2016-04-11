@@ -64,3 +64,7 @@ table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.d
     background: none !important;
     border: none !important;
 }
+
+.patient-actions {
+    float: right;
+}
