@@ -1,0 +1,18 @@
+{% extends "main_template.html" %}
+
+{% block title %} Send Message {% endblock title %}
+
+{% block content %}
+{% load humanize %}
+<h1>{% if is_sent %}Sent{% else %}Inbox{% endif %}</h1>
+<ul class="messages list-unstyled">
+    {% for msg in msgs %}
+    <li class="message {% if is_sent %}{% else %}{{ msg.get_read_status_str }}{% endif %}">
+        <p class="message-from">from <b>{{ msg.sender }}</b> {{ msg.date | naturaltime }}</p>
+        <p class="message-content">{{ msg.text }}</p>
+        <div class="message-links">{% if is_sent %}{% else %}<a href="{% url 'toggle_read' msg.pk %}">mark as {{ msg.get_read_status_str_inv }}</a>{% endif %} <a href="{% url 'reply_message' msg.pk %}">reply</a></div>
+    </li>
+    {% endfor %}
+</ul>
+
+{% endblock content %}

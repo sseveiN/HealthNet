@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from healthnet import models
 from healthnet.core.logging import LogEntry
+from healthnet.core.messages import Message
 from healthnet.core.users.user import User
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.doctor import Doctor
@@ -18,3 +19,5 @@ admin.site.register(User)
 admin.site.register(Patient)
 admin.site.register(Doctor)
 admin.site.register(Nurse)
+
+admin.site.register(Message)

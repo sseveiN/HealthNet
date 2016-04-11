@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.admin import widgets
 
 from healthnet.core.users.patient import Patient
+from healthnet.core.users.user import User
 from healthnet.models import Appointment
 from django.http import request
 from healthnet.core.users.doctor import Doctor
@@ -129,3 +130,43 @@ class AppointmentForm(forms.ModelForm):
         appointment_form = AppointmentForm(request.POST, instance=appointment)
         appointment_form.save()
         return appointment_form
+
+
+class SendMessageForm(forms.Form):
+    """
+    Form to send a message
+    """
+    recipient = forms.ModelChoiceField(queryset=None)
+    message = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        self.sender = kwargs.pop('sender')
+
+        super(SendMessageForm, self).__init__(*args, **kwargs)
+
+        self.fields['recipient'].label = "Recipient"
+        self.fields['message'].label = "Your Message"
+
+        self.fields['recipient'].queryset = User.objects.exclude(pk=self.sender.pk)
+
+
+class ReplyMessageForm(forms.Form):
+    """
+    Form to send a message
+    """
+    message = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+
+        super(ReplyMessageForm, self).__init__(*args, **kwargs)
+        self.fields['message'].label = "Your Message"

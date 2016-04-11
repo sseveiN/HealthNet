@@ -4,6 +4,8 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
+
 from healthnet.core.enumfield import EnumField
 
 from healthnet.core.logging import Logging
@@ -185,6 +187,30 @@ class User(AbstractBaseUser):
             return UserType.Nurse
         if self.is_patient:
             return UserType.Patient
+
+    def get_num_new_msgs(self):
+        return self.received_messages.filter(is_read=False).count()
+
+    def get_view_context(self):
+        return {
+            'num_msgs': self.get_num_new_msgs()
+        }
+
+    def mark_messages_read(self):
+        for i in self.received_messages.filter(is_read=False):
+            i.is_read = True
+            i.save()
+
+    def render_for_user(self, request, template, context):
+        user_context = dict(context)
+        user_context.update(self.get_view_context())
+        return render(request, template, user_context)
+
+    def __unicode__(self):
+        return '%s (%s)' % (self.get_full_name(), self.get_short_name())
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class UserBackend(object):

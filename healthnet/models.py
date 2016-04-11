@@ -23,6 +23,13 @@ class Address(models.Model):
     state = models.CharField(max_length=255)
     zipcode = models.CharField(max_length=255)
 
+    def __unicode__(self):
+        return '%s%s, %s, %s %s' % \
+               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
+
+    def __str__(self):
+        return self.__unicode__()
+
 
 class Hospital(models.Model):
     """
@@ -30,6 +37,12 @@ class Hospital(models.Model):
     """
     name = models.CharField(max_length=255)
     address = models.OneToOneField('Address')
+
+    def __unicode__(self):
+        return '%s (%s, %s)' % (self.name, self.address.city, self.address.state)
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class Calendar(models.Model):
@@ -175,6 +188,12 @@ class Appointment(models.Model):
 
     def has_conflict(self):
         return Calendar.has_conflict(self.attendees.all(), self.tstart, self.tend, self)
+
+    def __unicode__(self):
+        return self.name
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class Prescription(models.Model):

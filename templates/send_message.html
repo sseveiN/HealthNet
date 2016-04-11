@@ -1,0 +1,21 @@
+{% extends "main_template.html" %}
+
+{% block title %} Send Message {% endblock title %}
+
+{% block additional_navigation %}
+    {% include "fragments/message_navigation.html" %}
+{% endblock %}
+
+{% block content %}
+{% load bootstrap3 %}
+<form action="" method="post" class="form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "send" %} Send Message
+        </button>
+    {% endbuttons %}
+</form>
+
+{% endblock content %}

@@ -10,7 +10,7 @@
 
 
 {% block content %}
-    {% load bootstrap3 %}
+{% load bootstrap3 %}
 <form method="post" action=".">
   {% csrf_token %}
     {% bootstrap_form appointment_form %}

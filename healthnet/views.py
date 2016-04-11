@@ -4,8 +4,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
-from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm
+from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
+    ReplyMessageForm
 from healthnet.core.logging import LogEntry
+from healthnet.core.messages import Message
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.user import User, UserType
 from healthnet.core.users.patient import Patient
@@ -80,7 +82,7 @@ def dashboard(request):
     if user.is_type(UserType.Nurse):
         context['patients'] = Nurse.objects.get(username=user.username).get_patients()
 
-    return render(request, 'dashboard.html', context)
+    return user.render_for_user(request, 'dashboard.html', context)
 
 
 def appointment(request):
@@ -125,7 +127,7 @@ def appointment(request):
     context = {
         'appointment_form': appointment_form
     }
-    return render(request, 'appointment.html', context)
+    return user.render_for_user(request, 'appointment.html', context)
 
 
 def registration(request):
@@ -234,7 +236,7 @@ def edit_info(request, pk=None):
         'patient_user': user,
         'edit_info': form
     }
-    return render(request, 'edit_user.html', context)
+    return user.render_for_user(request, 'edit_user.html', context)
 
 
 def logout(request):
@@ -269,7 +271,7 @@ def log(request):
         'log_entries': LogEntry.objects.all()
     }
 
-    return render(request, 'log.html', context)
+    return user.render_for_user(request, 'log.html', context)
 
 
 def cancel_appointment(request, pk):
@@ -344,7 +346,7 @@ def edit_appointment(request, pk):
             'apt': apt,
             'appointment_form': form
         }
-        return render(request, 'edit_appointment.html', context)
+        return user.render_for_user(request, 'edit_appointment.html', context)
 
 
 def toggle_admit(request, pk):
@@ -364,7 +366,7 @@ def toggle_admit(request, pk):
     # Get patient based on pk argument
     patient = Patient.objects.get(pk=pk)
 
-    # User can only admit if they are nuirse or doctor
+    # User can only admit if they are nurse or doctor
     if not user.is_type(UserType.Doctor) and not User.is_type(UserType.Nurse):
         messages.error(request, "You aren't allowed to admit/discharge this patient!")
     else:
@@ -377,6 +379,119 @@ def toggle_admit(request, pk):
             messages.error(request, "There was an error %s this patient!" % ('admitting' if patient.is_admitted else 'discharging'))
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+def toggle_read(request, pk):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get message based on pk argument
+    msg = Message.objects.get(pk=pk)
+
+    # check user can see this message
+    if msg.recipient_id is not user.pk:
+        messages.error(request, "You aren't allowed to read this message!")
+    else:
+        msg.toggle_unread()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+def send_message(request, pk=None):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    if request.method == 'POST':
+        form = SendMessageForm(request.POST, sender=user, initial={'recipient': pk})
+
+        if form.is_valid():
+            Message.send(user, form.cleaned_data['recipient'], form.cleaned_data['message'])
+            messages.success(request, "Your message has been sent!")
+            return redirect('dashboard')
+    else:
+        form = SendMessageForm(sender=user, initial={'recipient': pk})
+    context = {
+        'is_message_page': True,
+        'form': form,
+    }
+
+    return user.render_for_user(request, 'send_message.html', context)
+
+
+def reply_message(request, pk):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get message based on pk argument
+    msg = Message.objects.get(pk=pk)
+
+    # check user can see this message
+    if msg.recipient_id is not user.pk:
+        messages.error(request, "You aren't allowed to read this message!")
+        return redirect('inbox')
+
+    if request.method == 'POST':
+        form = ReplyMessageForm(request.POST)
+
+        if form.is_valid():
+            recp = msg.sender
+            if msg.sender is user:
+                recp = msg.recipient
+
+            msg.reply(user, recp, form.cleaned_data['message'])
+            messages.success(request, "Your message has been sent!")
+            return redirect('inbox')
+    else:
+        form = ReplyMessageForm()
+    context = {
+        'is_message_page': True,
+        'msg': msg,
+        'form': form
+    }
+
+    return user.render_for_user(request, 'reply_message.html', context)
+
+
+def inbox(request):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    #user.mark_messages_read()
+
+    context = {
+        'is_message_page': True,
+        'msgs': user.received_messages.order_by('-date')
+    }
+
+    return user.render_for_user(request, 'inbox.html', context)
+
+
+def sent_messages(request):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    context = {
+        'is_message_page': True,
+        'is_sent': True,
+        'msgs': user.sent_messages.order_by('-date')
+    }
+
+    return user.render_for_user(request, 'inbox.html', context)
 
 
 # DEBUG VIEWS
