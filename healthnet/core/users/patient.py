@@ -29,7 +29,11 @@ class Patient(User):
     health_insurance_provider = models.CharField(max_length=15, blank=True, null=True)  # All the provider codes ive seen are 5 + 10 numbers
     health_insurance_number = models.CharField(max_length=10, unique=True)  # All the insurance numbers ive seen are 5 + 5 characters
     doctors = models.ManyToManyField('Doctor', blank=True)
-    primary_care_provider = models.OneToOneField('Doctor', related_name="primary_care_provider", blank=True, null=True)
+    primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True, unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
     hospital = models.OneToOneField('Hospital', null=True, blank=True, default=None)
     is_admitted = models.BooleanField(default=False)
+
+    def toggle_admit(self):
+        self.is_admitted = not self.is_admitted
+        self.save()

@@ -171,26 +171,49 @@ def registration(request):
     return render(request, 'register.html', context)
 
 
-def edit_info(request):
+def edit_info(request, pk=None):
     """
     User tries to edit their information
     :param request: request to edit their information
     :return: Goes to dashboard if successful, otherwise stays on edit_info with
                 a message saying what they need to fix"
     """
-    all_pats = Patient.objects.all()
-    user = User.get_logged_in(request)
-    primary_key = user.pk
 
-    # Require login
-    if user is None:
-        messages.error(request, "You must be logged in to access this page.")
-        return redirect('index')
+    show_name = False
 
-    # Check user type
-    if not user.is_type(UserType.Patient):
-        messages.error(request, "You must be a patient to edit your information.")
-        return redirect('index')
+    if pk is None:
+        user = User.get_logged_in(request)
+        primary_key = user.pk
+
+        # Require login
+        if user is None:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('index')
+
+        # Check user type
+        if not user.is_type(UserType.Patient):
+            messages.error(request, "You must be a patient to edit your information.")
+            return redirect('index')
+    else:
+        show_name = True
+        logged = User.get_logged_in(request)
+        user = User.objects.get(pk=pk)
+        primary_key = pk
+
+        # Require login
+        if logged is None:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('index')
+
+        # Check logged type
+        if not logged.is_type(UserType.Doctor) and not logged.is_type(UserType.Nurse):
+            messages.error(request, "You aren't allowed to view this patient!")
+            return redirect('index')
+
+        # Check user type
+        if not user.is_type(UserType.Patient):
+            messages.error(request, "You must be a patient to edit your information.")
+            return redirect('index')
 
     if request.method == 'POST':
         u = Patient.objects.get(pk=primary_key)
@@ -207,6 +230,8 @@ def edit_info(request):
         form = EditPatientInfoForm(instance=u)  # No request.POST
     # move it outside of else
     context = {
+        'show_name': show_name,
+        'patient_user': user,
         'edit_info': form
     }
     return render(request, 'edit_user.html', context)
@@ -345,14 +370,14 @@ def toggle_admit(request, pk):
     else:
         # noinspection PyBroadException
         try:
-            patient.is_admitted = not patient.is_admitted
-            patient.save()
+            patient.toggle_admit()
             Logging.info("'%s' admittance status changed to '%s' by '%s'" % (patient.username, str(patient.is_admitted), user.username))
             messages.success(request, "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
         except:
             messages.error(request, "There was an error %s this patient!" % ('admitting' if patient.is_admitted else 'discharging'))
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 # DEBUG VIEWS
 def create_test_user(request):

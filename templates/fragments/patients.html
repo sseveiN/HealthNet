@@ -19,7 +19,7 @@
             <td>{% if patient.is_admitted %}Yes{% else %}No{% endif %}</td>
             <td>
                 <div class="patient-actions">
-                    <button type="button" class="btn btn-primary btn-xs">View/Edit Info</button>
+                    <a href="{% url "views.edit_info" patient.pk %}"><button type="button" class="btn btn-primary btn-xs">View/Edit Info</button></a>
                     <button type="button" class="btn btn-primary btn-xs">Prescriptions</button>
                     <button type="button" class="btn btn-primary btn-xs">Tests</button>
                     <a href="{% url "views.toggle_admit" patient.pk %}"><button type="button" class="btn {% if patient.is_admitted %}btn-danger{% else %}btn-success{% endif %} btn-xs">{% if patient.is_admitted %}Discharge{% else %}Admit{% endif %}</button></a>
