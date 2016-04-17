@@ -58,7 +58,9 @@
                 "order": [[3, "asc"]],
                 "iDisplayLength": 10,
                 "aoColumnDefs": [
-                    { 'bSortable': false, 'bSearchable' : false, 'aTargets': [{% if request.session.current_user_is_admin %}6{% else %}5{% endif %}] },
+                    { 'bSortable': false, 'bSearchable' : false, 'aTargets': [
+                        {% if request.session.current_user_is_admin %}6{% else %}5{% endif %}
+                    ] },
                     { 'bSearchable' : false, 'aTargets': [4] }
                ]
             });

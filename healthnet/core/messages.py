@@ -1,7 +1,12 @@
 from django.db import models
 
+from healthnet.core.enumfield import EnumField
+
+MessageType = EnumField('Normal', 'Emergency', 'Reminder', 'Call to Action')
+
 
 class Message(models.Model):
+    type = models.IntegerField(choices=MessageType.get_choices(), default=MessageType.Normal)
     sender = models.ForeignKey('User', related_name='sent_messages')
     recipient = models.ForeignKey('User', related_name='received_messages')
     text = models.TextField()
@@ -39,8 +44,24 @@ class Message(models.Model):
         message.save()
         return message
 
+    def get_type_str(self):
+        """
+        Gets the type of the message
+        :return: type of the message as a str
+        """
+        if self.type == 0:
+            return 'Normal'
+        if self.type == 1:
+            return 'Emergency'
+        if self.type == 2:
+            return 'Reminder'
+        if self.type == 3:
+            return 'Call-to-Action'
+        else:
+            return 'Unknown'
+
     @staticmethod
-    def send(sender, recipient, msg):
-        message = Message.objects.create(sender=sender, recipient=recipient, text=msg)
+    def send(sender, recipient, msg, msg_type=MessageType.Normal):
+        message = Message.objects.create(sender=sender, recipient=recipient, text=msg, type=msg_type)
         message.save()
         return message

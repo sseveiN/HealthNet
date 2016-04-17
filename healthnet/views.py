@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
     ReplyMessageForm, TransferForm
 from healthnet.core.logging import LogEntry
-from healthnet.core.messages import Message
+from healthnet.core.messages import Message, MessageType
 from healthnet.core.users.administrator import Administrator
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.user import User, UserType
@@ -441,14 +441,14 @@ def send_message(request, pk=None):
         return redirect('index')
 
     if request.method == 'POST':
-        form = SendMessageForm(request.POST, sender=user, initial={'recipient': pk})
+        form = SendMessageForm(request.POST, sender=user, initial={'recipient': pk, 'type': MessageType.Normal})
 
         if form.is_valid():
-            Message.send(user, form.cleaned_data['recipient'], form.cleaned_data['message'])
+            Message.send(user, form.cleaned_data['recipient'], form.cleaned_data['message'], form.cleaned_data['type'])
             messages.success(request, "Your message has been sent!")
-            return redirect('dashboard')
+            return redirect('inbox')
     else:
-        form = SendMessageForm(sender=user, initial={'recipient': pk})
+        form = SendMessageForm(sender=user, initial={'recipient': pk, 'type': MessageType.Normal})
     context = {
         'is_message_page': True,
         'form': form,

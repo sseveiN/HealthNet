@@ -6,7 +6,7 @@
             <th>First Name</th>
             <th>Last Name</th>
             <th>Admitted</th>
-            {% if request.session.current_user_is_admin %}}<th>Hospital</th>{% endif %}
+            {% if request.session.current_user_is_admin %}<th>Hospital</th>{% endif %}
             <th></th>
         </tr>
     </thead>
@@ -18,7 +18,7 @@
             <td>{{ patient.first_name }}</td>
             <td>{{ patient.last_name }}</td>
             <td>{% if patient.is_admitted %}Yes{% else %}No{% endif %}</td>
-            {% if request.session.current_user_is_admin %}}<td>{{ patient.hospital }}</td>{% endif %}
+            {% if request.session.current_user_is_admin %}<td>{{ patient.hospital }}</td>{% endif %}
             <td>
                 <div class="patient-actions">
                     {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse %}

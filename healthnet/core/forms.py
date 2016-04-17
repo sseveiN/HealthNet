@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.admin import widgets
 
+from healthnet.core.messages import MessageType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
 from healthnet.models import Appointment, Hospital
@@ -137,6 +138,7 @@ class SendMessageForm(forms.Form):
     Form to send a message
     """
     recipient = forms.ModelChoiceField(queryset=None)
+    type = forms.ChoiceField(choices=MessageType.get_choices())
     message = forms.CharField(widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
@@ -150,6 +152,7 @@ class SendMessageForm(forms.Form):
         super(SendMessageForm, self).__init__(*args, **kwargs)
 
         self.fields['recipient'].label = "Recipient"
+        self.fields['type'].label = "Message Type"
         self.fields['message'].label = "Your Message"
 
         self.fields['recipient'].queryset = User.objects.exclude(pk=self.sender.pk)

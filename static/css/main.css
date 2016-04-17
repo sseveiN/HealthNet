@@ -146,3 +146,15 @@ table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.d
 .user {
     color: #337ab7;
 }
+
+.message-type.emergency {
+    background-color: #d9534f;
+}
+
+.message-type.reminder {
+    background-color: #5bc0de;
+}
+
+.message-type.call-to-action {
+    background-color: #5cb85c;
+}
