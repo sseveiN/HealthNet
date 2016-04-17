@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.db import models
 
 from healthnet.core.users.user import User, UserType
@@ -23,7 +25,6 @@ class Patient(User):
     address = models.OneToOneField('Address', blank=True, null=True)
     home_phone = models.CharField(max_length=12, blank=True, null=True)
     work_phone = models.CharField(max_length=12, blank=True, null=True)
-    age = models.IntegerField(blank=True, null=True)
     sex = models.IntegerField(choices=Gender.get_choices(), default=Gender.Unspecified, blank=True, null=True)
     marital_status = models.IntegerField(choices=MaritalStatus.get_choices(), default=MaritalStatus.Unspecified, blank=True, null=True)
     health_insurance_provider = models.CharField(max_length=15, blank=True, null=True)  # All the provider codes ive seen are 5 + 10 numbers
@@ -33,6 +34,10 @@ class Patient(User):
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
     hospital = models.ForeignKey('Hospital', null=True, blank=True, default=None)
     is_admitted = models.BooleanField(default=False)
+
+    def get_age(self):
+        today = date.today()
+        return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
 
     def toggle_admit(self):
         self.is_admitted = not self.is_admitted

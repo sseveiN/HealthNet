@@ -13,7 +13,7 @@
     {% for prev in msg.get_previous_messages %}
     <li class="message {{ prev.get_read_status_str }}">
         <p class="message-from">from <b>{{ prev.sender }}</b> to {{ prev.recipient }} {{ prev.date | naturaltime }} <span class="label label-default message-type {{  msg.get_type_str | lower }}">{{  msg.get_type_str }}</span></p>
-        <p class="message-content">{{ prev.text }}</p>
+        <p class="message-content">{{ msg.get_html | safe }}</p>
         <div class="message-links"><a href="{% url 'toggle_read' prev.pk %}">mark as {{ prev.get_read_status_str_inv }}</a> <a href="{% url 'reply_message' prev.pk %}">reply</a></div>
     </li>
     {% endfor %}

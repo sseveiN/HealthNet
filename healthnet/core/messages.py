@@ -1,3 +1,6 @@
+from django.utils.html import linebreaks
+from mistune import markdown
+
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
@@ -13,6 +16,9 @@ class Message(models.Model):
     previous_message = models.ForeignKey('Message', blank=True, null=True)
     is_read = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True, blank=True)
+
+    def get_html(self):
+        return linebreaks(markdown(self.text.rstrip()).rstrip())
 
     def toggle_unread(self):
         self.is_read = not self.is_read

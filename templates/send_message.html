@@ -5,6 +5,11 @@
 {% block content %}
 {% load bootstrap3 %}
 <h1>Send a Message</h1>
+
+<div class="alert alert-info">
+  You can use Markdown in your messages! For more information on markdown click  <a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet">here</a>.
+</div>
+
 <form action="" method="post" class="form">
     {% csrf_token %}
     {% bootstrap_form form %}

@@ -5,6 +5,8 @@ from itertools import chain
 from django.core.urlresolvers import reverse
 from django.db import models
 
+from healthnet.core.enumfield import EnumField
+
 
 class Hospital(models.Model):
     """
@@ -34,6 +36,7 @@ class Hospital(models.Model):
     def __str__(self):
         return self.__unicode__()
 
+
 # Import External Models
 from healthnet.core.users.user import User, UserType
 from healthnet.core.users.patient import Patient, Gender, MaritalStatus
@@ -41,6 +44,14 @@ from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.administrator import Administrator
 from healthnet.core.logging import LogEntry, LogLevel, Logging
+
+States = EnumField("Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+                   "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+                   "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+                   "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+                   "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+                   "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+                   "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming")
 
 
 class Address(models.Model):
@@ -50,7 +61,7 @@ class Address(models.Model):
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True)
     city = models.CharField(max_length=255)
-    state = models.CharField(max_length=255)
+    state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=255)
 
     def __unicode__(self):

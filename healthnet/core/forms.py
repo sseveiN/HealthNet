@@ -1,10 +1,12 @@
+from datetime import datetime
 from django import forms
 from django.contrib.admin import widgets
+from django.forms import SelectDateWidget
 
 from healthnet.core.messages import MessageType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
-from healthnet.models import Appointment, Hospital
+from healthnet.models import Appointment, Hospital, States
 from django.http import request
 from healthnet.core.users.doctor import Doctor
 
@@ -28,17 +30,24 @@ class RegistrationForm(forms.ModelForm):
     # TODO:
 
     password = forms.CharField(widget=forms.PasswordInput)
-    dob = forms.DateField(widget=forms.SelectDateWidget)
+    dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
 
-    address = forms.CharField()
+    address_line_1 = forms.CharField(max_length=255)
+    address_line_2 = forms.CharField(max_length=255)
+    city = forms.CharField(max_length=255)
+    state = forms.ChoiceField(choices=States.get_choices())
+    zipcode = forms.CharField(max_length=255)
 
     class Meta:
         """
         Meta class
         """
         model = Patient
-        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'address', 'age', 'sex', 'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider', 'primary_care_provider','doctors', 'height', 'weight', 'cholesterol']
-        exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records', 'address']
+        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'address', 'sex',
+                  'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider',
+                  'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
+        exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
+                   'records', 'address']
 
     def __init__(self, *args, **kwargs):
         """
@@ -51,10 +60,13 @@ class RegistrationForm(forms.ModelForm):
         self.fields['weight'].required = False
         self.fields['cholesterol'].required = False
         self.fields['dob'].required = False
-        self.fields['address'].required = False
+        self.fields['address_line_1'].required = False
+        self.fields['address_line_2'].required = False
+        self.fields['city'].required = False
+        self.fields['state'].required = False
+        self.fields['zipcode'].required = False
         self.fields['home_phone'].required = False
         self.fields['work_phone'].required = False
-        self.fields['age'].required = False
         self.fields['sex'].required = False
         self.fields['marital_status'].required = False
         self.fields['health_insurance_provider'].required = False
@@ -66,13 +78,16 @@ class EditPatientInfoForm(forms.ModelForm):
     """
     Form to edit patient info
     """
+
     class Meta:
         """
         Metaclass
         """
         model = Patient
-        fields = ['health_insurance_number', 'address', 'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider', 'primary_care_provider','doctors', 'height', 'weight', 'cholesterol']
-        exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
+        fields = ['health_insurance_number', 'address', 'home_phone', 'work_phone', 'marital_status',
+                  'health_insurance_provider', 'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
+        exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions',
+                   'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
 
     def __init__(self, *args, **kwargs):
         """
