@@ -1,11 +1,18 @@
 import datetime
 import json
-from itertools import chain
 
 from django.core.urlresolvers import reverse
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
+
+States = EnumField("Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
+                   "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
+                   "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+                   "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+                   "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+                   "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+                   "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming")
 
 
 class Hospital(models.Model):
@@ -13,7 +20,11 @@ class Hospital(models.Model):
     Hospital Model
     """
     name = models.CharField(max_length=255)
-    address = models.OneToOneField('Address')
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255, blank=True, default="")
+    city = models.CharField(max_length=255)
+    state = models.IntegerField(choices=States.get_choices())
+    zipcode = models.CharField(max_length=255)
 
     def has_user(self, user):
         for u in self.patient_set.all():
@@ -30,8 +41,12 @@ class Hospital(models.Model):
                 return True
         return False
 
+    def get_address_str(self):
+        return '%s%s, %s, %s %s' % \
+               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
+
     def __unicode__(self):
-        return '%s (%s, %s)' % (self.name, self.address.city, self.address.state)
+        return '%s (%s, %s)' % (self.name, self.city, self.state)
 
     def __str__(self):
         return self.__unicode__()
@@ -44,32 +59,6 @@ from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.administrator import Administrator
 from healthnet.core.logging import LogEntry, LogLevel, Logging
-
-States = EnumField("Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware",
-                   "District of Columbia", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa",
-                   "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
-                   "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
-                   "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
-                   "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
-                   "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming")
-
-
-class Address(models.Model):
-    """
-    Address Model
-    """
-    address_line_1 = models.CharField(max_length=255)
-    address_line_2 = models.CharField(max_length=255, blank=True, default="")
-    city = models.CharField(max_length=255)
-    state = models.IntegerField(choices=States.get_choices())
-    zipcode = models.CharField(max_length=255)
-
-    def __unicode__(self):
-        return '%s%s, %s, %s %s' % \
-               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
-
-    def __str__(self):
-        return self.__unicode__()
 
 
 class Calendar(models.Model):
@@ -229,10 +218,20 @@ class Prescription(models.Model):
     """
     patient = models.OneToOneField('Patient')
     doctor = models.OneToOneField('Doctor')
-    address = models.OneToOneField('Address')
+
+    address_line_1 = models.CharField(max_length=255)
+    address_line_2 = models.CharField(max_length=255, blank=True, default="")
+    city = models.CharField(max_length=255)
+    state = models.IntegerField(choices=States.get_choices())
+    zipcode = models.CharField(max_length=255)
+
     name = models.CharField(max_length=255)
     expiration_date = models.DateField()
     refills = models.IntegerField()
+
+    def get_address_str(self):
+        return '%s%s, %s, %s %s' % \
+               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
 
 
 class MedicalRecord(models.Model):

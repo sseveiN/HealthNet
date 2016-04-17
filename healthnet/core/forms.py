@@ -30,23 +30,18 @@ class RegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
 
-    address_line_1 = forms.CharField(max_length=255)
-    address_line_2 = forms.CharField(max_length=255)
-    city = forms.CharField(max_length=255)
-    state = forms.ChoiceField(choices=States.get_choices())
-    zipcode = forms.CharField(max_length=255)
-
     class Meta:
         """
         Meta class
         """
         model = Patient
 
-        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'address', 'sex',
-                  'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider',
-                  'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
+        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
+                  'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'home_phone', 'work_phone',
+                  'marital_status', 'health_insurance_provider', 'primary_care_provider', 'doctors', 'height', 'weight',
+                  'cholesterol']
         exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
-                   'records', 'address']
+                   'records']
 
     def __init__(self, *args, **kwargs):
         """
@@ -72,18 +67,22 @@ class RegistrationForm(forms.ModelForm):
         self.fields['doctors'].required = False
         self.fields['primary_care_provider'].required = False
 
+        self.fields['dob'].label = "Date of Birth"
+
 
 class EditPatientInfoForm(forms.ModelForm):
     """
     Form to edit patient info
     """
+
     class Meta:
         """
         Metaclass
         """
         model = Patient
-        fields = ['health_insurance_number', 'address', 'home_phone', 'work_phone', 'marital_status',
-                  'health_insurance_provider', 'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
+        fields = ['health_insurance_number', 'home_phone', 'work_phone', 'marital_status',
+                  'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'health_insurance_provider',
+                  'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
         exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions',
                    'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
 
@@ -97,7 +96,11 @@ class EditPatientInfoForm(forms.ModelForm):
         self.fields['height'].required = False
         self.fields['weight'].required = False
         self.fields['cholesterol'].required = False
-        self.fields['address'].required = False
+        self.fields['address_line_1'].required = False
+        self.fields['address_line_2'].required = False
+        self.fields['city'].required = False
+        self.fields['state'].required = False
+        self.fields['zipcode'].required = False
         self.fields['home_phone'].required = False
         self.fields['work_phone'].required = False
         self.fields['marital_status'].required = False

@@ -13,7 +13,7 @@ from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.user import User, UserType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.doctor import Doctor
-from healthnet.models import Calendar, Appointment, Address
+from healthnet.models import Calendar, Appointment
 from healthnet.core.logging import Logging
 
 
@@ -144,20 +144,11 @@ def registration(request):
             username = registration_form.cleaned_data['username']
             password = registration_form.cleaned_data['password']
 
-            address = Address.objects.create(
-                address_line_1=registration_form.cleaned_data['address_line_1'],
-                address_line_2=registration_form.cleaned_data['address_line_2'],
-                city=registration_form.cleaned_data['city'],
-                state=registration_form.cleaned_data['state'],
-                zipcode=registration_form.cleaned_data['zipcode'],
-            ).save()
-
             new_user = RegistrationForm(request.POST)
             new_patient = new_user.save()
             new_patient.is_patient = True
             new_patient.set_password(password)
             new_patient.doctors = registration_form.cleaned_data['doctors']
-            new_patient.address = address
             new_patient.save()
             Logging.info("User '%s' created" % username)
 
