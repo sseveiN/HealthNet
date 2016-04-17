@@ -59,7 +59,7 @@ class Address(models.Model):
     Address Model
     """
     address_line_1 = models.CharField(max_length=255)
-    address_line_2 = models.CharField(max_length=255, blank=True)
+    address_line_2 = models.CharField(max_length=255, blank=True, default="")
     city = models.CharField(max_length=255)
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=255)

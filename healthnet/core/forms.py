@@ -23,11 +23,9 @@ class RegistrationForm(forms.ModelForm):
     """
     Form for registration
     """
-    # TODO: need to be able to add an address
     # TODO: limit age, height, weight, cholesterol
     # TODO: lengthen health insurance provider
-    # TODO: choose multiple doctors
-    # TODO:
+    # TODO: make address line 2 optional
 
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
@@ -43,6 +41,7 @@ class RegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Patient
+
         fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'address', 'sex',
                   'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider',
                   'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
@@ -78,7 +77,6 @@ class EditPatientInfoForm(forms.ModelForm):
     """
     Form to edit patient info
     """
-
     class Meta:
         """
         Metaclass
