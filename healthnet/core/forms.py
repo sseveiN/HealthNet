@@ -3,7 +3,7 @@ from django.contrib.admin import widgets
 
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
-from healthnet.models import Appointment
+from healthnet.models import Appointment, Hospital
 from django.http import request
 from healthnet.core.users.doctor import Doctor
 
@@ -97,7 +97,7 @@ class AppointmentForm(forms.ModelForm):
     Form to create an appointment
     """
     # TODO: should only be able to select from own doctors
-    attendees = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all())
+    attendees = forms.ModelMultipleChoiceField(queryset=User.objects.all())
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -170,3 +170,23 @@ class ReplyMessageForm(forms.Form):
 
         super(ReplyMessageForm, self).__init__(*args, **kwargs)
         self.fields['message'].label = "Your Message"
+
+
+class TransferForm(forms.Form):
+    """
+    Form to send a message
+    """
+    transfer_to = forms.ModelChoiceField(queryset=None)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        self.transferer = kwargs.pop('transferer')
+
+        super(TransferForm, self).__init__(*args, **kwargs)
+
+        self.fields['transfer_to'].label = ""
+        self.fields['transfer_to'].queryset = self.transferer.get_hospitals()

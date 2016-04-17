@@ -9,15 +9,17 @@
 {% endblock css %}
 
 {% block content %}
-    <h1>Today's Appointments</h1>
-    {%  if appointments %}
-        {% include "fragments/calendar_day.html" %}
-    {% else %}
-        <p>You have no additional appointments today.</p>
+    {% if not request.session.current_user_is_admin %}
+        <h1>Today's Appointments</h1>
+        {%  if appointments %}
+            {% include "fragments/calendar_day.html" %}
+        {% else %}
+            <p>You have no additional appointments today.</p>
+        {% endif %}
     {% endif %}
 
-    {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse %}
-        <h1>My Patients</h1>
+    {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse or request.session.current_user_is_admin %}
+        {% if request.session.current_user_is_admin %}<h1>All Patients</h1>{% else %}<h1>My Patients</h1>{% endif %}
         {%  if patients %}
             {% include "fragments/patients.html" with patients=patients %}
         {% else %}
@@ -56,7 +58,7 @@
                 "order": [[3, "asc"]],
                 "iDisplayLength": 10,
                 "aoColumnDefs": [
-                    { 'bSortable': false, 'bSearchable' : false, 'aTargets': [5] },
+                    { 'bSortable': false, 'bSearchable' : false, 'aTargets': [{% if request.session.current_user_is_admin %}6{% else %}5{% endif %}] },
                     { 'bSearchable' : false, 'aTargets': [4] }
                ]
             });

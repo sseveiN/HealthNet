@@ -10,6 +10,8 @@ from healthnet.core.enumfield import EnumField
 
 from healthnet.core.logging import Logging
 
+from healthnet.models import Hospital
+
 
 class UserType(EnumField):
     """
@@ -205,6 +207,43 @@ class User(AbstractBaseUser):
         user_context = dict(context)
         user_context.update(self.get_view_context())
         return render(request, template, user_context)
+
+    def get_typed_patient(self):
+        if self.is_type(UserType.Patient):
+            return Patient.objects.get(username=self.username)
+
+        if self.is_type(UserType.Doctor):
+            return Doctor.objects.get(username=self.username)
+
+        if self.is_type(UserType.Nurse):
+            return Nurse.objects.get(username=self.username)
+
+        if self.is_type(UserType.Administrator):
+            return Administrator.objects.get(username=self.username)
+
+        return self
+
+    def get_patients(self):
+        if self.is_type(UserType.Doctor) or self.is_type(UserType.Nurse) or self.is_type(UserType.Administrator):
+            return self.get_typed_patient().get_patients()
+        return []
+
+    def has_patient(self, patient):
+        if type(patient) == User or type(patient) == Patient:
+            patient = patient.pk
+
+        for p in self.get_patients():
+            if patient == p.pk:
+                return True
+        return False
+
+    def get_hospitals(self):
+        user = self.get_typed_patient()
+        pks = []
+        for hospital in Hospital.objects.all():
+            if hospital.has_user(user):
+                pks.append(hospital.pk)
+        return Hospital.objects.filter(pk__in=pks)
 
     def __unicode__(self):
         return '%s (%s)' % (self.get_full_name(), self.get_short_name())

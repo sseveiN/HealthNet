@@ -5,9 +5,10 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
-    ReplyMessageForm
+    ReplyMessageForm, TransferForm
 from healthnet.core.logging import LogEntry
 from healthnet.core.messages import Message
+from healthnet.core.users.administrator import Administrator
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.user import User, UserType
 from healthnet.core.users.patient import Patient
@@ -72,15 +73,8 @@ def dashboard(request):
         'appointments': appointments,
         'appointments_json': appointments_json,
         'username': request.user.username,
-        'patients': []
+        'patients': user.get_patients()
     }
-
-    # Get list of patients if user is doctor or nurse
-    if user.is_type(UserType.Doctor):
-        context['patients'] = Doctor.objects.get(username=user.username).get_patients()
-
-    if user.is_type(UserType.Nurse):
-        context['patients'] = Nurse.objects.get(username=user.username).get_patients()
 
     return user.render_for_user(request, 'dashboard.html', context)
 
@@ -108,7 +102,7 @@ def appointment(request):
 
             appointment_form = AppointmentForm(request.POST)
             new_apt = appointment_form.save()
-            me = Patient.objects.get(pk=primary_key)
+            me = User.objects.get(pk=primary_key)
             new_apt.attendees.add(me)
 
             if new_apt.has_conflict():
@@ -208,7 +202,7 @@ def edit_info(request, pk=None):
             return redirect('index')
 
         # Check logged type
-        if not logged.is_type(UserType.Doctor) and not logged.is_type(UserType.Nurse):
+        if not logged.is_type(UserType.Doctor) and not logged.is_type(UserType.Nurse) or not logged.has_patient(user):
             messages.error(request, "You aren't allowed to view this patient!")
             return redirect('index')
 
@@ -367,18 +361,57 @@ def toggle_admit(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     # User can only admit if they are nurse or doctor
-    if not user.is_type(UserType.Doctor) and not User.is_type(UserType.Nurse):
+    if not user.is_type(UserType.Doctor) and not User.is_type(UserType.Nurse) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to admit/discharge this patient!")
     else:
         # noinspection PyBroadException
         try:
             patient.toggle_admit()
-            Logging.info("'%s' admittance status changed to '%s' by '%s'" % (patient.username, str(patient.is_admitted), user.username))
-            messages.success(request, "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
+            Logging.info("'%s' admittance status changed to '%s' by '%s'" % (
+                patient.username, str(patient.is_admitted), user.username))
+            messages.success(request,
+                             "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
         except:
-            messages.error(request, "There was an error %s this patient!" % ('admitting' if patient.is_admitted else 'discharging'))
+            messages.error(request, "There was an error %s this patient!" % (
+                'admitting' if patient.is_admitted else 'discharging'))
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+def transfer(request, pk):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get patient based on pk argument
+    patient = Patient.objects.get(pk=pk)
+
+    # User can only transfer if they are nurse or doctor or admin
+    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) and not user.is_type(UserType.Administrator) or not user.has_patient(patient):
+        messages.error(request, "You aren't allowed to transfer this patient!")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        if request.method == 'POST':
+            form = TransferForm(request.POST, transferer=user)
+
+            if form.is_valid():
+                patient.transfer(form.cleaned_data['transfer_to'])
+                Logging.info("Patient '%s' has been transfered to '%s' hospital by user '%s'." % (
+                    str(patient), str(form.cleaned_data['transfer_to']), str(user)))
+                messages.success(request, "The patient has been transfered!")
+                return redirect('dashboard')
+        else:
+            form = TransferForm(transferer=user)
+
+        context = {
+            'current_hospital': str(patient.get_hospitals()[0]) if len(patient.get_hospitals()) > 0 else None,
+            'patient_name': patient.get_display_name(),
+            'form': form,
+        }
+
+        return user.render_for_user(request, 'transfer.html', context)
 
 
 def toggle_read(request, pk):
@@ -468,7 +501,7 @@ def inbox(request):
     if user is None:
         return redirect('index')
 
-    #user.mark_messages_read()
+    # user.mark_messages_read()
 
     context = {
         'is_message_page': True,
@@ -534,4 +567,18 @@ def create_test_doctor(request):
     if not r:
         return HttpResponse(o)
     Logging.warning("Created debug test doctor user")
+    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+
+
+def create_test_nurse(request):
+    """
+    Creates a test nurse
+    :param request: request to create a test nurse
+    :return: If not r, returns o
+                Else, returns
+    """
+    r, o = User.create_user('nurse', 'nurse', UserType.Nurse, 'Nurse', 'Sue')
+    if not r:
+        return HttpResponse(o)
+    Logging.warning("Created debug test nurse user")
     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))

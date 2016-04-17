@@ -6,6 +6,7 @@
 {% load humanize %}
 <h1>{% if is_sent %}Sent{% else %}Inbox{% endif %}</h1>
 <ul class="messages list-unstyled">
+    {% if not msgs %}<p>You have no {% if is_sent %}sent {% endif %}messages.</p>{% endif %}
     {% for msg in msgs %}
     <li class="message {% if is_sent %}{% else %}{{ msg.get_read_status_str }}{% endif %}">
         <p class="message-from">from <b>{{ msg.sender }}</b> {{ msg.date | naturaltime }}</p>

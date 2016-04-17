@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^edit_info/', views.edit_info, name="edit_info"),
     url(r'^edit_appointment/(?P<pk>\d+)/', views.edit_appointment, name="edit_appointment"),
     url(r'^toggle_admit/(?P<pk>\d+)/$', views.toggle_admit, name="toggle_admit"),
+    url(r'^transfer/(?P<pk>\d+)/$', views.transfer, name="transfer"),
     url(r'^toggle_read/(?P<pk>\d+)/$', views.toggle_read, name="toggle_read"),
     url(r'^send_message/(?P<pk>\d+)/$', views.send_message, name="send_message"),
     url(r'^send_message/', views.send_message, name="send_message"),
@@ -41,4 +42,5 @@ urlpatterns = [
     url(r'^debug/create_test_user', views.create_test_user, name="create_test_user"),
     url(r'^debug/create_admin_user', views.create_admin_user, name="create_admin_user"),
     url(r'^debug/create_test_doctor', views.create_test_doctor, name="create_test_doctor"),
+    url(r'^debug/create_test_nurse', views.create_test_nurse, name="create_test_nurse"),
 ]

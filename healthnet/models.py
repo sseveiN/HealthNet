@@ -1,8 +1,38 @@
 import datetime
 import json
+from itertools import chain
 
 from django.core.urlresolvers import reverse
 from django.db import models
+
+
+class Hospital(models.Model):
+    """
+    Hospital Model
+    """
+    name = models.CharField(max_length=255)
+    address = models.OneToOneField('Address')
+
+    def has_user(self, user):
+        for u in self.patient_set.all():
+            if user.pk == u.pk:
+                return True
+        for u in self.nurse_set.all():
+            if user.pk == u.pk:
+                return True
+        for u in self.doctor_set.all():
+            if user.pk == u.pk:
+                return True
+        for u in self.administrator_set.all():
+            if user.pk == u.pk:
+                return True
+        return False
+
+    def __unicode__(self):
+        return '%s (%s, %s)' % (self.name, self.address.city, self.address.state)
+
+    def __str__(self):
+        return self.__unicode__()
 
 # Import External Models
 from healthnet.core.users.user import User, UserType
@@ -26,20 +56,6 @@ class Address(models.Model):
     def __unicode__(self):
         return '%s%s, %s, %s %s' % \
                (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
-
-    def __str__(self):
-        return self.__unicode__()
-
-
-class Hospital(models.Model):
-    """
-    Hospital Model
-    """
-    name = models.CharField(max_length=255)
-    address = models.OneToOneField('Address')
-
-    def __unicode__(self):
-        return '%s (%s, %s)' % (self.name, self.address.city, self.address.state)
 
     def __str__(self):
         return self.__unicode__()

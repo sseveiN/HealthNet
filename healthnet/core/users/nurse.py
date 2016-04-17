@@ -9,8 +9,13 @@ class Nurse(User):
     """
     User.is_nurse = models.BooleanField(default=True)
     doctors = models.ManyToManyField('Doctor')
-    hospital = models.OneToOneField('Hospital', blank=True, null=True)
+    hospitals = models.ForeignKey('Hospital', null=True, blank=True)
 
     def get_patients(self):
-        return self.hospital.patients.all()
+        out = []
+        if self.hospitals is None:
+            return out
+        for hospital in self.hospitals:
+            out += hospital.patient_set
+        return out
 

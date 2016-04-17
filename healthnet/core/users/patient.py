@@ -31,9 +31,14 @@ class Patient(User):
     doctors = models.ManyToManyField('Doctor', blank=True)
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True, unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
-    hospital = models.OneToOneField('Hospital', null=True, blank=True, default=None)
+    hospital = models.ForeignKey('Hospital', null=True, blank=True, default=None)
     is_admitted = models.BooleanField(default=False)
 
     def toggle_admit(self):
         self.is_admitted = not self.is_admitted
+        self.save()
+
+    def transfer(self, hospital):
+        self.hospital = hospital
+        self.is_admitted = True
         self.save()

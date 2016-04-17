@@ -68,3 +68,81 @@ table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.d
 .patient-actions {
     float: right;
 }
+
+.message-icon {
+    line-height: .1;
+}
+
+.new-message {
+    color: #777;
+    color: red;
+}
+
+.new-message-num {
+    display: none;
+}
+
+.new-message > .new-message-num {
+    display: inline-block;
+    background: black;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    line-height: 1.45;
+    font-size: 12px;
+    text-indent: 4px;
+    margin-left: -5px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.message.unread {
+    #background: red;
+}
+
+.message {
+    margin: 10px 10px 20px 0px;
+    padding: 7px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+}
+
+.message-links a {
+    color: #888;
+    font-weight: bold;
+    padding: 0px 1px;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+.message-content {
+    padding-left: 10px;
+}
+
+.message-from {
+    color: green;
+}
+
+.message.unread {
+    background: #f2dede;
+    border: 1px solid #ebccd1;
+}
+
+.message.unread .message-content,
+.message.unread .message-links a,
+.message.unread .message-from {
+    color: #a94442;
+}
+
+.send-message-action {
+    display: block;
+    width: 22px;
+    height: 22px;
+    font-size: 20px;
+    margin-bottom: -5px;
+    float: right;
+}
+
+.user {
+    color: #337ab7;
+}

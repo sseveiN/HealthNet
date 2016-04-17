@@ -19,8 +19,10 @@
         </p>
     {% endif %}
 
-    <p class="navbar-text navbar-right">
-        <a href="{% url 'views.inbox' %}"><span class="glyphicon glyphicon-envelope message_icon{% if num_msgs > 0 %} new-message{% endif %}"><span class="new-message-num">{{ num_msgs }}</span></span></a>
-    </p>
+    {% if request.session.current_user_display_name %}
+        <p class="navbar-text navbar-right">
+            <a href="{% url 'views.inbox' %}"><span class="glyphicon glyphicon-envelope message_icon{% if num_msgs > 0 %} new-message{% endif %}"><span class="new-message-num">{{ num_msgs }}</span></span></a>
+        </p>
+    {% endif %}
   </div>
 </nav>

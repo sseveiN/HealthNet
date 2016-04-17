@@ -1,5 +1,4 @@
 from django.db import models
-
 from healthnet.core.users.user import User, UserType
 
 
@@ -14,3 +13,4 @@ class Doctor(User):
 
     def get_patients(self):
         return self.patients.all()
+
