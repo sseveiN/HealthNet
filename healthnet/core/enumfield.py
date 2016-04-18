@@ -1,4 +1,4 @@
-class EnumField(object):
+hclass EnumField(object):
     """
     Custom enum field to allow enums without installing plugins
     """

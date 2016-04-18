@@ -1,17 +1,19 @@
 {% extends "main_template.html" %}
 
-{% block title %} Edit Info {% endblock title %}
+{% block title %} Transfer Patient {% endblock title %}
+
 
 {% block content %}
-
 {% load bootstrap3 %}
-{% if show_name %}<h1>{{ patient_user.first_name }} {{ patient_user.last_name }}</h1></br>{% endif %}
+
+<h1>Transfer <span class="user">{{ patient_name }}</span> to...</h1>
+
 <form action="" method="post" class="form">
     {% csrf_token %}
-    {% bootstrap_form edit_info %}
+    {% bootstrap_form form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "save-file" %} Edit User
+            {% bootstrap_icon "transfer" %} Transfer
         </button>
     {% endbuttons %}
 </form>

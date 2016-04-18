@@ -1,11 +1,17 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import UserManager
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
+
 from healthnet.core.enumfield import EnumField
 
 from healthnet.core.logging import Logging
+
+from healthnet.models import Hospital
+
 
 class UserType(EnumField):
     """
@@ -15,6 +21,18 @@ class UserType(EnumField):
     Doctor = 1
     Nurse = 2
     Patient = 3
+
+    @staticmethod
+    def get_type_name(usertype):
+        if usertype == UserType.Administrator:
+            return 'Administrator'
+        if usertype == UserType.Doctor:
+            return 'Doctor'
+        if usertype == UserType.Nurse:
+            return 'Nurse'
+        if usertype == UserType.Patient:
+            return 'Patient'
+        return "Unknown"
 
 
 class User(AbstractBaseUser):
@@ -29,6 +47,8 @@ class User(AbstractBaseUser):
     is_doctor = models.BooleanField(default=False)
     is_patient = models.BooleanField(default=False)
     is_nurse = models.BooleanField(default=False)
+
+    is_pending = models.BooleanField(default=True)
 
     appointments = models.ManyToManyField('Appointment', blank=True)
 
@@ -183,6 +203,74 @@ class User(AbstractBaseUser):
             return UserType.Nurse
         if self.is_patient:
             return UserType.Patient
+
+    def get_user_type_name(self):
+        return UserType.get_type_name(self.get_user_type())
+
+    def get_num_new_msgs(self):
+        return self.received_messages.filter(is_read=False).count()
+
+    def get_view_context(self):
+        return {
+            'num_msgs': self.get_num_new_msgs()
+        }
+
+    def mark_messages_read(self):
+        for i in self.received_messages.filter(is_read=False):
+            i.is_read = True
+            i.save()
+
+    def render_for_user(self, request, template, context):
+        user_context = dict(context)
+        user_context.update(self.get_view_context())
+        return render(request, template, user_context)
+
+    def get_typed_patient(self):
+        if self.is_type(UserType.Patient):
+            return Patient.objects.get(username=self.username)
+
+        if self.is_type(UserType.Doctor):
+            return Doctor.objects.get(username=self.username)
+
+        if self.is_type(UserType.Nurse):
+            return Nurse.objects.get(username=self.username)
+
+        if self.is_type(UserType.Administrator):
+            return Administrator.objects.get(username=self.username)
+
+        return self
+
+    def get_patients(self):
+        if self.is_type(UserType.Doctor) or self.is_type(UserType.Nurse) or self.is_type(UserType.Administrator):
+            return self.get_typed_patient().get_patients()
+        return []
+
+    def has_patient(self, patient):
+        if type(patient) == User or type(patient) == Patient:
+            patient = patient.pk
+
+        for p in self.get_patients():
+            if patient == p.pk:
+                return True
+        return False
+
+    def get_hospitals(self):
+        user = self.get_typed_patient()
+        pks = []
+        for hospital in Hospital.objects.all():
+            if hospital.has_user(user):
+                pks.append(hospital.pk)
+        return Hospital.objects.filter(pk__in=pks)
+
+    def approve(self):
+        self.is_pending = False
+        self.save()
+
+    def __unicode__(self):
+        return '%s (%s)' % (self.get_full_name(), self.get_short_name())
+
+    def __str__(self):
+        return self.__unicode__()
 
 
 class UserBackend(object):

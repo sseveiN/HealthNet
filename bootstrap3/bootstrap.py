@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
+
 try:
     from importlib import import_module
 except ImportError:
     from django.utils.importlib import import_module
-
 
 # Default settings
 BOOTSTRAP3_DEFAULTS = {
@@ -70,7 +70,7 @@ def javascript_url():
     Return the full url to the Bootstrap JavaScript file
     """
     return get_bootstrap_setting('javascript_url') or \
-        bootstrap_url('js/bootstrap.min.js')
+           bootstrap_url('js/bootstrap.min.js')
 
 
 def css_url():
@@ -78,7 +78,7 @@ def css_url():
     Return the full url to the Bootstrap CSS file
     """
     return get_bootstrap_setting('css_url') or \
-        bootstrap_url('css/bootstrap.min.css')
+           bootstrap_url('css/bootstrap.min.css')
 
 
 def theme_url():

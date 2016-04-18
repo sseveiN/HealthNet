@@ -1,8 +1,12 @@
+from datetime import datetime
 from django import forms
 from django.contrib.admin import widgets
+from django.forms import SelectDateWidget
 
+from healthnet.core.messages import MessageType
 from healthnet.core.users.patient import Patient
-from healthnet.models import Appointment, Result
+from healthnet.core.users.user import User
+from healthnet.models import Appointment, Hospital, States, Result
 from django.http import request
 from healthnet.core.users.doctor import Doctor
 
@@ -19,24 +23,25 @@ class RegistrationForm(forms.ModelForm):
     """
     Form for registration
     """
-    # TODO: need to be able to add an address
     # TODO: limit age, height, weight, cholesterol
     # TODO: lengthen health insurance provider
-    # TODO: choose multiple doctors
-    # TODO:
+    # TODO: make address line 2 optional
 
     password = forms.CharField(widget=forms.PasswordInput)
-    dob = forms.DateField(widget=forms.SelectDateWidget)
-
-    address = forms.CharField()
+    dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
 
     class Meta:
         """
         Meta class
         """
         model = Patient
-        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'address', 'age', 'sex', 'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider', 'primary_care_provider','doctors', 'height', 'weight', 'cholesterol']
-        exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records', 'address']
+
+        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
+                  'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'home_phone', 'work_phone',
+                  'marital_status', 'health_insurance_provider', 'primary_care_provider', 'doctors', 'height', 'weight',
+                  'cholesterol']
+        exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
+                   'records']
 
     def __init__(self, *args, **kwargs):
         """
@@ -49,28 +54,37 @@ class RegistrationForm(forms.ModelForm):
         self.fields['weight'].required = False
         self.fields['cholesterol'].required = False
         self.fields['dob'].required = False
-        self.fields['address'].required = False
+        self.fields['address_line_1'].required = False
+        self.fields['address_line_2'].required = False
+        self.fields['city'].required = False
+        self.fields['state'].required = False
+        self.fields['zipcode'].required = False
         self.fields['home_phone'].required = False
         self.fields['work_phone'].required = False
-        self.fields['age'].required = False
         self.fields['sex'].required = False
         self.fields['marital_status'].required = False
         self.fields['health_insurance_provider'].required = False
         self.fields['doctors'].required = False
         self.fields['primary_care_provider'].required = False
 
+        self.fields['dob'].label = "Date of Birth"
+
 
 class EditPatientInfoForm(forms.ModelForm):
     """
     Form to edit patient info
     """
+
     class Meta:
         """
         Metaclass
         """
         model = Patient
-        fields = ['health_insurance_number', 'address', 'home_phone', 'work_phone', 'marital_status', 'health_insurance_provider', 'primary_care_provider','doctors', 'height', 'weight', 'cholesterol']
-        exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
+        fields = ['health_insurance_number', 'home_phone', 'work_phone', 'marital_status',
+                  'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'health_insurance_provider',
+                  'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
+        exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions',
+                   'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
 
     def __init__(self, *args, **kwargs):
         """
@@ -82,7 +96,11 @@ class EditPatientInfoForm(forms.ModelForm):
         self.fields['height'].required = False
         self.fields['weight'].required = False
         self.fields['cholesterol'].required = False
-        self.fields['address'].required = False
+        self.fields['address_line_1'].required = False
+        self.fields['address_line_2'].required = False
+        self.fields['city'].required = False
+        self.fields['state'].required = False
+        self.fields['zipcode'].required = False
         self.fields['home_phone'].required = False
         self.fields['work_phone'].required = False
         self.fields['marital_status'].required = False
@@ -96,7 +114,7 @@ class AppointmentForm(forms.ModelForm):
     Form to create an appointment
     """
     # TODO: should only be able to select from own doctors
-    attendees = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all())
+    attendees = forms.ModelMultipleChoiceField(queryset=User.objects.all())
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -160,3 +178,65 @@ class ResultForm(forms.ModelForm):
         """
         super(ResultForm, self).__init__(*args, **kwargs)
 
+
+
+class SendMessageForm(forms.Form):
+    """
+    Form to send a message
+    """
+    recipient = forms.ModelChoiceField(queryset=None)
+    type = forms.ChoiceField(choices=MessageType.get_choices())
+    message = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        self.sender = kwargs.pop('sender')
+
+        super(SendMessageForm, self).__init__(*args, **kwargs)
+
+        self.fields['recipient'].label = "Recipient"
+        self.fields['type'].label = "Message Type"
+        self.fields['message'].label = "Your Message"
+
+        self.fields['recipient'].queryset = User.objects.exclude(pk=self.sender.pk)
+
+
+class ReplyMessageForm(forms.Form):
+    """
+    Form to send a message
+    """
+    message = forms.CharField(widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+
+        super(ReplyMessageForm, self).__init__(*args, **kwargs)
+        self.fields['message'].label = "Your Message"
+
+
+class TransferForm(forms.Form):
+    """
+    Form to send a message
+    """
+    transfer_to = forms.ModelChoiceField(queryset=None)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        self.transferer = kwargs.pop('transferer')
+
+        super(TransferForm, self).__init__(*args, **kwargs)
+
+        self.fields['transfer_to'].label = ""
+        self.fields['transfer_to'].queryset = self.transferer.get_hospitals()

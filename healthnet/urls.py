@@ -27,15 +27,24 @@ urlpatterns = [
     url(r'^register/', views.registration, name="registration"),
     url(r'^logout/', views.logout, name="logout"),
     url(r'^appointment/', views.appointment, name="appointment"),
+    url(r'^edit_info/(?P<pk>\d+)/$', views.edit_info, name="edit_info"),
     url(r'^edit_info/', views.edit_info, name="edit_info"),
     url(r'^edit_appointment/(?P<pk>\d+)/', views.edit_appointment, name="edit_appointment"),
     url(r'^release_test_result/(?P<pk>\d+)/', views.release_test_result, name="release_test_result"),
     url(r'^create_test_result/', views.create_test_result, name="create_test_result"),
-
-
+    url(r'^toggle_admit/(?P<pk>\d+)/$', views.toggle_admit, name="toggle_admit"),
+    url(r'^transfer/(?P<pk>\d+)/$', views.transfer, name="transfer"),
+    url(r'^toggle_read/(?P<pk>\d+)/$', views.toggle_read, name="toggle_read"),
+    url(r'^approve_user/(?P<pk>\d+)/$', views.approve_user, name="approve_user"),
+    url(r'^send_message/(?P<pk>\d+)/$', views.send_message, name="send_message"),
+    url(r'^send_message/', views.send_message, name="send_message"),
+    url(r'^reply_message/(?P<pk>\d+)/$', views.reply_message, name="reply_message"),
+    url(r'^sent_messages/', views.sent_messages, name="sent_messages"),
+    url(r'^inbox/', views.inbox, name="inbox"),
 
     # DEBUG
     url(r'^debug/create_test_user', views.create_test_user, name="create_test_user"),
     url(r'^debug/create_admin_user', views.create_admin_user, name="create_admin_user"),
     url(r'^debug/create_test_doctor', views.create_test_doctor, name="create_test_doctor"),
+    url(r'^debug/create_test_nurse', views.create_test_nurse, name="create_test_nurse"),
 ]

@@ -13,11 +13,10 @@ from .bootstrap import (
     get_bootstrap_setting, get_form_renderer, get_field_renderer,
     get_formset_renderer
 )
-from .text import text_concat, text_value
-from .exceptions import BootstrapError
-from .utils import add_css_class, render_tag, split_css_classes
 from .components import render_icon
-
+from .exceptions import BootstrapError
+from .text import text_concat, text_value
+from .utils import add_css_class, render_tag, split_css_classes
 
 FORM_GROUP_CLASS = 'form-group'
 
@@ -170,8 +169,8 @@ def is_widget_required_attribute(widget):
         return False
     if isinstance(
             widget, (
-                AdminFileWidget, HiddenInput, FileInput,
-                CheckboxInput, CheckboxSelectMultiple)):
+                    AdminFileWidget, HiddenInput, FileInput,
+                    CheckboxInput, CheckboxSelectMultiple)):
         return False
     return True
 
