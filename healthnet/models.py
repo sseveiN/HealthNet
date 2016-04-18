@@ -24,7 +24,7 @@ class Hospital(models.Model):
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
     city = models.CharField(max_length=255)
     state = models.IntegerField(choices=States.get_choices())
-    zipcode = models.CharField(max_length=255)
+    zipcode = models.CharField(max_length=5, min_length=5)
 
     def has_user(self, user):
         for u in self.patient_set.all():

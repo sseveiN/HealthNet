@@ -9,6 +9,7 @@ from healthnet.core.users.user import User
 from healthnet.models import Appointment, Hospital, States
 from django.http import request
 from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.nurse import Nurse
 
 
 class LoginForm(forms.Form):
@@ -23,9 +24,6 @@ class RegistrationForm(forms.ModelForm):
     """
     Form for registration
     """
-    # TODO: limit age, height, weight, cholesterol
-    # TODO: lengthen health insurance provider
-    # TODO: make address line 2 optional
 
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
@@ -209,3 +207,41 @@ class TransferForm(forms.Form):
 
         self.fields['transfer_to'].label = ""
         self.fields['transfer_to'].queryset = self.transferer.get_hospitals()
+
+class DoctorRegistration(forms.form):
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Doctor
+        fields = '__all__'
+        exclude = ['is_doctor', 'is_pending']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+            self.fields['nurses'].required = False
+            self.fields['hospitals'].required = False
+
+class NurseRegistration(forms.form):
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Nurse
+        fields = '__all__'
+        exclude = ['is_nurse', 'is_pending']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+            self.fields['nurses'].required = False
+            self.fields['hospital'].required = False
