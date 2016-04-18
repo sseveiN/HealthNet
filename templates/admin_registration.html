@@ -1,13 +1,13 @@
 {% extends "main_template.html" %}
 
-{% block title %} Register {% endblock title %}
+{% block title %} Admin Register {% endblock title %}
 
 {% block content %}
 
 {% load bootstrap3 %}
 <form action="" method="post" class="form">
     {% csrf_token %}
-    {% bootstrap_form doctor_registration_form %}
+    {% bootstrap_form admin_registration_form %}
     {% buttons %}
         <button type="submit" class="btn btn-primary">
             {% bootstrap_icon "star" %} Register
