@@ -1,3 +1,6 @@
+import collections
+
+
 class EnumField(object):
     """
     Custom enum field to allow enums without installing plugins
@@ -7,6 +10,7 @@ class EnumField(object):
         Initialize the enum
         :param string_list: List of strings to initialize
         """
+        self.__dict__ = collections.OrderedDict()
         self.__dict__.update([(string, number) for (number, string) in enumerate(string_list)])
 
     def get_choices(self):
@@ -22,3 +26,8 @@ class EnumField(object):
         :return: the enum choices
         """
         return self.get_choices()
+
+    def get_str(self, state_num):
+        for num, state in enumerate(self.__dict__):
+            if num == state_num:
+                return state

@@ -60,11 +60,14 @@
                 events: events,
                 eventLimit: true
             });
+
+            $('.fc-button-group').removeClass().addClass('btn-group');
+            $('.fc-button').removeClass().addClass('btn');
         });
     </script>
 
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function() {
             $('#patients').DataTable({
                 "order": [[3, "asc"]],
                 "iDisplayLength": 10,

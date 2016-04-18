@@ -69,7 +69,7 @@ table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.d
     border: none !important;
 }
 
-.patient-actions {
+.pending-user-actions, .patient-actions {
     float: right;
 }
 
@@ -149,6 +149,10 @@ table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.d
 
 .user {
     color: #337ab7;
+}
+
+.message-type.normal {
+    display: none;
 }
 
 .message-type.emergency {
