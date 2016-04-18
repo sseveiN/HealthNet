@@ -32,6 +32,7 @@ urlpatterns = [
     url(r'^toggle_admit/(?P<pk>\d+)/$', views.toggle_admit, name="toggle_admit"),
     url(r'^transfer/(?P<pk>\d+)/$', views.transfer, name="transfer"),
     url(r'^toggle_read/(?P<pk>\d+)/$', views.toggle_read, name="toggle_read"),
+    url(r'^approve_user/(?P<pk>\d+)/$', views.approve_user, name="approve_user"),
     url(r'^send_message/(?P<pk>\d+)/$', views.send_message, name="send_message"),
     url(r'^send_message/', views.send_message, name="send_message"),
     url(r'^reply_message/(?P<pk>\d+)/$', views.reply_message, name="reply_message"),

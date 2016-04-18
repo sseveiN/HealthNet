@@ -38,11 +38,15 @@ def index(request):
             user = User.login(request, request.POST['username'], request.POST['password'])
 
             if user is not None:
+                if user.is_pending:
+                    messages.error(request, "Your account is pending admin approval!")
+                    User.logout(request)
+                    return redirect('index')
+
                 # creds valid; redirect to dashboard
-                return HttpResponseRedirect('dashboard')
+                return redirect('dashboard')
             else:
-                # TODO: error msg
-                pass
+                messages.error(request, "An incorrect username or password was provided!")
     else:
         login_form = LoginForm()
 
@@ -69,11 +73,16 @@ def dashboard(request):
     appointments = Calendar.get_appointments_for_attendee_for_day(user, datetime.now())
     appointments_json = Calendar.get_appointments_json(user)
 
+    pending = []
+    if user.is_type(UserType.Administrator):
+        pending = User.objects.filter(is_pending=True)
+
     context = {
         'appointments': appointments,
         'appointments_json': appointments_json,
         'username': request.user.username,
-        'patients': user.get_patients()
+        'patients': user.get_patients(),
+        'pending_users': pending
     }
 
     return user.render_for_user(request, 'dashboard.html', context)
@@ -431,6 +440,26 @@ def toggle_read(request, pk):
         messages.error(request, "You aren't allowed to read this message!")
     else:
         msg.toggle_unread()
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+def approve_user(request, pk):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get message based on pk argument
+    to_approve = User.objects.get(pk=pk)
+
+    # check user can see this message
+    if not user.is_type(UserType.Administrator):
+        messages.error(request, "You aren't allowed to approve users!")
+    else:
+        messages.success(request, "%s has been approved." % str(user))
+        to_approve.approve()
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
