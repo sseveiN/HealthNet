@@ -1,5 +1,5 @@
 from django.utils.html import linebreaks
-from mistune import markdown
+#from mistune import markdown
 
 from django.db import models
 
@@ -18,7 +18,7 @@ class Message(models.Model):
     date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def get_html(self):
-        return linebreaks(markdown(self.text.rstrip()).rstrip())
+        return linebreaks((self.text.rstrip()).rstrip())
 
     def toggle_unread(self):
         self.is_read = not self.is_read
