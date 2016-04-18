@@ -216,8 +216,9 @@ class Prescription(models.Model):
     """
     Prescription Model
     """
-    patient = models.OneToOneField('Patient')
-    doctor = models.OneToOneField('Doctor')
+
+    patient = models.ForeignKey(Patient, unique=False, blank=True, null=True)
+    doctor = models.ForeignKey(Doctor, unique=False, blank=True, null=True)
 
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
@@ -228,6 +229,8 @@ class Prescription(models.Model):
     name = models.CharField(max_length=255)
     expiration_date = models.DateField()
     refills = models.IntegerField()
+
+    description = models.CharField(max_length=255)
 
     def get_address_str(self):
         return '%s%s, %s, %s %s' % \
@@ -244,19 +247,19 @@ class Result(models.Model):
     """
     Test Result Model
     """
-    patient = models.ForeignKey(Patient, unique=False)
-    doctor = models.ForeignKey(Doctor, unique=False)
+    patient = models.ForeignKey(Patient, unique=False, blank=True, null=True)
+    doctor = models.ForeignKey(Doctor, unique=False, blank=True, null=True)
     test_date = models.DateField()
-    release_date = models.DateField(default='1996-09-15')
+    release_date = models.DateField(blank=True, null=True)
     description = models.CharField(max_length=255)
     is_released = models.BooleanField(default=False)
 
-    def create_result(doctor):
-        time = datetime.now()
-        result = Result.objects.create(patient=None, doctor=doctor, test_date=time, release_date=None,
-                                       description=None, is_released=None)
-        result.save()
-        return True, result
+    #def create_result(doctor):
+    #    time = datetime.now()
+    #    result = Result.objects.create(patient=None, doctor=doctor, test_date=time, release_date=None,
+    #                                   description=None, is_released=None)
+    #    result.save()
+    #    return True, result
 
     def release_result(self):
         self.release_date = datetime.now()

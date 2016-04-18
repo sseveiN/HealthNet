@@ -11,7 +11,8 @@
 
 {% block content %}
     <h1>Test Results</h1>
-    <a href="{% url "views.create_test_result" %}"><button type="button" class="btn btn-warning btn-sm">Create</button></a>
+    <h4>Patient Name: {{ patient.first_name }} {{ patient.last_name }}</h4>
+    {% if request.session.current_user_is_doctor %}<p><a href="{% url "views.create_test_result" pk %}"><button type="button" class="btn btn-success btn-lg">Create New Result</button></a></p>{% endif %}
 
 
 
@@ -52,10 +53,11 @@
 {% block scripts %}
     <script type="text/javascript">
         $(document).ready(function(){
-            //$('#result').DataTable({
-             //   "order": [[0, "desc"]],
-              //  "iDisplayLength": 25
-            //});
+            $('#result').DataTable({
+                "aoColumns": [{"sWidth": '2em'}, null, null, null],
+                "order": [[1, "desc"]],
+                "iDisplayLength": 25
+            });
         });
     </script>
 {% endblock scripts %}
