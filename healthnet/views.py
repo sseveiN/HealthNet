@@ -690,6 +690,153 @@ def admin_registration(request):
 
     return render(request, 'admin_registration.html', context)
 
+def result(request, pk):
+
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    if user.is_type(UserType.Patient):
+        context = {
+            'released_test_results': Result.objects.filter(patient=user, is_released=True).distinct(),
+            'patient' : user,
+            'pk': pk
+        }
+    elif user.is_type(UserType.Doctor):
+        patient = Patient.objects.get(pk=pk)
+        context = {
+            'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
+            'unreleased_test_results': Result.objects.filter(doctor=user, is_released=False).distinct(),
+            'patient' : patient,
+            'pk':pk
+        }
+    else:
+        return HttpResponse("Access Denied!")
+
+    return render(request, 'result.html', context)
+
+def release_test_result(request, pk):
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    if not user.is_type(UserType.Doctor):
+        messages.error(request, "You aren't allowed to to release this test result!")
+    else:
+            r = Result.objects.get(pk=pk)
+            r.release_result()
+            messages.success(request, "The result was successfully released!")
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+def create_test_result(request, pk):
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    doctor = Doctor.objects.get(pk=user.pk)
+    patient = Patient.objects.get(pk=pk)
+
+    if request.method == 'POST':
+        result_form = ResultForm(request.POST, initial={'doctor': doctor, 'patient': patient})
+
+        if result_form.is_valid() and user.is_type(UserType.Doctor):
+            new_result = result_form.save()
+            new_result.doctor = doctor
+            new_result.patient = patient
+            new_result.save()
+            messages.success(request, "The new test results were successfully saved!")
+            return HttpResponseRedirect(reverse('result', kwargs={'pk': pk}))
+        else:
+            print('invalid')
+    else:
+        result_form = ResultForm(initial={'doctor': Doctor.objects.get(username=user.username)})
+
+    context = {
+        'result_form': result_form
+    }
+    return render(request, 'create_test_result.html', context)
+
+def prescription(request, pk):
+
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    if user.is_type(UserType.Patient):
+        context = {
+            'prescriptions': Prescription.objects.filter(patient=user).distinct(),
+            'patient' : user,
+            'pk': pk
+        }
+    elif user.is_type(UserType.Doctor):
+        patient = Patient.objects.get(pk=pk)
+        context = {
+            'prescriptions': Prescription.objects.filter(patient=patient).distinct(),
+            'patient' : patient,
+            'pk':pk
+        }
+    else:
+        return HttpResponse("Access Denied!")
+
+    return render(request, 'prescription.html', context)
+
+def create_prescription(request, pk):
+
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    doctor = Doctor.objects.get(pk=user.pk)
+    patient = Patient.objects.get(pk=pk)
+
+    if request.method == 'POST':
+        prescription_form = PrescriptionForm(request.POST, initial={'doctor': doctor, 'patient': patient})
+
+        if prescription_form.is_valid() and user.is_type(UserType.Doctor):
+            new = prescription_form.save()
+            new.doctor = doctor
+            new.patient = patient
+            new.save()
+            messages.success(request, "The prescription was successfully created!")
+            return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
+        else:
+            print('invalid')
+    else:
+        prescription_form = PrescriptionForm(initial={'doctor': Doctor.objects.get(username=user.username)})
+
+    context = {
+        'prescription_form': prescription_form
+    }
+    return render(request, 'create_prescription.html', context)
+
+def remove_prescription(request, pk):
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    p = Prescription.objects.get(pk=pk)
+
+    if not user.is_type(UserType.Doctor):
+        messages.error(request, "You aren't allowed to remove this prescription!")
+    else:
+        try:
+            p.delete()
+            Logging.info("Prescription with pk '%s' canceled by '%s" % (p.pk, user.username))
+            messages.success(request, "The prescription was successfully deleted!")
+        except:
+            messages.error(request, "There was an error deleting this appointment!")
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
+
 # DEBUG VIEWS
 def create_test_user(request):
     """
@@ -746,158 +893,3 @@ def create_test_nurse(request):
     Logging.warning("Created debug test nurse user")
     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
 
-def result(request, pk):
-
-    user = User.get_logged_in(request)
-
-    if user is None:
-        return redirect('index')
-
-    if user.is_type(UserType.Patient):
-        context = {
-            'released_test_results': Result.objects.filter(patient=user, is_released=True).distinct(),
-            'patient' : user,
-            'pk': pk
-        }
-    elif user.is_type(UserType.Doctor):
-        patient = Patient.objects.get(pk=pk)
-        context = {
-            'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
-            'unreleased_test_results': Result.objects.filter(doctor=user, is_released=False).distinct(),
-            'patient' : patient,
-            'pk':pk
-        }
-    else:
-        return HttpResponse("Access Denied!")
-
-    return render(request, 'result.html', context)
-
-def release_test_result(request, pk):
-    """
-    Doctor tries to release a test result
-    :param request: request to cancel an appointment
-    :param pk: They result key
-    :return: If no User, index page
-                Otherwise, go back to the page the user was at before
-    """
-    user = User.get_logged_in(request)
-
-    # Require login
-    if user is None:
-        return redirect('index')
-
-    # Get appointment based on pk argument
-
-    # User can only delete if they are an attendee
-    if not user.is_type(UserType.Doctor):
-        messages.error(request, "You aren't allowed to to release this test result!")
-    else:
-        # noinspection PyBroadException
-
-            r = Result.objects.get(pk=pk)
-            r.release_result()
-            #Logging.info("Result with pk '%s' canceled by '%s" % (r.pk, user.username))
-            messages.success(request, "The result was successfully released!")
-
-            #messages.error(request, "There was an error releasing this result!")
-
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-
-def create_test_result(request, pk):
-    """
-    User tries to create an appointment
-    :param request: request to create an appointment
-    :return: If the appointment is created, the dashboard, otherwise
-                they stay on the appointment form with a message saying
-                what they need to fix
-    """
-    user = User.get_logged_in(request)
-
-    # Require login
-    if user is None:
-        return redirect('index')
-
-    doctor = Doctor.objects.get(pk=user.pk)
-    patient = Patient.objects.get(pk=pk)
-
-    if request.method == 'POST':
-        result_form = ResultForm(request.POST, initial={'doctor': doctor, 'patient': patient})
-
-        if result_form.is_valid() and user.is_type(UserType.Doctor):
-            new_result = result_form.save()
-            new_result.doctor = doctor
-            new_result.patient = patient
-            new_result.save()
-            messages.success(request, "The new test results were successfully saved!")
-            return HttpResponseRedirect(reverse('result', kwargs={'pk': pk}))
-        else:
-            print('invalid')
-    else:
-        result_form = ResultForm(initial={'doctor': Doctor.objects.get(username=user.username)})
-
-    context = {
-        'result_form': result_form
-    }
-    return render(request, 'create_test_result.html', context)
-
-def prescription(request, pk):
-
-    user = User.get_logged_in(request)
-
-    if user is None:
-        return redirect('index')
-
-    if user.is_type(UserType.Patient):
-        context = {
-            'prescriptions': Prescription.objects.filter(patient=user).distinct(),
-            'patient' : user,
-            'pk': pk
-        }
-    elif user.is_type(UserType.Doctor):
-        patient = Patient.objects.get(pk=pk)
-        context = {
-            'prescriptions': Prescription.objects.filter(patient=patient).distinct(),
-            'patient' : patient,
-            'pk':pk
-        }
-    else:
-        return HttpResponse("Access Denied!")
-
-    return render(request, 'prescription.html', context)
-
-def create_prescription(request, pk):
-    """
-    User tries to create an appointment
-    :param request: request to create an appointment
-    :return: If the appointment is created, the dashboard, otherwise
-                they stay on the appointment form with a message saying
-                what they need to fix
-    """
-    user = User.get_logged_in(request)
-
-    # Require login
-    if user is None:
-        return redirect('index')
-
-    doctor = Doctor.objects.get(pk=user.pk)
-    patient = Patient.objects.get(pk=pk)
-
-    if request.method == 'POST':
-        prescription_form = PrescriptionForm(request.POST, initial={'doctor': doctor, 'patient': patient})
-
-        if prescription_form.is_valid() and user.is_type(UserType.Doctor):
-            new = prescription_form.save()
-            new.doctor = doctor
-            new.patient = patient
-            new.save()
-            messages.success(request, "The prescription was successfully created!")
-            return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
-        else:
-            print('invalid')
-    else:
-        prescription_form = PrescriptionForm(initial={'doctor': Doctor.objects.get(username=user.username)})
-
-    context = {
-        'prescription_form': prescription_form
-    }
-    return render(request, 'create_prescription.html', context)

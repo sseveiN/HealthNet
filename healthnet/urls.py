@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^prescription/(?P<pk>\d+)/', views.prescription, name="prescription"),
     url(r'^$', views.index, name="index"),
     url(r'^cancel_appointment/(?P<pk>\d+)/$', views.cancel_appointment, name="cancel_appointment"),
+    url(r'^remove_prescription/(?P<pk>\d+)/$', views.remove_prescription, name="remove_prescription"),
     url(r'^register/', views.registration, name="registration"),
     url(r'^logout/', views.logout, name="logout"),
     url(r'^appointment/', views.appointment, name="appointment"),

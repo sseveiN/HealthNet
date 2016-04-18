@@ -36,7 +36,7 @@
                 <td>{{ p.description }}</td>
                 <td>
 
-            <a href="{%  url 'views.edit_info' %}"><span class="glyphicon glyphicon-trash"></span></a></li>
+            <a href="{%  url 'views.remove_prescription' p.pk %}"><span class="glyphicon glyphicon-trash"></span></a></li>
                 </td>
             </tr>
         {% endfor %}
