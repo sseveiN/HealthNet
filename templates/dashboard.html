@@ -9,6 +9,15 @@
 {% endblock css %}
 
 {% block content %}
+    {% if request.session.current_user_is_admin %}
+        <h1>Accounts Pending Approval</h1>
+        {% if pending_users %}
+            {% include "fragments/approval_pending.html" with pending_users=pending_users %}
+        {% else %}
+            <p>There are no accounts pending approval.</p>
+        {% endif %}
+    {% endif %}
+
     {% if not request.session.current_user_is_admin %}
         <h1>Today's Appointments</h1>
         {%  if appointments %}
@@ -27,9 +36,11 @@
         {% endif %}
     {% endif %}
 
-    <h1>Calendar</h1>
-    <p>Click on any appointment to edit it.</p>
-    <div id="calendar"></div>
+    {% if not request.session.current_user_is_admin %}
+        <h1>Calendar</h1>
+        <p>Click on any appointment to edit it.</p>
+        <div id="calendar"></div>
+    {% endif %}
 {% endblock content %}
 
 {% block scripts %}
@@ -49,11 +60,14 @@
                 events: events,
                 eventLimit: true
             });
+
+            $('.fc-button-group').removeClass().addClass('btn-group');
+            $('.fc-button').removeClass().addClass('btn');
         });
     </script>
 
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function() {
             $('#patients').DataTable({
                 "order": [[3, "asc"]],
                 "iDisplayLength": 10,
@@ -64,6 +78,16 @@
                     { 'bSearchable' : false, 'aTargets': [4] }
                ]
             });
+
+            {% if request.session.current_user_is_admin %}
+                $('#pending-users').DataTable({
+                    "order": [[3, "asc"]],
+                    "iDisplayLength": 10,
+                    "aoColumnDefs": [
+                        { 'bSortable': false, 'bSearchable' : false, 'aTargets': [5] }
+                   ]
+                });
+            {% endif %}
         });
     </script>
 {% endblock scripts %}

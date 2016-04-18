@@ -6,7 +6,7 @@ from django.forms import SelectDateWidget
 from healthnet.core.messages import MessageType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
-from healthnet.models import Appointment, Hospital, States
+from healthnet.models import Appointment, Hospital, States, Result
 from django.http import request
 from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
@@ -145,6 +145,37 @@ class AppointmentForm(forms.ModelForm):
         appointment_form = AppointmentForm(request.POST, instance=appointment)
         appointment_form.save()
         return appointment_form
+
+
+class ResultForm(forms.ModelForm):
+    """
+    Form to create an appointment
+    """
+    # TODO: should only be able to select from own doctors
+    #attendees = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all())
+    #description = forms.CharField(widget=forms.Textarea)
+
+    test_date = forms.DateField(widget=forms.SelectDateWidget)
+    #release_date = '9/15/1996'
+    # TODO: make the test_date different
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Result
+        #fields = '__all__'
+        fields = ['patient', 'test_date', 'description', 'release_date']
+        exclude = ['doctor']
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        super(ResultForm, self).__init__(*args, **kwargs)
+
 
 
 class SendMessageForm(forms.Form):

@@ -23,15 +23,16 @@ class UserType(EnumField):
     Patient = 3
 
     @staticmethod
-    def get_type_name(type):
-        if type == Administrator:
+    def get_type_name(usertype):
+        if usertype == UserType.Administrator:
             return 'Administrator'
-        if type == Doctor:
+        if usertype == UserType.Doctor:
             return 'Doctor'
-        if type == Nurse:
+        if usertype == UserType.Nurse:
             return 'Nurse'
-        if type == Patient:
+        if usertype == UserType.Patient:
             return 'Patient'
+        return "Unknown"
 
 
 class User(AbstractBaseUser):
@@ -260,6 +261,10 @@ class User(AbstractBaseUser):
             if hospital.has_user(user):
                 pks.append(hospital.pk)
         return Hospital.objects.filter(pk__in=pks)
+
+    def approve(self):
+        self.is_pending = False
+        self.save()
 
     def __unicode__(self):
         return '%s (%s)' % (self.get_full_name(), self.get_short_name())
