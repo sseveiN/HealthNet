@@ -9,7 +9,8 @@ from healthnet.core.users.user import User
 from healthnet.core.users.administrator import Administrator
 from healthnet.models import Appointment, Hospital, States, Result, Prescription
 from django.http import request
-from healthnet.core.users.doctor import Doctor, Nurse
+from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.nurse import Nurse
 
 
 class LoginForm(forms.Form):
