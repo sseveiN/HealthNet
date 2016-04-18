@@ -22,6 +22,17 @@ class UserType(EnumField):
     Nurse = 2
     Patient = 3
 
+    @staticmethod
+    def get_type_name(type):
+        if type == Administrator:
+            return 'Administrator'
+        if type == Doctor:
+            return 'Doctor'
+        if type == Nurse:
+            return 'Nurse'
+        if type == Patient:
+            return 'Patient'
+
 
 class User(AbstractBaseUser):
     """
@@ -35,6 +46,8 @@ class User(AbstractBaseUser):
     is_doctor = models.BooleanField(default=False)
     is_patient = models.BooleanField(default=False)
     is_nurse = models.BooleanField(default=False)
+
+    is_pending = models.BooleanField(default=True)
 
     appointments = models.ManyToManyField('Appointment', blank=True)
 
@@ -189,6 +202,9 @@ class User(AbstractBaseUser):
             return UserType.Nurse
         if self.is_patient:
             return UserType.Patient
+
+    def get_user_type_name(self):
+        return UserType.get_type_name(self.get_user_type())
 
     def get_num_new_msgs(self):
         return self.received_messages.filter(is_read=False).count()

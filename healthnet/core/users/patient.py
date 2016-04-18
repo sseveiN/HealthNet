@@ -41,9 +41,11 @@ class Patient(User):
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(min_length=5, max_length=5)
 
+    is_pending = False
+
     def get_address_str(self):
         return '%s%s, %s, %s %s' % \
-               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
+               (self.address_line_1, self.address_line_2, self.city, States.get_str(self.state), self.zipcode)
 
     def get_age(self):
         today = date.today()
