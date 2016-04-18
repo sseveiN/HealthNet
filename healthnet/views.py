@@ -4,12 +4,12 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
-from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm
+from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, ResultForm
 from healthnet.core.logging import LogEntry
 from healthnet.core.users.user import User, UserType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.doctor import Doctor
-from healthnet.models import Calendar, Appointment
+from healthnet.models import Calendar, Appointment, Result
 from healthnet.core.logging import Logging
 
 
@@ -354,3 +354,103 @@ def create_test_doctor(request):
         return HttpResponse(o)
     Logging.warning("Created debug test doctor user")
     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+
+def result(request):
+
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    if user.is_type(UserType.Patient):
+        context = {
+            'released_test_results': Result.objects.filter(patient=user, is_released=True).distinct(),
+        }
+    elif user.is_type(UserType.Doctor):
+        context = {
+            'released_test_results': Result.objects.filter(doctor=user, is_released=True).distinct(),
+            'unreleased_test_results': Result.objects.filter(doctor=user, is_released=False).distinct(),
+        }
+    else:
+        return HttpResponse("Access Denied!")
+
+    return render(request, 'result.html', context)
+
+def release_test_result(request, pk):
+    """
+    Doctor tries to release a test result
+    :param request: request to cancel an appointment
+    :param pk: They result key
+    :return: If no User, index page
+                Otherwise, go back to the page the user was at before
+    """
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Get appointment based on pk argument
+
+    # User can only delete if they are an attendee
+    if not user.is_type(UserType.Doctor):
+        messages.error(request, "You aren't allowed to to release this test result!")
+    else:
+        # noinspection PyBroadException
+
+            r = Result.objects.get(pk=pk)
+            r.release_result()
+            #Logging.info("Result with pk '%s' canceled by '%s" % (r.pk, user.username))
+            messages.success(request, "The result was successfully released!")
+
+            #messages.error(request, "There was an error releasing this result!")
+
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+def create_test_result(request):
+    """
+    User tries to create an appointment
+    :param request: request to create an appointment
+    :return: If the appointment is created, the dashboard, otherwise
+                they stay on the appointment form with a message saying
+                what they need to fix
+    """
+    user = User.get_logged_in(request)
+    primary_key = user.pk
+
+    if request.method == 'POST':
+        result = Result.create_result(user)
+        result_form = ResultForm(request.POST, instance=result, initial={'doctor': Doctor.objects.get(username=user.username)})
+
+        if result_form.is_valid() and user.is_type(UserType.Doctor):
+            #name = result_form.cleaned_data['name']
+            #description = result_form.cleaned_data['description']
+            #tstart = result_form.cleaned_data['tstart']
+            #tend = result_form.cleaned_data['tend']
+            #attendees = result_form.cleaned_data['attendees']
+
+            result_form = ResultForm(request.POST)
+            new_result = result_form.save()
+            #new_result.doctor = user
+            #new_result.is_released = False
+
+            #me = Patient.objects.get(pk=primary_key)
+            #new_apt.attendees.add(me)
+
+            #if new_apt.has_conflict():
+            #    messages.error(request, "There is a conflict with the selected times!")
+            #    appointment_form = AppointmentForm(request.POST)
+            #    new_apt.delete()
+            #else:
+            new_result.save()
+            #Logging.info("Created appointment '%s'" % name)
+            return HttpResponseRedirect('/result')
+        else:
+            print('invalid')
+    else:
+        result_form = ResultForm(request.POST, initial={'doctor': Doctor.objects.get(username=user.username)})
+
+    context = {
+        'result_form': result_form
+    }
+    return render(request, 'create_test_result.html', context)

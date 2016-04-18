@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^dashboard/', views.dashboard, name="dashboard"),
     url(r'^log/', views.log, name="log"),
+    url(r'^result/', views.result, name="result"),
     url(r'^$', views.index, name="index"),
     url(r'^cancel_appointment/(?P<pk>\d+)/$', views.cancel_appointment, name="cancel_appointment"),
     url(r'^register/', views.registration, name="registration"),
@@ -28,6 +29,8 @@ urlpatterns = [
     url(r'^appointment/', views.appointment, name="appointment"),
     url(r'^edit_info/', views.edit_info, name="edit_info"),
     url(r'^edit_appointment/(?P<pk>\d+)/', views.edit_appointment, name="edit_appointment"),
+    url(r'^release_test_result/(?P<pk>\d+)/', views.release_test_result, name="release_test_result"),
+    url(r'^create_test_result/', views.create_test_result, name="create_test_result"),
 
 
 
