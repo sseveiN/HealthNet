@@ -43,6 +43,13 @@ urlpatterns = [
     url(r'^reply_message/(?P<pk>\d+)/$', views.reply_message, name="reply_message"),
     url(r'^sent_messages/', views.sent_messages, name="sent_messages"),
     url(r'^inbox/', views.inbox, name="inbox"),
+    url(r'^doctor_registration/', views.doctor_registration, name="doctor_registration"),
+    url(r'^nurse_registration/', views.nurse_registration, name="nurse_registration"),
+    url(r'^admin_registration/', views.admin_registration, name="admin_registration"),
+
+
+
+
 
     # DEBUG
     url(r'^debug/create_test_user', views.create_test_user, name="create_test_user"),

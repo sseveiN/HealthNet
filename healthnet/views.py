@@ -6,7 +6,7 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
-    ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm
+    ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, AdminRegistrationForm
 from healthnet.core.logging import LogEntry
 from healthnet.core.messages import Message, MessageType
 from healthnet.core.users.administrator import Administrator
@@ -558,6 +558,137 @@ def sent_messages(request):
 
     return user.render_for_user(request, 'inbox.html', context)
 
+def doctor_registration(request):
+    """
+    User tries to register for account
+    :param request: request to register for an account
+    :return: If successful, user taken to dashboard, else, they are instructed
+                to register again, with a message saying what they need to fix
+    """
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        registration_form = DoctorRegistrationForm(request.POST)
+
+        if registration_form.is_valid():
+            username = registration_form.cleaned_data['username']
+            password = registration_form.cleaned_data['password']
+
+            new_user = DoctorRegistrationForm(request.POST)
+            new_doctor = new_user.save()
+            new_doctor.is_doctor = True
+            new_doctor.is_pending = True
+            new_doctor.set_password(password)
+            new_doctor.nurses = registration_form.cleaned_data['nurses']
+            new_doctor.save()
+            Logging.info("Doctor '%s' created" % username)
+
+            if new_user is not None:
+                Logging.info("Doctor created with username '%s" % username)
+                User.login(request, username, password)
+                return HttpResponseRedirect('/dashboard')
+
+            return HttpResponseRedirect('dashboard')
+    else:
+        registration_form = DoctorRegistrationForm(request.POST)
+
+    context = {
+        'doctor_registration_form': registration_form
+    }
+
+    return render(request, 'doctor_registration.html', context)
+
+def nurse_registration(request):
+    """
+    User tries to register for account
+    :param request: request to register for an account
+    :return: If successful, user taken to dashboard, else, they are instructed
+                to register again, with a message saying what they need to fix
+    """
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        registration_form = NurseRegistrationForm(request.POST)
+
+        if registration_form.is_valid():
+            username = registration_form.cleaned_data['username']
+            password = registration_form.cleaned_data['password']
+
+            new_user = NurseRegistrationForm(request.POST)
+            new_nurse = new_user.save()
+            new_nurse.is_doctor = True
+            new_nurse.is_pending = True
+            new_nurse.set_password(password)
+            new_nurse.doctors = registration_form.cleaned_data['doctors']
+            new_nurse.save()
+            Logging.info("Nurse '%s' created" % username)
+
+            if new_user is not None:
+                Logging.info("Nurse created with username '%s" % username)
+                User.login(request, username, password)
+                return HttpResponseRedirect('/dashboard')
+
+            return HttpResponseRedirect('dashboard')
+    else:
+        registration_form = NurseRegistrationForm(request.POST)
+
+    context = {
+        'nurse_registration_form': registration_form
+    }
+
+    return render(request, 'nurse_registration.html', context)
+
+def admin_registration(request):
+    """
+    User tries to register for account
+    :param request: request to register for an account
+    :return: If successful, user taken to dashboard, else, they are instructed
+                to register again, with a message saying what they need to fix
+    """
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        registration_form = AdminRegistrationForm(request.POST)
+
+        if registration_form.is_valid():
+            username = registration_form.cleaned_data['username']
+            password = registration_form.cleaned_data['password']
+
+            new_user = AdminRegistrationForm(request.POST)
+            new_admin = new_user.save()
+            new_admin.is_doctor = True
+            new_admin.is_pending = True
+            new_admin.set_password(password)
+            new_admin.doctors = registration_form.cleaned_data['doctors']
+            new_admin.save()
+            Logging.info("Admin '%s' created" % username)
+
+            if new_user is not None:
+                Logging.info("Admin created with username '%s" % username)
+                User.login(request, username, password)
+                return HttpResponseRedirect('/dashboard')
+
+            return HttpResponseRedirect('dashboard')
+    else:
+        registration_form = AdminRegistrationForm(request.POST)
+
+    context = {
+        'admin_registration_form': registration_form
+    }
+
+    return render(request, 'admin_registration.html', context)
 
 # DEBUG VIEWS
 def create_test_user(request):

@@ -6,9 +6,10 @@ from django.forms import SelectDateWidget
 from healthnet.core.messages import MessageType
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
+from healthnet.core.users.administrator import Administrator
 from healthnet.models import Appointment, Hospital, States, Result, Prescription
 from django.http import request
-from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.doctor import Doctor, Nurse
 
 
 class LoginForm(forms.Form):
@@ -23,9 +24,6 @@ class RegistrationForm(forms.ModelForm):
     """
     Form for registration
     """
-    # TODO: limit age, height, weight, cholesterol
-    # TODO: lengthen health insurance provider
-    # TODO: make address line 2 optional
 
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
@@ -269,3 +267,62 @@ class TransferForm(forms.Form):
 
         self.fields['transfer_to'].label = ""
         self.fields['transfer_to'].queryset = self.transferer.get_hospitals()
+
+class DoctorRegistrationForm(forms.ModelForm):
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Doctor
+        fields = '__all__'
+        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+            super(DoctorRegistrationForm, self).__init__(*args, **kwargs)
+            self.fields['nurses'].required = False
+            self.fields['hospitals'].required = False
+
+class NurseRegistrationForm(forms.ModelForm):
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Nurse
+        fields = '__all__'
+        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+            super(NurseRegistrationForm, self).__init__(*args, **kwargs)
+            self.fields['doctors'].required = False
+            self.fields['hospitals'].required = False
+
+class AdminRegistrationForm(forms.ModelForm):
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Administrator
+        fields = '__all__'
+        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+            super(AdminRegistrationForm, self).__init__(*args, **kwargs)
+            self.fields['hospital'].required = False
