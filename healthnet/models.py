@@ -43,10 +43,10 @@ class Hospital(models.Model):
 
     def get_address_str(self):
         return '%s%s, %s, %s %s' % \
-               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
+               (self.address_line_1, self.address_line_2, self.city, States.get_str(self.state), self.zipcode)
 
     def __unicode__(self):
-        return '%s (%s, %s)' % (self.name, self.city, self.state)
+        return '%s (%s, %s)' % (self.name, self.city, States.get_str(self.state))
 
     def __str__(self):
         return self.__unicode__()
@@ -231,7 +231,7 @@ class Prescription(models.Model):
 
     def get_address_str(self):
         return '%s%s, %s, %s %s' % \
-               (self.address_line_1, self.address_line_2, self.city, self.state, self.zipcode)
+               (self.address_line_1, self.address_line_2, self.city, States.get_str(self.state), self.zipcode)
 
 
 class MedicalRecord(models.Model):

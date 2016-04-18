@@ -147,6 +147,7 @@ def registration(request):
             new_user = RegistrationForm(request.POST)
             new_patient = new_user.save()
             new_patient.is_patient = True
+            new_patient.is_pending = False
             new_patient.set_password(password)
             new_patient.doctors = registration_form.cleaned_data['doctors']
             new_patient.save()
