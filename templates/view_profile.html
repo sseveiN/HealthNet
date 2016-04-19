@@ -1,0 +1,66 @@
+{% extends "main_template.html" %}
+
+{% load staticfiles %}
+
+{% block title %} {{ patient.first_name }}'s Profile {% endblock title %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css"/>
+{% endblock css %}
+
+
+{% block content %}
+    <h1>{{ patient.first_name }}'s Profile</h1>
+
+
+
+    <ul class="list-inline">
+        {% if request.session.current_user_is_patient %}
+            <li><a href="{% url "views.edit_info" %}"><button type="button" class="btn btn-primary">Edit Info</button></a></li>
+        {% endif %}
+
+        {% if request.session.current_user_is_doctor %}
+            <li><a href="{% url "views.edit_info" patient.pk %}"><button type="button" class="btn btn-primary">Edit Info</button></a></li>
+        {% endif %}
+
+        <li><a href="{% url "views.prescription" patient.pk %}"><button type="button" class="btn btn-primary">Prescriptions</button></a></li>
+        <li><a href="{% url "views.result" patient.pk %}"><button type="button" class="btn btn-primary">Test Results</button></a></li>
+
+    </ul>
+    <h3>Health Insurance</h3>
+    <ul class="list-unstyled">
+
+        <li>Number: {% if health_number %}{{ health_number }}{% else %}None{% endif %}</li>
+        <li>Provider: {% if health_provider %}{{ health_provider }}{% else %}None{% endif %}</li>
+    </ul>
+    <h3>Contact</h3>
+
+    <ul class="list-inline">
+        <li>Patient Home Phone: {% if home %}{{ home }}{% else %}None{% endif %}</li>
+        <li>Work Phone: {% if work %}{{ work }}{% else %}None{% endif %}</li>
+    </ul>
+    <ul class="list-unstyled">
+        <li>Address: {% if address %}{{ address }}{% else %}None{% endif %}</li>
+        <li>Primary Care Provider: {% if primary %}{{ primary }}{% else %}None{% endif %}</li>
+        <li>Hospital: {% if hospital %}{{ hospital }}{% else %}None{% endif %}</li>
+    </ul>
+
+    <h3>Basic Info</h3>
+    <ul class="list-unstyled">
+        <li>Date of Birth: {% if dob %}{{ dob }}{% else %}None{% endif %}</li>
+        <li>Sex: {% if sex %}{{ sex }}{% else %}None{% endif %}</li>
+        <li>Marital Status: {% if marital %}{{ marital }}{% else %}None{% endif %}</li>
+        <li>Height: {% if height %}{{ height }}{% else %}None{% endif %}</li>
+        <li>Weight: {% if weight %}{{ weight }}{% else %}None{% endif %}</li>
+        <li>Cholesterol: {% if cholesterol %}{{ cholesterol }}{% else %}None{% endif %}</li>
+    </ul>
+
+{% endblock content %}
+
+{% block scripts %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+
+        });
+    </script>
+{% endblock scripts %}

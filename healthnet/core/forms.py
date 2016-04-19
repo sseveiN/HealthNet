@@ -149,63 +149,39 @@ class AppointmentForm(forms.ModelForm):
 
 
 class ResultForm(forms.ModelForm):
-    """
-    Form to create an appointment
-    """
-    # TODO: should only be able to select from own doctors
-    #attendees = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all())
-    #description = forms.CharField(widget=forms.Textarea)
 
-    test_date = forms.DateField(widget=forms.SelectDateWidget)
+    test_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
     description = forms.CharField(widget=forms.Textarea)
-    #release_date = '9/15/1996'
-    # TODO: make the test_date different
 
     class Meta:
-        """
-        Metaclass
-        """
         model = Result
         fields = '__all__'
         exclude = ['patient', 'doctor', 'is_released', 'release_date']
 
     def __init__(self, *args, **kwargs):
-        """
-        Initialize the form
-        :param args: initial arguments
-        :param kwargs: initial kwarguments
-        """
         super(ResultForm, self).__init__(*args, **kwargs)
 
 
 class PrescriptionForm(forms.ModelForm):
-    """
-    Form to create an appointment
-    """
-    # TODO: should only be able to select from own doctors
-    #attendees = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all())
-    #description = forms.CharField(widget=forms.Textarea)
 
-    test_date = forms.DateField(widget=forms.SelectDateWidget)
+    expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
     description = forms.CharField(widget=forms.Textarea)
-    #release_date = '9/15/1996'
-    # TODO: make the test_date different
+    zipcode = forms.IntegerField(widget=forms.NumberInput)
+    refills = forms.IntegerField(widget=forms.NumberInput, min_value=0)
+
+    # TODO: add form validation
 
     class Meta:
-        """
-        Metaclass
-        """
         model = Prescription
         fields = '__all__'
         exclude = ['patient', 'doctor']
 
     def __init__(self, *args, **kwargs):
-        """
-        Initialize the form
-        :param args: initial arguments
-        :param kwargs: initial kwarguments
-        """
         super(PrescriptionForm, self).__init__(*args, **kwargs)
+        self.fields['refills'].label = "Number of Refills"
+        self.fields['expiration_date'].label = "Expiration Date"
+        self.fields['name'].label = "Prescription/Medicine Name"
+        self.fields['description'].label = "Instructions/Directions"
 
 
 class SendMessageForm(forms.Form):

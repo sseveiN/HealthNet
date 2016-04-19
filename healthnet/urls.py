@@ -47,6 +47,7 @@ urlpatterns = [
     url(r'^doctor_registration/', views.doctor_registration, name="doctor_registration"),
     url(r'^nurse_registration/', views.nurse_registration, name="nurse_registration"),
     url(r'^admin_registration/', views.admin_registration, name="admin_registration"),
+    url(r'^view_profile/(?P<pk>\d+)/$', views.view_profile, name="view_profile"),
 
 
 

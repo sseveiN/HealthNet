@@ -232,7 +232,9 @@ def edit_info(request, pk=None):
             profile.user = request.user
             profile.save()
             messages.success(request, "Your profile information has been successfully saved!")
-            return redirect('dashboard')
+            #return redirect('dashboard')
+
+            return HttpResponseRedirect(reverse('view_profile', kwargs={'pk': pk}))
     else:
         u = Patient.objects.get(pk=primary_key)
         form = EditPatientInfoForm(instance=u)  # No request.POST
@@ -815,6 +817,7 @@ def create_prescription(request, pk):
     }
     return render(request, 'create_prescription.html', context)
 
+
 def remove_prescription(request, pk):
     user = User.get_logged_in(request)
 
@@ -835,6 +838,55 @@ def remove_prescription(request, pk):
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+def view_profile(request, pk):
+
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    if user.is_type(UserType.Patient):
+        patient = Patient.objects.get(pk=user.pk)
+        context = {
+            'patient' : patient,
+            'pk': pk,
+            'health_number' : patient.health_insurance_number,
+            'home' : patient.home_phone,
+            'work' : patient.work_phone,
+            'marital' : patient.marital_status,
+            'address' : patient.get_address_str(),
+            'health_provider' : patient.health_insurance_provider,
+            'primary' : patient.primary_care_provider,
+            'height' : patient.height,
+            'weight' : patient.weight,
+            'cholesterol' : patient.cholesterol,
+            'dob': patient.dob,
+            'sex': patient.sex,
+            'hospital': patient.hospital
+        }
+    elif user.is_type(UserType.Doctor):
+        patient = Patient.objects.get(pk=pk)
+        context = {
+            'patient' : patient,
+            'pk':pk,
+            'health_number' : patient.health_insurance_number,
+            'home' : patient.home_phone,
+            'work' : patient.work_phone,
+            'marital' : patient.marital_status,
+            'address' : patient.get_address_str(),
+            'health_provider' : patient.health_insurance_provider,
+            'primary' : patient.primary_care_provider,
+            'height' : patient.height,
+            'weight' : patient.weight,
+            'cholesterol' : patient.cholesterol,
+            'dob': patient.dob,
+            'sex': patient.sex,
+            'hospital': patient.hospital
+        }
+    else:
+        return HttpResponse("Access Denied!")
+
+    return render(request, 'view_profile.html', context)
 
 
 # DEBUG VIEWS
