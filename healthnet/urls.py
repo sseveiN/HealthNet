@@ -17,6 +17,7 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from healthnet import views
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^dashboard/', views.dashboard, name="dashboard"),
@@ -48,10 +49,7 @@ urlpatterns = [
     url(r'^nurse_registration/', views.nurse_registration, name="nurse_registration"),
     url(r'^admin_registration/', views.admin_registration, name="admin_registration"),
     url(r'^view_profile/(?P<pk>\d+)/$', views.view_profile, name="view_profile"),
-
-
-
-
+    url(r'^register_choose/$', views.register_choose, name="register_choose"),
 
     # DEBUG
     url(r'^debug/create_test_user', views.create_test_user, name="create_test_user"),

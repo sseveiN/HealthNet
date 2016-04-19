@@ -11,19 +11,22 @@
 
 {% block content %}
     {% load bootstrap3 %}
-<form method="post" action=".">
-  {% csrf_token %}
-    {% bootstrap_form result_form %}
-
-  <input type="submit" value="Submit" />
-</form>
+    <form method="post" action=".">
+        {% csrf_token %}
+        {% bootstrap_form result_form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "plus" %} Create Result
+            </button>
+        {% endbuttons %}
+    </form>
 {% endblock content %}
 
 {% block scripts %}
-<script type="text/javascript">
-$(function() {
-    $('#id_tstart').datetimepicker();
-    $('#id_tend').datetimepicker();
-});
-</script>
+    <script type="text/javascript">
+        $(function () {
+            $('#id_tstart').datetimepicker();
+            $('#id_tend').datetimepicker();
+        });
+    </script>
 {% endblock %}

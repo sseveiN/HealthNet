@@ -1,17 +1,16 @@
 {% extends "main_template.html" %}
 
-{% block title %} Edit Info {% endblock title %}
+{% block title %} Register {% endblock title %}
 
 {% block content %}
 
     {% load bootstrap3 %}
-    {% if show_name %}<h1>{{ patient_user.first_name }} {{ patient_user.last_name }}</h1></br>{% endif %}
     <form action="" method="post" class="form">
         {% csrf_token %}
-        {% bootstrap_form edit_info %}
+        {% bootstrap_form form %}
         {% buttons %}
             <button type="submit" class="btn btn-primary">
-                {% bootstrap_icon "save-file" %} Edit User
+                {% bootstrap_icon "arrow-right" %} Next
             </button>
         {% endbuttons %}
     </form>

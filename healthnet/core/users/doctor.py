@@ -1,7 +1,7 @@
 from django.db import models
 
 from healthnet.core.users.patient import Patient
-from healthnet.core.users.user import User, UserType
+from healthnet.core.users.user import User
 
 
 class Doctor(User):
@@ -14,4 +14,3 @@ class Doctor(User):
 
     def get_patients(self):
         return Patient.objects.filter(doctors=self)
-

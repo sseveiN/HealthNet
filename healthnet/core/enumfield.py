@@ -5,6 +5,7 @@ class EnumField(object):
     """
     Custom enum field to allow enums without installing plugins
     """
+
     def __init__(self, *string_list):
         """
         Initialize the enum

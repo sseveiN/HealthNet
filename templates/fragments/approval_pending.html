@@ -1,25 +1,27 @@
 <table id="pending-users" class="table">
     <thead>
-        <tr>
-            <th>#</th>
-            <th>Username</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Requested Permission</th>
-            <th></th>
-        </tr>
+    <tr>
+        <th>#</th>
+        <th>Username</th>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Requested Permission</th>
+        <th></th>
+    </tr>
     </thead>
     <tbody>
     {% for user in pending_users %}
         <tr class="patient">
             <td>{{ user.pk }}</td>
-            <td>{{ user.username}}</td>
+            <td>{{ user.username }}</td>
             <td>{{ user.first_name }}</td>
             <td>{{ user.last_name }}</td>
             <td><b>{{ user.get_user_type_name }}</b></td>
             <td>
                 <div class="pending-user-actions">
-                    <a href="{% url "views.approve_user" user.pk %}"><button type="button" class="btn btn-success btn-xs">Approve</button></a>
+                    <a href="{% url "views.approve_user" user.pk %}">
+                        <button type="button" class="btn btn-success btn-xs">Approve</button>
+                    </a>
                 </div>
             </td>
         </tr>

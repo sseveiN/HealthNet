@@ -1,6 +1,6 @@
 from django.db import models
 
-from healthnet.core.users.user import UserType, User
+from healthnet.core.users.user import User
 
 
 class Nurse(User):
@@ -12,10 +12,4 @@ class Nurse(User):
     hospitals = models.ForeignKey('Hospital', null=True, blank=True)
 
     def get_patients(self):
-        out = []
-        if self.hospitals is None:
-            return out
-        for hospital in self.hospitals:
-            out += hospital.patient_set
-        return out
-
+        return self.hospitals.patient_set.all()

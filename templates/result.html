@@ -12,36 +12,41 @@
 {% block content %}
     <h1>Test Results</h1>
     <h4>Patient Name: {{ patient.first_name }} {{ patient.last_name }}</h4>
-    {% if request.session.current_user_is_doctor %}<p><a href="{% url "views.create_test_result" pk %}"><button type="button" class="btn btn-success btn-lg">Create New Result</button></a></p>{% endif %}
-
-
+    <div class="table-controls">{% if request.session.current_user_is_doctor %}
+        <p><a href="{% url "views.create_test_result" pk %}">
+            <button type="button" class="btn btn-success pull-right"><span class="glyphicon glyphicon-plus"></span>New
+                Result
+            </button>
+        </a></p>{% endif %}</div>
 
     <table id="result" class="table">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Release Date</th>
-                <th>Test Date</th>
-                <th>Description</th>
-            </tr>
+        <tr>
+            <th>#</th>
+            <th>Release Date</th>
+            <th>Test Date</th>
+            <th>Description</th>
+        </tr>
         </thead>
         <tbody>
-        {%  if request.session.current_user_is_doctor %}
+        {% if request.session.current_user_is_doctor %}
             {% for result in unreleased_test_results %}
                 <tr class="unreleased_test-results-{{ result.get_level_str | lower }}">
-                <td>{{ result.pk }}</td>
-                <td><a href="{% url "views.release_test_result" result.pk %}"><button type="button" class="btn btn-warning btn-xs">Release</button></a></td>
-                <td>{{ result.test_date }}</td>
-                <td>{{ result.description }}</td>
-            </tr>
+                    <td>{{ result.pk }}</td>
+                    <td><a href="{% url "views.release_test_result" result.pk %}">
+                        <button type="button" class="btn btn-warning btn-xs">Release</button>
+                    </a></td>
+                    <td>{{ result.test_date }}</td>
+                    <td>{{ result.description }}</td>
+                </tr>
 
             {% endfor %}
-        {%  endif %}
+        {% endif %}
 
         {% for result in released_test_results %}
             <tr class="released_test-results-{{ result.get_level_str | lower }}">
                 <td>{{ result.pk }}</td>
-                <td>{{ result.release_date}}</td>
+                <td>{{ result.release_date }}</td>
                 <td>{{ result.test_date }}</td>
                 <td>{{ result.description }}</td>
             </tr>
@@ -52,7 +57,7 @@
 
 {% block scripts %}
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function () {
             $('#result').DataTable({
                 "aoColumns": [{"sWidth": '2em'}, null, null, null],
                 "order": [[1, "desc"]],

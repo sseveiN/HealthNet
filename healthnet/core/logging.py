@@ -1,6 +1,6 @@
-from django.db import models
-
 from datetime import datetime
+
+from django.db import models
 
 from healthnet.core.enumfield import EnumField
 
@@ -34,6 +34,7 @@ class Logging(object):
     """
     The log
     """
+
     @staticmethod
     def log(level, msg):
         """

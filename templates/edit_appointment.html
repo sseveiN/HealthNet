@@ -10,25 +10,27 @@
 
 
 {% block content %}
-{% load bootstrap3 %}
-<form method="post" action="fragments">
-    {% csrf_token %}
-    {% bootstrap_form appointment_form %}
+    {% load bootstrap3 %}
+    <form method="post" action="fragments">
+        {% csrf_token %}
+        {% bootstrap_form appointment_form %}
 
-    {% buttons %}
-         <a href="{% url "views.cancel_appointment" apt.pk %}"><button type="button" class="btn btn-danger">Cancel This Appointment</button></a>
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "save-file" %} Edit Appointment
-        </button>
-    {% endbuttons %}
-</form>
+        {% buttons %}
+            <a href="{% url "views.cancel_appointment" apt.pk %}">
+                <button type="button" class="btn btn-danger">Cancel This Appointment</button>
+            </a>
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "save-file" %} Edit Appointment
+            </button>
+        {% endbuttons %}
+    </form>
 {% endblock content %}
 
 {% block scripts %}
-<script type="text/javascript">
-$(function() {
-    $('#id_tstart').datetimepicker();
-    $('#id_tend').datetimepicker();
-});
-</script>
+    <script type="text/javascript">
+        $(function () {
+            $('#id_tstart').datetimepicker();
+            $('#id_tend').datetimepicker();
+        });
+    </script>
 {% endblock %}

@@ -20,7 +20,7 @@
 
     {% if not request.session.current_user_is_admin %}
         <h1>Today's Appointments</h1>
-        {%  if appointments %}
+        {% if appointments %}
             {% include "fragments/calendar_day.html" %}
         {% else %}
             <p>You have no additional appointments today.</p>
@@ -29,7 +29,7 @@
 
     {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse or request.session.current_user_is_admin %}
         {% if request.session.current_user_is_admin %}<h1>All Patients</h1>{% else %}<h1>My Patients</h1>{% endif %}
-        {%  if patients %}
+        {% if patients %}
             {% include "fragments/patients.html" with patients=patients %}
         {% else %}
             <p>You have no patients.</p>
@@ -47,7 +47,7 @@
     <script src="http://fullcalendar.io/js/fullcalendar-2.6.1/fullcalendar.min.js"></script>
 
     <script type="text/javascript">
-        $(document).ready(function() {
+        $(document).ready(function () {
             var events = {{ appointments_json | safe }};
 
             $('#calendar').fullCalendar({
@@ -67,16 +67,18 @@
     </script>
 
     <script type="text/javascript">
-        $(document).ready(function() {
+        $(document).ready(function () {
             $('#patients').DataTable({
                 "order": [[3, "asc"]],
                 "iDisplayLength": 10,
                 "aoColumnDefs": [
-                    { 'bSortable': false, 'bSearchable' : false, 'aTargets': [
+                    {
+                        'bSortable': false, 'bSearchable': false, 'aTargets': [
                         {% if request.session.current_user_is_admin %}6{% else %}5{% endif %}
-                    ] },
-                    { 'bSearchable' : false, 'aTargets': [4] }
-               ]
+                    ]
+                    },
+                    {'bSearchable': false, 'aTargets': [4]}
+                ]
             });
 
             {% if request.session.current_user_is_admin %}
@@ -84,8 +86,8 @@
                     "order": [[3, "asc"]],
                     "iDisplayLength": 10,
                     "aoColumnDefs": [
-                        { 'bSortable': false, 'bSearchable' : false, 'aTargets': [5] }
-                   ]
+                        {'bSortable': false, 'bSearchable': false, 'aTargets': [5]}
+                    ]
                 });
             {% endif %}
         });

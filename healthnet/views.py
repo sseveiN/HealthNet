@@ -1,21 +1,20 @@
 from datetime import datetime
 
 from django.contrib import messages
-from django.contrib.auth import authenticate
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
+
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
-    ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, AdminRegistrationForm
+    ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, \
+    AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType
 from healthnet.core.logging import LogEntry
-from healthnet.core.messages import Message, MessageType
-from healthnet.core.users.administrator import Administrator
-from healthnet.core.users.nurse import Nurse
-from healthnet.core.users.user import User, UserType
-from healthnet.core.users.patient import Patient
-from healthnet.core.users.doctor import Doctor
-from healthnet.models import Calendar, Appointment, Result, Prescription
 from healthnet.core.logging import Logging
+from healthnet.core.messages import Message, MessageType
+from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.patient import Patient
+from healthnet.core.users.user import User, UserType
+from healthnet.models import Calendar, Appointment, Result, Prescription
 
 
 def index(request):
@@ -126,7 +125,7 @@ def appointment(request):
         else:
             print('invalid')
     else:
-        appointment_form = AppointmentForm(request.POST)
+        appointment_form = AppointmentForm()
 
     context = {
         'appointment_form': appointment_form
@@ -170,7 +169,7 @@ def registration(request):
 
             return HttpResponseRedirect('dashboard')
     else:
-        registration_form = RegistrationForm(request.POST)
+        registration_form = RegistrationForm()
 
     context = {
         'registration_form': registration_form
@@ -232,7 +231,7 @@ def edit_info(request, pk=None):
             profile.user = request.user
             profile.save()
             messages.success(request, "Your profile information has been successfully saved!")
-            #return redirect('dashboard')
+            # return redirect('dashboard')
 
             return HttpResponseRedirect(reverse('view_profile', kwargs={'pk': pk}))
     else:
@@ -403,7 +402,8 @@ def transfer(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     # User can only transfer if they are nurse or doctor or admin
-    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) and not user.is_type(UserType.Administrator) or not user.has_patient(patient):
+    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) and not user.is_type(
+            UserType.Administrator) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to transfer this patient!")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
@@ -461,7 +461,8 @@ def approve_user(request, pk):
     if not user.is_type(UserType.Administrator):
         messages.error(request, "You aren't allowed to approve users!")
     else:
-        messages.success(request, "%s has been approved." % str(user))
+        Logging.warning("%s has been approved by %s." % (str(to_approve), str(user)))
+        messages.success(request, "%s has been approved." % str(to_approve))
         to_approve.approve()
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -560,6 +561,7 @@ def sent_messages(request):
 
     return user.render_for_user(request, 'inbox.html', context)
 
+
 def doctor_registration(request):
     """
     User tries to register for account
@@ -591,18 +593,19 @@ def doctor_registration(request):
 
             if new_user is not None:
                 Logging.info("Doctor created with username '%s" % username)
-                User.login(request, username, password)
-                return HttpResponseRedirect('/dashboard')
+                messages.success(request, "Your account has been registered and is awaiting admin approval.")
+                return redirect('dashboard')
 
-            return HttpResponseRedirect('dashboard')
+            return redirect('dashboard')
     else:
-        registration_form = DoctorRegistrationForm(request.POST)
+        registration_form = DoctorRegistrationForm()
 
     context = {
         'doctor_registration_form': registration_form
     }
 
     return render(request, 'doctor_registration.html', context)
+
 
 def nurse_registration(request):
     """
@@ -626,7 +629,7 @@ def nurse_registration(request):
 
             new_user = NurseRegistrationForm(request.POST)
             new_nurse = new_user.save()
-            new_nurse.is_doctor = True
+            new_nurse.is_nurse = True
             new_nurse.is_pending = True
             new_nurse.set_password(password)
             new_nurse.doctors = registration_form.cleaned_data['doctors']
@@ -635,18 +638,19 @@ def nurse_registration(request):
 
             if new_user is not None:
                 Logging.info("Nurse created with username '%s" % username)
-                User.login(request, username, password)
-                return HttpResponseRedirect('/dashboard')
+                messages.success(request, "Your account has been registered and is awaiting admin approval.")
+                return redirect('dashboard')
 
-            return HttpResponseRedirect('dashboard')
+            return redirect('dashboard')
     else:
-        registration_form = NurseRegistrationForm(request.POST)
+        registration_form = NurseRegistrationForm()
 
     context = {
         'nurse_registration_form': registration_form
     }
 
     return render(request, 'nurse_registration.html', context)
+
 
 def admin_registration(request):
     """
@@ -670,21 +674,20 @@ def admin_registration(request):
 
             new_user = AdminRegistrationForm(request.POST)
             new_admin = new_user.save()
-            new_admin.is_doctor = True
+            new_admin.is_admin = True
             new_admin.is_pending = True
             new_admin.set_password(password)
-            new_admin.doctors = registration_form.cleaned_data['doctors']
             new_admin.save()
             Logging.info("Admin '%s' created" % username)
 
             if new_user is not None:
                 Logging.info("Admin created with username '%s" % username)
-                User.login(request, username, password)
-                return HttpResponseRedirect('/dashboard')
+                messages.success(request, "Your account has been registered and is awaiting admin approval.")
+                return redirect('dashboard')
 
-            return HttpResponseRedirect('dashboard')
+            return redirect('dashboard')
     else:
-        registration_form = AdminRegistrationForm(request.POST)
+        registration_form = AdminRegistrationForm()
 
     context = {
         'admin_registration_form': registration_form
@@ -692,8 +695,8 @@ def admin_registration(request):
 
     return render(request, 'admin_registration.html', context)
 
-def result(request, pk):
 
+def result(request, pk):
     user = User.get_logged_in(request)
 
     if user is None:
@@ -702,7 +705,7 @@ def result(request, pk):
     if user.is_type(UserType.Patient):
         context = {
             'released_test_results': Result.objects.filter(patient=user, is_released=True).distinct(),
-            'patient' : user,
+            'patient': user,
             'pk': pk
         }
     elif user.is_type(UserType.Doctor):
@@ -710,13 +713,14 @@ def result(request, pk):
         context = {
             'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
             'unreleased_test_results': Result.objects.filter(doctor=user, is_released=False).distinct(),
-            'patient' : patient,
-            'pk':pk
+            'patient': patient,
+            'pk': pk
         }
     else:
         return HttpResponse("Access Denied!")
 
     return render(request, 'result.html', context)
+
 
 def release_test_result(request, pk):
     user = User.get_logged_in(request)
@@ -727,11 +731,13 @@ def release_test_result(request, pk):
     if not user.is_type(UserType.Doctor):
         messages.error(request, "You aren't allowed to to release this test result!")
     else:
-            r = Result.objects.get(pk=pk)
-            r.release_result()
-            messages.success(request, "The result was successfully released!")
+        r = Result.objects.get(pk=pk)
+        r.release_result()
+        Logging.log('%s released a test with desription \'%s\' for %s' % (user, r.description, r.patient))
+        messages.success(request, "The result was successfully released!")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 def create_test_result(request, pk):
     user = User.get_logged_in(request)
@@ -762,8 +768,8 @@ def create_test_result(request, pk):
     }
     return render(request, 'create_test_result.html', context)
 
-def prescription(request, pk):
 
+def prescription(request, pk):
     user = User.get_logged_in(request)
 
     if user is None:
@@ -772,23 +778,23 @@ def prescription(request, pk):
     if user.is_type(UserType.Patient):
         context = {
             'prescriptions': Prescription.objects.filter(patient=user).distinct(),
-            'patient' : user,
+            'patient': user,
             'pk': pk
         }
     elif user.is_type(UserType.Doctor):
         patient = Patient.objects.get(pk=pk)
         context = {
             'prescriptions': Prescription.objects.filter(patient=patient).distinct(),
-            'patient' : patient,
-            'pk':pk
+            'patient': patient,
+            'pk': pk
         }
     else:
         return HttpResponse("Access Denied!")
 
     return render(request, 'prescription.html', context)
 
-def create_prescription(request, pk):
 
+def create_prescription(request, pk):
     user = User.get_logged_in(request)
 
     if user is None:
@@ -805,6 +811,7 @@ def create_prescription(request, pk):
             new.doctor = doctor
             new.patient = patient
             new.save()
+            Logging.warning("%s has created a %s prescription expiring on %s for %s" % (doctor, new.name, new.expiration_date, patient))
             messages.success(request, "The prescription was successfully created!")
             return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
         else:
@@ -838,8 +845,8 @@ def remove_prescription(request, pk):
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-def view_profile(request, pk):
 
+def view_profile(request, pk):
     user = User.get_logged_in(request)
 
     if user is None:
@@ -848,39 +855,39 @@ def view_profile(request, pk):
     if user.is_type(UserType.Patient):
         patient = Patient.objects.get(pk=user.pk)
         context = {
-            'patient' : patient,
+            'patient': patient,
             'pk': pk,
-            'health_number' : patient.health_insurance_number,
-            'home' : patient.home_phone,
-            'work' : patient.work_phone,
-            'marital' : patient.marital_status,
-            'address' : patient.get_address_str(),
-            'health_provider' : patient.health_insurance_provider,
-            'primary' : patient.primary_care_provider,
-            'height' : patient.height,
-            'weight' : patient.weight,
-            'cholesterol' : patient.cholesterol,
+            'health_number': patient.health_insurance_number,
+            'home': patient.home_phone,
+            'work': patient.work_phone,
+            'marital': patient.get_marital_status_str(),
+            'address': patient.get_address_str(),
+            'health_provider': patient.health_insurance_provider,
+            'primary': patient.primary_care_provider,
+            'height': patient.height,
+            'weight': patient.weight,
+            'cholesterol': patient.cholesterol,
             'dob': patient.dob,
-            'sex': patient.sex,
+            'sex': patient.get_sex_str(),
             'hospital': patient.hospital
         }
     elif user.is_type(UserType.Doctor):
         patient = Patient.objects.get(pk=pk)
         context = {
-            'patient' : patient,
-            'pk':pk,
-            'health_number' : patient.health_insurance_number,
-            'home' : patient.home_phone,
-            'work' : patient.work_phone,
-            'marital' : patient.marital_status,
-            'address' : patient.get_address_str(),
-            'health_provider' : patient.health_insurance_provider,
-            'primary' : patient.primary_care_provider,
-            'height' : patient.height,
-            'weight' : patient.weight,
-            'cholesterol' : patient.cholesterol,
+            'patient': patient,
+            'pk': pk,
+            'health_number': patient.health_insurance_number,
+            'home': patient.home_phone,
+            'work': patient.work_phone,
+            'marital': patient.get_marital_status_str(),
+            'address': patient.get_address_str(),
+            'health_provider': patient.health_insurance_provider,
+            'primary': patient.primary_care_provider,
+            'height': patient.height,
+            'weight': patient.weight,
+            'cholesterol': patient.cholesterol,
             'dob': patient.dob,
-            'sex': patient.sex,
+            'sex': patient.get_sex_str(),
             'hospital': patient.hospital
         }
     else:
@@ -888,6 +895,35 @@ def view_profile(request, pk):
 
     return render(request, 'view_profile.html', context)
 
+
+def register_choose(request):
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = RegistrationSelectForm(request.POST)
+
+        if form.is_valid():
+            register_type = int(form.cleaned_data['type'])
+
+            if register_type == RegisterSelectType.Patient:
+                return redirect('../register')
+            if register_type == RegisterSelectType.Doctor:
+                return redirect('../doctor_registration')
+            if register_type == RegisterSelectType.Nurse:
+                return redirect('../nurse_registration')
+            if register_type == RegisterSelectType.Administrator:
+                return redirect('../admin_registration')
+    else:
+        form = RegistrationSelectForm()
+
+    context = {
+        'form': form
+    }
+    return render(request, 'register_choose.html', context)
 
 # DEBUG VIEWS
 def create_test_user(request):
@@ -944,4 +980,3 @@ def create_test_nurse(request):
         return HttpResponse(o)
     Logging.warning("Created debug test nurse user")
     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
-

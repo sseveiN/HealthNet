@@ -1,16 +1,17 @@
 from datetime import datetime
-from django import forms
-from django.contrib.admin import widgets
-from django.forms import SelectDateWidget
 
-from healthnet.core.messages import MessageType
-from healthnet.core.users.patient import Patient
-from healthnet.core.users.user import User
-from healthnet.core.users.administrator import Administrator
-from healthnet.models import Appointment, Hospital, States, Result, Prescription
+from django import forms
+from django.forms import SelectDateWidget
 from django.http import request
+
+from healthnet.core.enumfield import EnumField
+from healthnet.core.messages import MessageType
+from healthnet.core.users.administrator import Administrator
 from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
+from healthnet.core.users.patient import Patient
+from healthnet.core.users.user import User, UserType
+from healthnet.models import Appointment, Result, Prescription
 
 
 class LoginForm(forms.Form):
@@ -149,7 +150,6 @@ class AppointmentForm(forms.ModelForm):
 
 
 class ResultForm(forms.ModelForm):
-
     test_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
     description = forms.CharField(widget=forms.Textarea)
 
@@ -163,7 +163,6 @@ class ResultForm(forms.ModelForm):
 
 
 class PrescriptionForm(forms.ModelForm):
-
     expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
     description = forms.CharField(widget=forms.Textarea)
     zipcode = forms.IntegerField(widget=forms.NumberInput)
@@ -245,14 +244,16 @@ class TransferForm(forms.Form):
         self.fields['transfer_to'].label = ""
         self.fields['transfer_to'].queryset = self.transferer.get_hospitals()
 
+
 class DoctorRegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         """
         Metaclass
         """
         model = Doctor
-        fields = '__all__'
+        fields = ['username', 'password', 'first_name', 'last_name', 'nurses', 'hospitals']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -265,14 +266,16 @@ class DoctorRegistrationForm(forms.ModelForm):
             self.fields['nurses'].required = False
             self.fields['hospitals'].required = False
 
+
 class NurseRegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         """
         Metaclass
         """
         model = Nurse
-        fields = '__all__'
+        fields = ['username', 'password', 'first_name', 'last_name', 'doctors', 'hospitals']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -285,14 +288,16 @@ class NurseRegistrationForm(forms.ModelForm):
             self.fields['doctors'].required = False
             self.fields['hospitals'].required = False
 
+
 class AdminRegistrationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         """
         Metaclass
         """
         model = Administrator
-        fields = '__all__'
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -303,3 +308,23 @@ class AdminRegistrationForm(forms.ModelForm):
             """
             super(AdminRegistrationForm, self).__init__(*args, **kwargs)
             self.fields['hospital'].required = False
+
+
+RegisterSelectType = EnumField('Patient', 'Doctor', 'Nurse', 'Administrator')
+
+
+class RegistrationSelectForm(forms.Form):
+    """
+    Form to select a registration type
+    """
+    type = forms.ChoiceField(choices=RegisterSelectType.get_choices())
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        super(RegistrationSelectForm, self).__init__(*args, **kwargs)
+
+        self.fields['type'].label = "What are you?"

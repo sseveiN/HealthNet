@@ -4,20 +4,22 @@
 
 {% block content %}
 
-<h1>Welcome to HealthNet!</h1>
-<p>HealthNet can only be accessed if you have an account! If you are a patient you can register <a href="{%  url 'views.registration' %}">here</a>! Please note, you will need a valid insurance provider and number to register.</p>
-</br>
-{% load bootstrap3 %}
-<form action="" method="post" class="form">
-    {% csrf_token %}
-    {% bootstrap_form login_form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "log-in" %} Login
-        </button>
-    {% endbuttons %}
-</form>
+    <h1>Welcome to HealthNet!</h1>
+    <p>HealthNet can only be accessed if you have an account! If you are a patient you can register <a
+            href="{% url 'views.registration' %}">here</a>! Please note, you will need a valid insurance provider and
+        number to register.</p>
+    </br>
+    {% load bootstrap3 %}
+    <form action="" method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form login_form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "log-in" %} Login
+            </button>
+        {% endbuttons %}
+    </form>
 
 
-<a href="{%  url 'views.registration' %}">Don't have an account? Register here. </a><a href="{%  url 'views.nurse_registration' %}">Nurses register here. </a><a href="{%  url 'views.doctor_registration' %}">Doctors register here. </a><a href="{%  url 'views.admin_registration' %}">Admins register here.</a>
+    <a href="{% url 'views.register_choose' %}">Don't have an account? Register here. </a>
 {% endblock content %}

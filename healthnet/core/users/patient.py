@@ -1,11 +1,10 @@
 from datetime import date
 
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
-from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator, MinLengthValidator
-
-from healthnet.core.users.user import User, UserType
 from healthnet.core.enumfield import EnumField
+from healthnet.core.users.user import User
 from healthnet.models import States
 
 Gender = EnumField('Male', 'Female', 'Unspecified')
@@ -21,18 +20,26 @@ class Patient(User):
     """
     User.is_patient = models.BooleanField(default=True)
     records = models.ForeignKey('MedicalRecord', blank=True, null=True)
-    height = models.IntegerField(validators=[MaxValueValidator(96), MinValueValidator(0)],blank=True, null=True)  # Height in cm
-    weight = models.IntegerField(validators=[MaxValueValidator(400), MinValueValidator(0)], blank=True, null=True)  # Weight in lbs
-    cholesterol = models.IntegerField(validators=[MaxValueValidator(300), MinValueValidator(0)], blank=True, null=True)  # Cholesterol in mg/dL
+    height = models.IntegerField(validators=[MaxValueValidator(96), MinValueValidator(0)], blank=True,
+                                 null=True)  # Height in in
+    weight = models.IntegerField(validators=[MaxValueValidator(400), MinValueValidator(0)], blank=True,
+                                 null=True)  # Weight in lbs
+    cholesterol = models.IntegerField(validators=[MaxValueValidator(300), MinValueValidator(0)], blank=True,
+                                      null=True)  # Cholesterol in mg/dL
     dob = models.DateField(blank=True, null=True)
     home_phone = models.CharField(max_length=12, blank=True, null=True)
     work_phone = models.CharField(max_length=12, blank=True, null=True)
     sex = models.IntegerField(choices=Gender.get_choices(), default=Gender.Unspecified, blank=True, null=True)
-    marital_status = models.IntegerField(choices=MaritalStatus.get_choices(), default=MaritalStatus.Unspecified, blank=True, null=True)
-    health_insurance_provider = models.CharField(max_length=30, blank=True, null=True)  # All the provider codes ive seen are 5 + 10 numbers
-    health_insurance_number = models.CharField(max_length=10, unique=True)  # All the insurance numbers ive seen are 5 + 5 characters
+    marital_status = models.IntegerField(choices=MaritalStatus.get_choices(), default=MaritalStatus.Unspecified,
+                                         blank=True, null=True)
+    health_insurance_provider = models.CharField(max_length=30, blank=True,
+                                                 null=True)  # All the provider codes ive seen are 5 + 10 numbers
+    health_insurance_number = models.CharField(max_length=12,
+                                               unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}\d{11}$',
+                                                                                       message='Health insurance number must be 11 numbers beginging with one letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
     doctors = models.ManyToManyField('Doctor', blank=True)
-    primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True, unique=False)
+    primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True,
+                                              unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
     hospital = models.ForeignKey('Hospital', null=True, blank=True, default=None)
     is_admitted = models.BooleanField(default=False)
@@ -44,6 +51,12 @@ class Patient(User):
     zipcode = models.CharField(max_length=5)
 
     is_pending = False
+
+    def get_sex_str(self):
+        return Gender.get_str(self.sex)
+
+    def get_marital_status_str(self):
+        return MaritalStatus.get_str(self.marital_status)
 
     def get_address_str(self):
         return '%s%s, %s, %s %s' % \

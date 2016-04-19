@@ -1,21 +1,25 @@
 <ul class="calendar_day list-unstyled">
     {% for apt in appointments %}
-    <li class="appointment">
-        <h3 class="name">{{ apt.name }}</h3>
+        <li class="appointment">
+            <h3 class="name">{{ apt.name }}</h3>
 
-        <h4 class="time">{{ apt.tstart | date:"g:i a" }} - {{ apt.tend | date:"g:i a" }}</h4>
-        <p class="description">{{ apt.description }}</p>
-        <b>Attendees:</b>
-        <ul class="attendees">
-            {% for attendee in apt.attendees.all %}
-            <li>{{ attendee.get_display_name }}</li>
-            {% endfor %}
-        </ul>
+            <h4 class="time">{{ apt.tstart | date:"g:i a" }} - {{ apt.tend | date:"g:i a" }}</h4>
+            <p class="description">{{ apt.description }}</p>
+            <b>Attendees:</b>
+            <ul class="attendees">
+                {% for attendee in apt.attendees.all %}
+                    <li>{{ attendee.get_display_name }}</li>
+                {% endfor %}
+            </ul>
 
-        <div class="edit_controls">
-            <a href="{% url "views.edit_appointment" apt.pk %}"><button type="button" class="btn btn-default btn-sm">Edit</button></a>
-            <a href="{% url "views.cancel_appointment" apt.pk %}"><button type="button" class="btn btn-danger btn-sm">Cancel</button></a>
-        </div>
-    </li>
+            <div class="edit_controls">
+                <a href="{% url "views.edit_appointment" apt.pk %}">
+                    <button type="button" class="btn btn-default btn-sm">Edit</button>
+                </a>
+                <a href="{% url "views.cancel_appointment" apt.pk %}">
+                    <button type="button" class="btn btn-danger btn-sm">Cancel</button>
+                </a>
+            </div>
+        </li>
     {% endfor %}
 </ul>

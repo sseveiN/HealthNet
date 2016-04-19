@@ -4,15 +4,16 @@
 
 {% block content %}
 
-{% load bootstrap3 %}
-<form action="" method="post" class="form">
-    {% csrf_token %}
-    {% bootstrap_form admin_registration_form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "star" %} Register
-        </button>
-    {% endbuttons %}
-</form>
+    {% load bootstrap3 %}
+    <h1>Administrator Registration</h1>
+    <form action="" method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form admin_registration_form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "star" %} Register
+            </button>
+        {% endbuttons %}
+    </form>
 
 {% endblock content %}

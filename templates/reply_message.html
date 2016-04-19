@@ -7,27 +7,32 @@
 {% endblock %}
 
 {% block content %}
-{% load humanize %}
-<h1>Reply To Message</h1>
-<ul class="messages list-unstyled">
-    {% for prev in msg.get_previous_messages %}
-    <li class="message {{ prev.get_read_status_str }}">
-        <p class="message-from">from <b>{{ prev.sender }}</b> to {{ prev.recipient }} {{ prev.date | naturaltime }} <span class="label label-default message-type {{  msg.get_type_str | lower }}">{{  msg.get_type_str }}</span></p>
-        <p class="message-content">{{ msg.get_html | safe }}</p>
-        <div class="message-links"><a href="{% url 'toggle_read' prev.pk %}">mark as {{ prev.get_read_status_str_inv }}</a> <a href="{% url 'reply_message' prev.pk %}">reply</a></div>
-    </li>
-    {% endfor %}
-</ul>
+    {% load humanize %}
+    <h1>Reply To Message</h1>
+    <ul class="messages list-unstyled">
+        {% for prev in msg.get_previous_messages %}
+            <li class="message {{ prev.get_read_status_str }}">
+                <p class="message-from">from <b>{{ prev.sender }}</b>
+                    to {{ prev.recipient }} {{ prev.date | naturaltime }} <span
+                            class="label label-default message-type {{ msg.get_type_str | lower }}">{{ msg.get_type_str }}</span>
+                </p>
+                <p class="message-content">{{ msg.get_html | safe }}</p>
+                <div class="message-links"><a href="{% url 'toggle_read' prev.pk %}">mark
+                    as {{ prev.get_read_status_str_inv }}</a> <a href="{% url 'reply_message' prev.pk %}">reply</a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
 
-{% load bootstrap3 %}
-<form action="" method="post" class="form">
-    {% csrf_token %}
-    {% bootstrap_form form %}
-    {% buttons %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "send" %} Send
-        </button>
-    {% endbuttons %}
-</form>
+    {% load bootstrap3 %}
+    <form action="" method="post" class="form">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "send" %} Send
+            </button>
+        {% endbuttons %}
+    </form>
 
 {% endblock content %}

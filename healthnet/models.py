@@ -1,5 +1,5 @@
-from datetime import datetime
 import json
+from datetime import datetime
 
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -53,12 +53,12 @@ class Hospital(models.Model):
 
 
 # Import External Models
-from healthnet.core.users.user import User, UserType
-from healthnet.core.users.patient import Patient, Gender, MaritalStatus
+from healthnet.core.users.user import User
+from healthnet.core.users.patient import Patient
 from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.administrator import Administrator
-from healthnet.core.logging import LogEntry, LogLevel, Logging
+from healthnet.core.logging import LogEntry, Logging
 
 
 class Calendar(models.Model):
@@ -243,6 +243,7 @@ class MedicalRecord(models.Model):
     """
     pass
 
+
 class Result(models.Model):
     """
     Test Result Model
@@ -254,7 +255,7 @@ class Result(models.Model):
     description = models.CharField(max_length=255)
     is_released = models.BooleanField(default=False)
 
-    #def create_result(doctor):
+    # def create_result(doctor):
     #    time = datetime.now()
     #    result = Result.objects.create(patient=None, doctor=doctor, test_date=time, release_date=None,
     #                                   description=None, is_released=None)

@@ -1,7 +1,7 @@
 from django.db import models
 
 from healthnet.core.users.patient import Patient
-from healthnet.core.users.user import User, UserType
+from healthnet.core.users.user import User
 
 
 class Administrator(User):

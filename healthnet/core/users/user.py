@@ -1,15 +1,13 @@
+from datetime import datetime
+
 from django.contrib.auth import authenticate
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
 
 from healthnet.core.enumfield import EnumField
-
 from healthnet.core.logging import Logging
-
 from healthnet.models import Hospital
 
 
@@ -120,6 +118,9 @@ class User(AbstractBaseUser):
 
         if user is None:
             return None
+
+        user.last_login = datetime.now()
+        user.save()
 
         request.session['current_user_pk'] = user.pk
         request.session['current_user_username'] = username
@@ -277,6 +278,7 @@ class UserBackend(object):
     """
     Backend to the user
     """
+
     def authenticate(self, username=None, password=None):
         """
         Authenticate the user
@@ -304,6 +306,7 @@ class UserBackend(object):
             return User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return None
+
 
 # Resolve cyclic dependencies
 from healthnet.core.users.administrator import Administrator

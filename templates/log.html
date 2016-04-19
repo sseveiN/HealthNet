@@ -9,12 +9,12 @@
 {% block content %}
     <table id="log" class="table">
         <thead>
-            <tr>
-                <th>#</th>
-                <th>Timestamp</th>
-                <th>Level</th>
-                <th>Message</th>
-            </tr>
+        <tr>
+            <th>#</th>
+            <th>Timestamp</th>
+            <th>Level</th>
+            <th>Message</th>
+        </tr>
         </thead>
         <tbody>
         {% for entry in log_entries %}
@@ -31,7 +31,7 @@
 
 {% block scripts %}
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function () {
             $('#log').DataTable({
                 "order": [[0, "desc"]],
                 "iDisplayLength": 25

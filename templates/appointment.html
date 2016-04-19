@@ -10,21 +10,21 @@
 
 
 {% block content %}
-{% load bootstrap3 %}
-<form method="post" action=".">
-  {% csrf_token %}
-    {% bootstrap_form appointment_form %}
-    <button type="submit" class="btn btn-primary">
-        {% bootstrap_icon "plus" %} Create Appointment
-    </button>
-</form>
+    {% load bootstrap3 %}
+    <form method="post" action=".">
+        {% csrf_token %}
+        {% bootstrap_form appointment_form %}
+        <button type="submit" class="btn btn-primary">
+            {% bootstrap_icon "plus" %} Create Appointment
+        </button>
+    </form>
 {% endblock content %}
 
 {% block scripts %}
-<script type="text/javascript">
-$(function() {
-    $('#id_tstart').datetimepicker();
-    $('#id_tend').datetimepicker();
-});
-</script>
+    <script type="text/javascript">
+        $(function () {
+            $('#id_tstart').datetimepicker();
+            $('#id_tend').datetimepicker();
+        });
+    </script>
 {% endblock %}

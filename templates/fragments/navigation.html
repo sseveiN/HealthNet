@@ -1,29 +1,33 @@
 <nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container">
-    <ul class="nav navbar-nav">
-        <li class="active"><a href="{% url 'views.index' %}">HealthNet</a></li>
-        {% if is_message_page %}
-            {% include "fragments/message_navigation.html" %}
-        {% else %}
-            {% if request.session.current_user_is_admin %}<li><a href="{% url 'views.log' %}">Activity Log</a></li>{% endif %}
-            {% if request.session.current_user_is_patient or request.session.current_user_is_doctor or request.session.current_user_is_nurse %}<li><a href="{% url 'views.appointment' %}">Create Appointment</a></li>{% endif %}
-            {% if request.session.current_user_is_patient %}<li><a href="{% url 'views.view_profile' user.pk %}">View Info</a></li>{% endif %}
+    <div class="container">
+        <ul class="nav navbar-nav">
+            <li class="active"><a href="{% url 'views.index' %}">HealthNet</a></li>
+            {% if is_message_page %}
+                {% include "fragments/message_navigation.html" %}
+            {% else %}
+                {% if request.session.current_user_is_admin %}
+                    <li><a href="{% url 'views.log' %}">Activity Log</a></li>{% endif %}
+                {% if request.session.current_user_is_patient or request.session.current_user_is_doctor or request.session.current_user_is_nurse %}
+                    <li><a href="{% url 'views.appointment' %}">Create Appointment</a></li>{% endif %}
             {% endif %}
-    </ul>
-    {% if request.session.current_user_display_name %}
-        <p class="navbar-text navbar-right">Hello, {{ request.session.current_user_display_name }}! - <a href="{% url 'views.logout' %}" rel="Logout">Logout</a></p>
-    {% endif %}
+        </ul>
+        {% if request.session.current_user_display_name %}
+            <p class="navbar-text navbar-right">Hello, {{ request.session.current_user_display_name }}! - <a
+                    href="{% url 'views.logout' %}" rel="Logout">Logout</a></p>
+        {% endif %}
 
-    {% if request.session.current_user_is_patient %}
-        <p class="navbar-text navbar-right">
-            <a href="{%  url 'views.edit_info' %}"><span class="glyphicon glyphicon-wrench"></span></a></li>
-        </p>
-    {% endif %}
+        {% if request.session.current_user_is_patient %}
+            <p class="navbar-text navbar-right">
+                <a href="{% url 'views.view_profile' request.session.current_user_pk %}"><span class="glyphicon glyphicon-user" title="View User Info"></span></a></li>
+            </p>
+        {% endif %}
 
-    {% if request.session.current_user_display_name %}
-        <p class="navbar-text navbar-right">
-            <a href="{% url 'views.inbox' %}"><span class="glyphicon glyphicon-envelope message_icon{% if num_msgs > 0 %} new-message{% endif %}"><span class="new-message-num">{{ num_msgs }}</span></span></a>
-        </p>
-    {% endif %}
-  </div>
+        {% if request.session.current_user_display_name %}
+            <p class="navbar-text navbar-right">
+                <a href="{% url 'views.inbox' %}"><span title="View Messages"
+                        class="glyphicon glyphicon-envelope message_icon{% if num_msgs > 0 %} new-message{% endif %}"><span
+                        class="new-message-num" >{{ num_msgs }}</span></span></a>
+            </p>
+        {% endif %}
+    </div>
 </nav>
