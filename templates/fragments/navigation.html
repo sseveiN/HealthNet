@@ -1,7 +1,7 @@
 <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container">
         <ul class="nav navbar-nav">
-            <li class="active"><a href="{% url 'views.index' %}">HealthNet</a></li>
+            <li class="active"><a href="{% url 'views.index' %}"><span class="glyphicon glyphicon-plus logo-plus"></span> <span class="logo-name">HealthNet</span></a></li>
             {% if is_message_page %}
                 {% include "fragments/message_navigation.html" %}
             {% else %}

@@ -181,3 +181,12 @@ h1 {
 .header-controls {
     margin-top: 20px;
 }
+
+.logo-plus {
+    color: red;
+}
+
+.logo-name {
+    color: black;
+    font-weight: bold;
+}
