@@ -35,28 +35,11 @@
 
     <div class="clearfix"></div>
 
-    <h3>Health Insurance</h3>
-    <ul class="list-unstyled">
-
-        <li><b>Number:</b> {% if health_number %}{{ health_number }}{% else %}None{% endif %}</li>
-        <li><b>Provider:</b> {% if health_provider %}{{ health_provider }}{% else %}None{% endif %}</li>
-    </ul>
-    <h3>Contact</h3>
-
-    <ul class="list-inline">
-        <li><b>Patient Home Phone:</b> {% if home %}{{ home }}{% else %}None{% endif %}</li>
-        <li><b>Work Phone:</b> {% if work %}{{ work }}{% else %}None{% endif %}</li>
-    </ul>
-    <ul class="list-unstyled">
-        <li><b>Address:</b> {% if address %}{{ address }}{% else %}None{% endif %}</li>
-    </ul>
-
-    <ul class="list-unstyled">
-        <li><b>Primary Care Provider:</b> {% if primary %}{{ primary }}{% else %}None{% endif %}</li>
-        <li><b>Hospital:</b> {% if hospital %}{{ hospital }}{% else %}None{% endif %}</li>
-    </ul>
-
     <h3>Basic Info</h3>
+    <ul class="list-unstyled">
+        <li><b>Full Name:</b> {{ patient.get_full_name }}</li>
+        <li><b>Username:</b> {{ patient.username }}</li>
+    </ul>
     <ul class="list-unstyled">
         <li><b>Date of Birth:</b> {% if dob %}{{ dob }}{% else %}None{% endif %}</li>
         <li><b>Sex:</b> {% if sex %}{{ sex }}{% else %}None{% endif %}</li>
@@ -64,6 +47,28 @@
         <li><b>Height:</b> {% if height %}{{ height }} in{% else %}None{% endif %}</li>
         <li><b>Weight:</b> {% if weight %}{{ weight }} lb{% else %}None{% endif %}</li>
         <li><b>Cholesterol:</b> {% if cholesterol %}{{ cholesterol }} mg/dL{% else %}None{% endif %}</li>
+    </ul>
+
+    <h3>Contact Info</h3>
+    <ul class="list-unstyled">
+        <li><b>Patient Home Phone:</b> {% if home %}{{ home }}{% else %}None{% endif %}</li>
+        <li><b>Work Phone:</b> {% if work %}{{ work }}{% else %}None{% endif %}</li>
+        <li><b>Address:</b> {% if address %}{{ address }}{% else %}None{% endif %}</li>
+    </ul>
+
+    <h3>Care Info</h3>
+    <ul class="list-unstyled">
+        <li><b>Primary Care Provider:</b> {% if primary %}{{ primary }}{% else %}None{% endif %}</li>
+        <li><b>Hospital:</b> {% if hospital %}{{ hospital }}{% else %}None{% endif %}</li>
+        <li><b>Hospital Address:</b> {% if hospital.get_address_str %}{{ hospital.get_address_str }}{% else %}None{% endif %}</li>
+        <li><b>Admitted:</b> {% if patient.is_admitted == True %}Yes{% else %}No{% endif %}</li>
+    </ul>
+
+    <h3>Health Insurance</h3>
+    <ul class="list-unstyled">
+
+        <li><b>Number:</b> {% if health_number %}{{ health_number }}{% else %}None{% endif %}</li>
+        <li><b>Provider:</b> {% if health_provider %}{{ health_provider }}{% else %}None{% endif %}</li>
     </ul>
 
 {% endblock content %}
