@@ -719,7 +719,7 @@ def result(request, pk):
     else:
         return HttpResponse("Access Denied!")
 
-    return render(request, 'result.html', context)
+    return user.render_for_user(request, 'result.html', context)
 
 
 def release_test_result(request, pk):
@@ -766,7 +766,7 @@ def create_test_result(request, pk):
     context = {
         'result_form': result_form
     }
-    return render(request, 'create_test_result.html', context)
+    return user.render_for_user(request, 'create_test_result.html', context)
 
 
 def prescription(request, pk):
@@ -791,7 +791,7 @@ def prescription(request, pk):
     else:
         return HttpResponse("Access Denied!")
 
-    return render(request, 'prescription.html', context)
+    return user.render_for_user(request, 'prescription.html', context)
 
 
 def create_prescription(request, pk):
@@ -822,7 +822,7 @@ def create_prescription(request, pk):
     context = {
         'prescription_form': prescription_form
     }
-    return render(request, 'create_prescription.html', context)
+    return user.render_for_user(request, 'create_prescription.html', context)
 
 
 def remove_prescription(request, pk):
@@ -893,7 +893,7 @@ def view_profile(request, pk):
     else:
         return HttpResponse("Access Denied!")
 
-    return render(request, 'view_profile.html', context)
+    return user.render_for_user(request, 'view_profile.html', context)
 
 
 def register_choose(request):
@@ -924,6 +924,7 @@ def register_choose(request):
         'form': form
     }
     return render(request, 'register_choose.html', context)
+
 
 # DEBUG VIEWS
 def create_test_user(request):
