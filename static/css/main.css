@@ -190,3 +190,15 @@ h1 {
     color: black;
     font-weight: bold;
 }
+
+.collapse-toggle {
+    background: rgba(0, 0, 0, .02);
+}
+
+.dashboard-header {
+    cursor: move;
+}
+
+.dashboard-item {
+    background: rgba(255, 255, 255, .90);
+}

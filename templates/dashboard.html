@@ -9,42 +9,76 @@
 {% endblock css %}
 
 {% block content %}
-    {% if request.session.current_user_is_admin %}
-        <h1>Accounts Pending Approval</h1>
-        {% if pending_users %}
-            {% include "fragments/approval_pending.html" with pending_users=pending_users %}
-        {% else %}
-            <p>There are no accounts pending approval.</p>
-        {% endif %}
-    {% endif %}
+        <ul id="sortable" class="list-unstyled">
+        {% if request.session.current_user_is_admin %}
+            <li class="dashboard-item">
+                <div class="dashboard-header clearfix">
+                    <h1 class="pull-left">Accounts Pending Approval</h1>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
+                </div>
 
-    {% if not request.session.current_user_is_admin %}
-        <h1>Today's Appointments</h1>
-        {% if appointments %}
-            {% include "fragments/calendar_day.html" %}
-        {% else %}
-            <p>You have no additional appointments today.</p>
+                <div id="accounts-section" class="collapse in">
+                    {% if pending_users %}
+                        {% include "fragments/approval_pending.html" with pending_users=pending_users %}
+                    {% else %}
+                        <p>There are no accounts pending approval.</p>
+                    {% endif %}
+                </div>
+            </li>
         {% endif %}
-    {% endif %}
 
-    {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse or request.session.current_user_is_admin %}
-        {% if request.session.current_user_is_admin %}<h1>All Patients</h1>{% else %}<h1>My Patients</h1>{% endif %}
-        {% if patients %}
-            {% include "fragments/patients.html" with patients=patients %}
-        {% else %}
-            <p>You have no patients.</p>
+        {% if not request.session.current_user_is_admin %}
+            <li class="dashboard-item" data-dashboard-id="1">
+                <div class="dashboard-header clearfix">
+                    <h1 class="pull-left">Today's Appointments</h1>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#appointments-section"><span class="glyphicon glyphicon-minus"></span></button>
+                </div>
+
+                <div id="appointments-section" class="collapse in">
+                    {% if appointments %}
+                        {% include "fragments/calendar_day.html" %}
+                    {% else %}
+                        <p>You have no additional appointments today.</p>
+                    {% endif %}
+                </div>
+            </li>
         {% endif %}
-    {% endif %}
 
-    {% if not request.session.current_user_is_admin %}
-        <h1>Calendar</h1>
-        <p>Click on any appointment to edit it.</p>
-        <div id="calendar"></div>
-    {% endif %}
+        {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse or request.session.current_user_is_admin %}
+            <li class="dashboard-item" data-dashboard-id="2">
+                <div class="dashboard-header clearfix">
+                    {% if request.session.current_user_is_admin %}<h1 class="pull-left">All Patients</h1>{% else %}<h1 class="pull-left">My Patients</h1>{% endif %}
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#patients-section"><span class="glyphicon glyphicon-minus"></span></button>
+                </div>
+
+                <div id="patients-section" class="collapse in">
+                    {% if patients %}
+                        {% include "fragments/patients.html" with patients=patients %}
+                    {% else %}
+                        <p>You have no patients.</p>
+                    {% endif %}
+                </div>
+            </li>
+        {% endif %}
+
+        {% if not request.session.current_user_is_admin %}
+            <li class="dashboard-item" data-dashboard-id="3">
+                <div class="dashboard-header clearfix">
+                    <h1 class="pull-left">Calendar</h1>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#calendar-section"><span class="glyphicon glyphicon-minus"></span></button>
+                </div>
+
+                <div id="calendar-section" class="collapse in">
+                    <p>Click on any appointment to edit it.</p>
+                    <div id="calendar"></div>
+                </div>
+            </li>
+        {% endif %}
+    </ul>
 {% endblock content %}
 
 {% block scripts %}
-    <script src="http://fullcalendar.io/js/fullcalendar-2.6.1/fullcalendar.min.js"></script>
+    <script type="text/javascript" src="http://fullcalendar.io/js/fullcalendar-2.6.1/fullcalendar.min.js"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -63,11 +97,7 @@
 
             $('.fc-button-group').removeClass().addClass('btn-group');
             $('.fc-button').removeClass().addClass('btn');
-        });
-    </script>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
             $('#patients').DataTable({
                 "order": [[3, "asc"]],
                 "iDisplayLength": 10,
@@ -90,6 +120,10 @@
                     ]
                 });
             {% endif %}
+
+            $("#sortable").sortable({
+                handle: ".dashboard-header"
+            });
         });
     </script>
 {% endblock scripts %}
