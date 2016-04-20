@@ -42,6 +42,7 @@
     </ul>
     <ul class="list-unstyled">
         <li><b>Date of Birth:</b> {% if dob %}{{ dob }}{% else %}None{% endif %}</li>
+        <li><b>Age:</b> {% if dob %}{{ patient.get_age }}{% else %}None{% endif %}</li>
         <li><b>Sex:</b> {% if sex %}{{ sex }}{% else %}None{% endif %}</li>
         <li><b>Marital Status:</b> {% if marital %}{{ marital }}{% else %}None{% endif %}</li>
         <li><b>Height:</b> {% if height %}{{ height }} in{% else %}None{% endif %}</li>
@@ -51,7 +52,7 @@
 
     <h3>Contact Info</h3>
     <ul class="list-unstyled">
-        <li><b>Patient Home Phone:</b> {% if home %}{{ home }}{% else %}None{% endif %}</li>
+        <li><b>Home Phone:</b> {% if home %}{{ home }}{% else %}None{% endif %}</li>
         <li><b>Work Phone:</b> {% if work %}{{ work }}{% else %}None{% endif %}</li>
         <li><b>Address:</b> {% if address %}{{ address }}{% else %}None{% endif %}</li>
     </ul>
@@ -59,7 +60,7 @@
     <h3>Care Info</h3>
     <ul class="list-unstyled">
         <li><b>Primary Care Provider:</b> {% if primary %}{{ primary }}{% else %}None{% endif %}</li>
-        <li><b>Hospital:</b> {% if hospital %}{{ hospital }}{% else %}None{% endif %}</li>
+        <li><b>Hospita Name:</b> {% if hospital %}{{ hospital.name }}{% else %}None{% endif %}</li>
         <li><b>Hospital Address:</b> {% if hospital.get_address_str %}{{ hospital.get_address_str }}{% else %}None{% endif %}</li>
         <li><b>Admitted:</b> {% if patient.is_admitted == True %}Yes{% else %}No{% endif %}</li>
     </ul>
