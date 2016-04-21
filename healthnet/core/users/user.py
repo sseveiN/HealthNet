@@ -55,9 +55,10 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'username'
 
     @staticmethod
-    def create_user(username, password, usertype: UserType, first_name="", last_name=""):
+    def create_user(username, password, usertype: UserType, first_name="", last_name="", print_stdout=True):
         """
         Creates the user with the specified parameters
+        :param print_stdout: should we log this to stdout?
         :param username: user's username
         :param password: user's password
         :param usertype: the type of user
@@ -93,7 +94,7 @@ class User(AbstractBaseUser):
         user.set_password(password)
         user.save()
 
-        Logging.info("User '%s' created" % username)
+        Logging.info("User '%s' created" % username, print_stdout=print_stdout)
 
         return True, user
 
