@@ -23,7 +23,7 @@ Thanks to our core developers:
 - Tanner Caffery
 - Peter Doyle
 
-# Test Liason
+## Test Liason
 If you have any issues during testing, you may contact our test liason Peter Doyle at pxd9796@rit.edu.
 
 ## License
