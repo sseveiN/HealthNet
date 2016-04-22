@@ -10,7 +10,7 @@ from healthnet.core.users.administrator import Administrator
 from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
-from healthnet.core.users.user import User, UserType
+from healthnet.core.users.user import User
 from healthnet.models import Appointment, Result, Prescription
 
 
