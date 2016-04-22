@@ -91,7 +91,7 @@ class AppointmentForm(forms.ModelForm):
     Form to create an appointment
     """
     # TODO: should only be able to select from own doctors
-    attendees = forms.ModelMultipleChoiceField(queryset=User.objects.all())
+    attendees = forms.ModelMultipleChoiceField(queryset=None)
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -107,11 +107,17 @@ class AppointmentForm(forms.ModelForm):
         :param args: initial arguments
         :param kwargs: initial kwarguments
         """
+
+        self.creator = kwargs.pop('creator')
+
         super(AppointmentForm, self).__init__(*args, **kwargs)
+
         self.fields['tstart'].label = "Start date/time"
         self.fields['tend'].label = "End date/time"
         self.fields['tstart'].help_text = "Format Example: 10/25/06 11:30"
         self.fields['tend'].help_text = "Format Example: 10/25/06 14:30"
+
+        self.fields['attendees'].queryset = User.objects.exclude(pk=self.creator.pk)
 
     @staticmethod
     def edit_appointment(pk):

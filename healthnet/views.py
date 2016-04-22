@@ -100,23 +100,19 @@ def appointment(request):
     primary_key = user.pk
 
     if request.method == 'POST':
-        appointment_form = AppointmentForm(request.POST)
+        appointment_form = AppointmentForm(request.POST, creator=user)
 
         if appointment_form.is_valid():
             name = appointment_form.cleaned_data['name']
-            description = appointment_form.cleaned_data['description']
-            tstart = appointment_form.cleaned_data['tstart']
-            tend = appointment_form.cleaned_data['tend']
-            attendees = appointment_form.cleaned_data['attendees']
 
-            appointment_form = AppointmentForm(request.POST)
+            appointment_form = AppointmentForm(request.POST, creator=user)
             new_apt = appointment_form.save()
             me = User.objects.get(pk=primary_key)
             new_apt.attendees.add(me)
 
             if new_apt.has_conflict():
                 messages.error(request, "There is a conflict with the selected times!")
-                appointment_form = AppointmentForm(request.POST)
+                appointment_form = AppointmentForm(request.POST, creator=user)
                 new_apt.delete()
             else:
                 new_apt.save()
@@ -125,7 +121,7 @@ def appointment(request):
         else:
             print('invalid')
     else:
-        appointment_form = AppointmentForm()
+        appointment_form = AppointmentForm(creator=user)
 
     context = {
         'appointment_form': appointment_form
