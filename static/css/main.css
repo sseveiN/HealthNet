@@ -202,3 +202,12 @@ h1 {
 .dashboard-item {
     background: rgba(255, 255, 255, .90);
 }
+
+[required="required"] {
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' height='20px' width='20px'><text x='0' y='25' fill='red' font-size='30' font-family='Times New Roman'>*</text></svg>") no-repeat;
+    background-position: right 0px top 5px;
+}
+
+select[required="required"] {
+    background-position: right 10px top 5px;
+}

@@ -36,9 +36,9 @@ class RegistrationForm(forms.ModelForm):
         """
         model = Patient
 
-        fields = ['health_insurance_number', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
+        fields = ['health_insurance_number', 'health_insurance_provider', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'home_phone', 'work_phone',
-                  'marital_status', 'health_insurance_provider', 'primary_care_provider', 'doctors', 'height', 'weight',
+                  'marital_status', 'primary_care_provider', 'doctors', 'height', 'weight',
                   'cholesterol']
         exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
                    'records']
@@ -50,23 +50,10 @@ class RegistrationForm(forms.ModelForm):
         :param kwargs: initial kwarguments
         """
         super(RegistrationForm, self).__init__(*args, **kwargs)
-        self.fields['height'].required = False
-        self.fields['weight'].required = False
-        self.fields['cholesterol'].required = False
-        self.fields['dob'].required = False
-        self.fields['address_line_1'].required = False
-        self.fields['address_line_2'].required = False
-        self.fields['city'].required = False
-        self.fields['state'].required = False
-        self.fields['zipcode'].required = False
-        self.fields['home_phone'].required = False
-        self.fields['work_phone'].required = False
-        self.fields['sex'].required = False
-        self.fields['marital_status'].required = False
-        self.fields['health_insurance_provider'].required = False
-        self.fields['doctors'].required = False
-        self.fields['primary_care_provider'].required = False
 
+        self.fields['height'].label = 'Height (in)'
+        self.fields['weight'].label = 'Weight (lb)'
+        self.fields['cholesterol'].label = 'Weight (mg/dL)'
         self.fields['dob'].label = "Date of Birth"
 
 
@@ -93,20 +80,10 @@ class EditPatientInfoForm(forms.ModelForm):
         :param kwargs: initial kwarguments
         """
         super(EditPatientInfoForm, self).__init__(*args, **kwargs)
-        self.fields['height'].required = False
-        self.fields['weight'].required = False
-        self.fields['cholesterol'].required = False
-        self.fields['address_line_1'].required = False
-        self.fields['address_line_2'].required = False
-        self.fields['city'].required = False
-        self.fields['state'].required = False
-        self.fields['zipcode'].required = False
-        self.fields['home_phone'].required = False
-        self.fields['work_phone'].required = False
-        self.fields['marital_status'].required = False
-        self.fields['health_insurance_provider'].required = False
-        self.fields['doctors'].required = False
-        self.fields['primary_care_provider'].required = False
+
+        self.fields['height'].label = 'Height (in)'
+        self.fields['weight'].label = 'Weight (lb)'
+        self.fields['cholesterol'].label = 'Weight (mg/dL)'
 
 
 class AppointmentForm(forms.ModelForm):
