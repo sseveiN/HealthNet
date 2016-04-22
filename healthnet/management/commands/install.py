@@ -1,9 +1,12 @@
 import os
 import sys
+from getpass import getpass
+from io import StringIO
 
 import django
 from django.core import management
 from django.core.management import BaseCommand
+from django.db import connection
 
 from healthnet.core.users.user import User, UserType
 from django.contrib.auth.models import User as SuperUser
@@ -41,12 +44,17 @@ class Command(BaseCommand):
         print("\n")
 
         # destroy database
-        management.call_command('sqlflush', interactive=False, stdout=None)
-        try:
-            SuperUser.objects.all().delete()
-            User.objects.all().delete()
-        except:
-            pass
+        buf = StringIO()
+        management.call_command('sqlflush', interactive=False, stdout=buf)
+
+        for cmd in buf.getvalue().splitlines():
+            connection.cursor().execute(cmd.strip())
+
+        # try:
+        #     SuperUser.objects.all().delete()
+        #     User.objects.all().delete()
+        # except:
+        #     pass
 
         # migrate
         management.call_command('makemigrations', interactive=False, stdout=None)
@@ -60,7 +68,7 @@ class Command(BaseCommand):
         # Create super users
         self.print_ok("Create super user for system admin:")
         username = input('Username: ')
-        password = input('Password: ')
+        password = getpass('Password: ')
         su = SuperUser.objects.create_superuser(username=username, password=password, email='')
         su.save()
         print("\n")
@@ -72,8 +80,9 @@ class Command(BaseCommand):
         addr_2 = input('Address Line 2: ')
         city = input('City: ')
 
-        for num, name in States.get_choices():
-            print('%s = %s' % (num, name))
+        for state_num, state_name in States.get_choices():
+            print('%s = %s' % (state_num, state_name))
+
         state = input('State (number): ')
         zipcode = input('Zipcode: ')
         hospital = Hospital.objects.create(name=name, address_line_1=addr_1, address_line_2=addr_2, city=city,
@@ -87,7 +96,7 @@ class Command(BaseCommand):
         fn = input('First Name: ')
         ln = input('Last Name: ')
         username = input('Username: ')
-        password = input('Password: ')
+        password = getpass('Password: ')
         success, admin = User.create_user(username, password, UserType.Administrator, first_name=fn, last_name=ln,
                                           print_stdout=False)
 
