@@ -12,4 +12,8 @@ class Nurse(User):
     hospitals = models.ForeignKey('Hospital', null=True, blank=True)
 
     def get_patients(self):
+        if self.hospitals is None:
+            return None
+        if self.hospitals.patient_set is None:
+            return None
         return self.hospitals.patient_set.all()

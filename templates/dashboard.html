@@ -82,8 +82,6 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            var events = {{ appointments_json | safe }};
-
             $('#calendar').fullCalendar({
                 header: {
                     left: 'prev,next today',
@@ -91,7 +89,7 @@
                     right: ' month,agendaWeek,agendaDay'
                 },
                 defaultView: 'agendaWeek',
-                events: events,
+                events: {{ appointments_json | safe }},
                 eventLimit: true
             });
 

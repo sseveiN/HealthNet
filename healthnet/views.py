@@ -729,7 +729,7 @@ def release_test_result(request, pk):
     else:
         r = Result.objects.get(pk=pk)
         r.release_result()
-        Logging.log('%s released a test with desription \'%s\' for %s' % (user, r.description, r.patient))
+        Logging.info('%s released a test with description \'%s\' for %s' % (user, r.description, r.patient))
         messages.success(request, "The result was successfully released!")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
