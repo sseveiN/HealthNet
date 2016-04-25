@@ -8,9 +8,8 @@ class Doctor(User):
     """
     A doctor
     """
+    hospitals = models.ManyToManyField('Hospital', blank=True)
     User.is_doctor = models.BooleanField(default=True)
-    nurses = models.ManyToManyField('Nurse', blank=True)
-    hospitals = models.ForeignKey('Hospital', null=True, blank=True)
 
     def get_patients(self):
         return Patient.objects.filter(doctors=self)

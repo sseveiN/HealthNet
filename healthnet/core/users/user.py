@@ -8,7 +8,6 @@ from django.shortcuts import render
 
 from healthnet.core.enumfield import EnumField
 from healthnet.core.logging import Logging
-from healthnet.models import Hospital
 
 
 class UserType(EnumField):
@@ -255,14 +254,6 @@ class User(AbstractBaseUser):
             if patient == p.pk:
                 return True
         return False
-
-    def get_hospitals(self):
-        user = self.get_typed_patient()
-        pks = []
-        for hospital in Hospital.objects.all():
-            if hospital.has_user(user):
-                pks.append(hospital.pk)
-        return Hospital.objects.filter(pk__in=pks)
 
     def approve(self):
         self.is_pending = False

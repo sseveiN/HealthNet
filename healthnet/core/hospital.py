@@ -1,5 +1,10 @@
 from django.db import models
 
+from healthnet.core.users.user import User
+from healthnet.core.users.administrator import Administrator
+from healthnet.core.users.nurse import Nurse
+from healthnet.core.users.patient import Patient
+
 from healthnet.models import States
 
 
@@ -7,6 +12,7 @@ class Hospital(models.Model):
     """
     Hospital Model
     """
+
     name = models.CharField(max_length=255)
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
