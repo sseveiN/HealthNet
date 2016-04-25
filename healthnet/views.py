@@ -230,7 +230,7 @@ def edit_info(request, pk=None):
             messages.success(request, "Your profile information has been successfully saved!")
             # return redirect('dashboard')
 
-            return HttpResponseRedirect(reverse('view_profile', kwargs={'pk': pk}))
+            return HttpResponseRedirect(reverse('view_profile', kwargs={'pk': primary_key}))
     else:
         u = Patient.objects.get(pk=primary_key)
         form = EditPatientInfoForm(instance=u)  # No request.POST
