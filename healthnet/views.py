@@ -809,7 +809,8 @@ def edit_nurse_info(request, pk=None):
     context = {
         'show_name': show_name,
         'nurse_user': user,
-        'edit_info': form
+        'edit_info': form,
+        'hospital': u.hospital
     }
     return user.render_for_user(request, 'edit_nurse_info.html', context)
 

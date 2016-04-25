@@ -11,7 +11,7 @@ from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
-from healthnet.models import Appointment, Result, Prescription
+from healthnet.models import Appointment, Result, Prescription, Hospital
 
 
 class LoginForm(forms.Form):
@@ -248,8 +248,9 @@ class DoctorRegistrationForm(forms.ModelForm):
     """
     Form to register a doctor
     """
+
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'))
     password = forms.CharField(widget=forms.PasswordInput())
-    hospitals = forms.MultipleChoiceField(widget=forms.MultipleChoiceField())
 
     class Meta:
         """
@@ -268,11 +269,11 @@ class DoctorRegistrationForm(forms.ModelForm):
             super(DoctorRegistrationForm, self).__init__(*args, **kwargs)
 
 
-
-
-
 class EditDoctorInfoForm(forms.ModelForm):
 
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'))
+    m2m_field = 'hospitals'
+    m2m_fields = []
     class Meta:
         """
         Metaclass
@@ -281,21 +282,31 @@ class EditDoctorInfoForm(forms.ModelForm):
         fields = ['first_name', 'last_name', 'hospitals']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
-        def __init__(self, *args, **kwargs):
-            """
-            Initialize the form
-            :param args:
-            :param kwargs:
-            """
+    def save(self, commit=True):
+        """
+        Saving m2m
+        """
+        instance = super(EditDoctorInfoForm, self).save(commit=True)
+        if self.m2m_field:
+            self.m2m_fields = [self.m2m_field]
 
-            super(EditDoctorInfoForm, self).__init__(*args, **kwargs)
+        for field in self.m2m_fields:
+            m2mfield = getattr(instance, field)
+            for obj in self.cleaned_data.get(field):
+                m2mfield.add(obj)
 
+        if commit:
+            instance.save()
+            #self.save_m2m()
+
+        return instance
 
 class NurseRegistrationForm(forms.ModelForm):
     """
     Form to register a nurse
     """
     password = forms.CharField(widget=forms.PasswordInput())
+    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
 
     class Meta:
         """
@@ -316,6 +327,8 @@ class NurseRegistrationForm(forms.ModelForm):
 
 class EditNurseInfoForm(forms.ModelForm):
 
+    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
+
     class Meta:
         """
         Metaclass
@@ -331,6 +344,7 @@ class EditNurseInfoForm(forms.ModelForm):
             :param kwargs:
             """
             super(EditNurseInfoForm, self).__init__(*args, **kwargs)
+
 
 class AdminRegistrationForm(forms.ModelForm):
     """
