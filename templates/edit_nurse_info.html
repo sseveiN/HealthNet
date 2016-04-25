@@ -6,7 +6,7 @@
 
     {% load bootstrap3 %}
 
-    {% if show_name %}<h1>{{ patient_user.first_name }} {{ patient_user.last_name }}</h1></br>{% endif %}
+    {% if show_name %}<h1>{{ nurse_user.first_name }} {{ nurse_user.last_name }}</h1></br>{% endif %}
     <form action="" method="post" class="form">
         {% csrf_token %}
         {% bootstrap_form edit_info %}

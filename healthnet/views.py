@@ -7,11 +7,12 @@ from django.shortcuts import render, redirect
 
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
     ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, \
-    AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType
+    AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType, EditNurseInfoForm, EditDoctorInfoForm
 from healthnet.core.logging import LogEntry
 from healthnet.core.logging import Logging
 from healthnet.core.messages import Message, MessageType
 from healthnet.core.users.doctor import Doctor
+from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User, UserType
 from healthnet.models import Calendar, Appointment, Result, Prescription
@@ -642,6 +643,68 @@ def doctor_registration(request):
 
     return render(request, 'doctor_registration.html', context)
 
+def edit_doctor_info(request, pk=None):
+    """
+    User tries to edit their information
+    :param request: request to edit their information
+    :return: Goes to dashboard if successful, otherwise stays on edit_info with
+                a message saying what they need to fix"
+    """
+
+    show_name = False
+
+    if pk is None:
+        user = User.get_logged_in(request)
+        primary_key = user.pk
+
+        # Require login
+        if user is None:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('index')
+
+        # Check user type
+        if not user.is_type(UserType.Doctor):
+            messages.error(request, "You must be a doctor to edit your information.")
+            return redirect('index')
+    else:
+        show_name = True
+        logged = User.get_logged_in(request)
+        user = User.objects.get(pk=pk)
+        primary_key = pk
+
+        # Require login
+        if logged is None:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('index')
+
+        # Check user type
+        if not user.is_type(UserType.Doctor):
+            messages.error(request, "You must be a doctor to edit your information.")
+            return redirect('index')
+
+    if request.method == 'POST':
+        u = Doctor.objects.get(pk=primary_key)
+        form = EditDoctorInfoForm(request.POST, instance=u)
+
+        if form.is_valid():  # is_valid is function not property
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            messages.success(request, "Your profile information has been successfully saved!")
+            # return redirect('dashboard')
+
+            return HttpResponseRedirect(reverse('index', kwargs={'pk': pk}))
+    else:
+        u = Doctor.objects.get(pk=primary_key)
+        form = EditDoctorInfoForm(instance=u)  # No request.POST
+    # move it outside of else
+    context = {
+        'show_name': show_name,
+        'doctor_user': user,
+        'edit_info': form
+    }
+    return user.render_for_user(request, 'edit_doctor_info.html', context)
+
 
 def nurse_registration(request):
     """
@@ -686,6 +749,69 @@ def nurse_registration(request):
     }
 
     return render(request, 'nurse_registration.html', context)
+
+
+def edit_nurse_info(request, pk=None):
+    """
+    User tries to edit their information
+    :param request: request to edit their information
+    :return: Goes to dashboard if successful, otherwise stays on edit_info with
+                a message saying what they need to fix"
+    """
+
+    show_name = False
+
+    if pk is None:
+        user = User.get_logged_in(request)
+        primary_key = user.pk
+
+        # Require login
+        if user is None:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('index')
+
+        # Check user type
+        if not user.is_type(UserType.Nurse):
+            messages.error(request, "You must be a nurse to edit your information.")
+            return redirect('index')
+    else:
+        show_name = True
+        logged = User.get_logged_in(request)
+        user = User.objects.get(pk=pk)
+        primary_key = pk
+
+        # Require login
+        if logged is None:
+            messages.error(request, "You must be logged in to access this page.")
+            return redirect('index')
+
+        # Check user type
+        if not user.is_type(UserType.Nurse):
+            messages.error(request, "You must be a nurse to edit your information.")
+            return redirect('index')
+
+    if request.method == 'POST':
+        u = Nurse.objects.get(pk=primary_key)
+        form = EditNurseInfoForm(request.POST, instance=u)
+
+        if form.is_valid():  # is_valid is function not property
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            messages.success(request, "Your profile information has been successfully saved!")
+            # return redirect('dashboard')
+
+            return HttpResponseRedirect(reverse('index', kwargs={'pk': pk}))
+    else:
+        u = Nurse.objects.get(pk=primary_key)
+        form = EditNurseInfoForm(instance=u)  # No request.POST
+    # move it outside of else
+    context = {
+        'show_name': show_name,
+        'nurse_user': user,
+        'edit_info': form
+    }
+    return user.render_for_user(request, 'edit_nurse_info.html', context)
 
 
 def admin_registration(request):
