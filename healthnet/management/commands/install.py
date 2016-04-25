@@ -1,4 +1,3 @@
-import os
 import sys
 from getpass import getpass
 from io import StringIO
@@ -15,19 +14,44 @@ from healthnet.models import Hospital, States
 
 
 class Command(BaseCommand):
+    """
+    Install command which checks python and django versions,
+    creates a cleared database and creates an initial super user,
+    admin user and hospital.
+    """
     def confirm(self, s):
+        """
+        Asks user to confirm a request
+        :param s: The message to ask the user to confirm
+        :return: Whether or not the user confirmed
+        """
         yes = {'yes', 'y', 'ye', ''}
         self.print_ok(s)
         choice = input().lower()
         return choice in yes
 
     def print_ok(self, s):
+        """
+        Prints a string colored green
+        :param s: The string to print
+        :return: None
+        """
         print('\033[92m' + s + '\033[0m')
 
     def print_err(self, s):
+        """
+        Prints a string colored red
+        :param s: The string to print
+        :return: None
+        """
         print('\033[91m' + s + '\033[0m')
 
     def handle(self, **options):
+        """
+        Handle the command
+        :param options: options for the command
+        :return: None
+        """
         # Check we are using the proper python version
         if sys.version_info < (3, 4):
             self.print_err("You must be using Python 3.4 or greater.")
@@ -49,12 +73,6 @@ class Command(BaseCommand):
 
         for cmd in buf.getvalue().splitlines():
             connection.cursor().execute(cmd.strip())
-
-        # try:
-        #     SuperUser.objects.all().delete()
-        #     User.objects.all().delete()
-        # except:
-        #     pass
 
         # migrate
         management.call_command('makemigrations', interactive=False, stdout=None)

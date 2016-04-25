@@ -7,11 +7,12 @@ HealthNet is a website where patients can communicate with doctors and nurses to
 3. Follow the installer steps
 
 ## Usage
-- To start the application simple run `python manage.py runserver` and direct your browser to http://localhost:8000/
+To start the application simply run `python manage.py runserver` and direct your browser to http://localhost:8000/
     
 ## Credits
-Thanks to https://github.com/dyve/ for use of his django-bootstrap3 form integration.
+Thanks to https://github.com/dyve/ for use of his django-bootstrap3 form integration library.
 Thanks to the developers of jQuery, Bootstrap and Fullcalendar.io for use of their products.
+Thanks to https://github.com/lepture/ for use of his mistune markdown library.
 
 Thanks to our core developers:
 - Dakota Baber

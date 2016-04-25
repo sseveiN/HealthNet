@@ -177,11 +177,11 @@ def registration(request):
 def edit_info(request, pk=None):
     """
     User tries to edit their information
+    :param pk: The pk of user to edit; if none will edit currently logged in user
     :param request: request to edit their information
     :return: Goes to dashboard if successful, otherwise stays on edit_info with
                 a message saying what they need to fix"
     """
-
     show_name = False
 
     if pk is None:
@@ -388,6 +388,12 @@ def toggle_admit(request, pk):
 
 
 def transfer(request, pk):
+    """
+    Transfer a patient to specific hospital
+    :param request: The HTTP request
+    :param pk: The pk of the patient to transfer
+    :return: the page to display
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -410,7 +416,7 @@ def transfer(request, pk):
                 patient.transfer(form.cleaned_data['transfer_to'])
                 Logging.info("Patient '%s' has been transfered to '%s' hospital by user '%s'." % (
                     str(patient), str(form.cleaned_data['transfer_to']), str(user)))
-                messages.success(request, "The patient has been transfered!")
+                messages.success(request, "The patient has been transferred!")
                 return redirect('dashboard')
         else:
             form = TransferForm(transferer=user)
@@ -425,6 +431,12 @@ def transfer(request, pk):
 
 
 def toggle_read(request, pk):
+    """
+    Toggle the read status of a message
+    :param request: The HTTP request
+    :param pk: The pk of the message to change
+    :return: redirects back to last page
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -444,6 +456,12 @@ def toggle_read(request, pk):
 
 
 def approve_user(request, pk):
+    """
+    Approve a user
+    :param request: The HTTP request
+    :param pk: The pk of the message to change
+    :return: redirects back to last page
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -453,7 +471,7 @@ def approve_user(request, pk):
     # Get message based on pk argument
     to_approve = User.objects.get(pk=pk)
 
-    # check user can see this message
+    # check user can is an admin and can approve
     if not user.is_type(UserType.Administrator):
         messages.error(request, "You aren't allowed to approve users!")
     else:
@@ -465,6 +483,12 @@ def approve_user(request, pk):
 
 
 def send_message(request, pk=None):
+    """
+    Send a message to a user
+    :param request: The HTTP request
+    :param pk: The pk of the recipient to send the message to; if None select from drop down
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -489,6 +513,12 @@ def send_message(request, pk=None):
 
 
 def reply_message(request, pk):
+    """
+    Reply to a message
+    :param request: The HTTP request
+    :param pk: The message to reply to
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -526,6 +556,11 @@ def reply_message(request, pk):
 
 
 def inbox(request):
+    """
+    The message inbox view
+    :param request: The HTTP request
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -543,6 +578,11 @@ def inbox(request):
 
 
 def sent_messages(request):
+    """
+    The sent messages (outbox) view
+    :param request: The HTTP request
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -693,6 +733,12 @@ def admin_registration(request):
 
 
 def result(request, pk):
+    """
+    Shows a list of test results
+    :param request: The HTTP request
+    :param pk: The pk of the user to show test results for
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -719,6 +765,12 @@ def result(request, pk):
 
 
 def release_test_result(request, pk):
+    """
+    Release a specific test result
+    :param request: The HTTP request
+    :param pk: The pk of the test result to release
+    :return: redirect to previous page
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -736,6 +788,12 @@ def release_test_result(request, pk):
 
 
 def create_test_result(request, pk):
+    """
+    Create a test result for a user
+    :param request: The HTTP request
+    :param pk: The pk of the user to create
+    :return: the view to render
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -766,6 +824,12 @@ def create_test_result(request, pk):
 
 
 def prescription(request, pk):
+    """
+    View a users prescriptions
+    :param request: The HTTP request
+    :param pk: The pk of the users prescriptions
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -791,6 +855,12 @@ def prescription(request, pk):
 
 
 def create_prescription(request, pk):
+    """
+    Create a prescription for a user
+    :param request: The HTTP request
+    :param pk: The pk of the user to create the prescription for
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -822,6 +892,12 @@ def create_prescription(request, pk):
 
 
 def remove_prescription(request, pk):
+    """
+    Delete a specified prescription
+    :param request: The HTTP request
+    :param pk: The pk of the prescription to remove
+    :return: redirects back to previous page
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -843,6 +919,12 @@ def remove_prescription(request, pk):
 
 
 def view_profile(request, pk):
+    """
+    View a profile for a specific user
+    :param request: The HTTP request
+    :param pk: The pk of the user to view
+    :return: The view to render
+    """
     user = User.get_logged_in(request)
 
     if user is None:
@@ -893,6 +975,12 @@ def view_profile(request, pk):
 
 
 def register_choose(request):
+    """
+    Choose the type of user to register and redirect
+    to their registration page
+    :param request: The HTTP request
+    :return: the view to render
+    """
     user = User.get_logged_in(request)
 
     # Don't allow if logged in
@@ -923,6 +1011,7 @@ def register_choose(request):
 
 
 # DEBUG VIEWS
+# The views below are DEBUG use only.
 def create_test_user(request):
     """
     Creates a test patient

@@ -9,7 +9,6 @@ class Prescription(models.Model):
     """
     Prescription Model
     """
-
     patient = models.ForeignKey(Patient, unique=False, blank=True, null=True)
     doctor = models.ForeignKey(Doctor, unique=False, blank=True, null=True)
 
@@ -26,5 +25,9 @@ class Prescription(models.Model):
     description = models.CharField(max_length=255)
 
     def get_address_str(self):
+        """
+        Get the string representation of an address
+        :return: The string representation of an address
+        """
         return '%s%s, %s, %s %s' % \
                (self.address_line_1, self.address_line_2, self.city, States.get_str(self.state), self.zipcode)

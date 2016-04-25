@@ -74,6 +74,10 @@ table.dataTable thead .sorting_desc, table.dataTable thead .sorting_asc, table.d
     float: right;
 }
 
+.patient-actions a {
+    text-decoration: none;
+}
+
 .message-icon {
     line-height: .1;
 }

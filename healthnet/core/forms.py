@@ -26,7 +26,6 @@ class RegistrationForm(forms.ModelForm):
     """
     Form for registration
     """
-
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
 
@@ -61,10 +60,9 @@ class EditPatientInfoForm(forms.ModelForm):
     """
     Form to edit patient info
     """
-
     class Meta:
         """
-        Metaclass
+        Meta class
         """
         model = Patient
         fields = ['health_insurance_number', 'home_phone', 'work_phone', 'marital_status',
@@ -90,13 +88,12 @@ class AppointmentForm(forms.ModelForm):
     """
     Form to create an appointment
     """
-    # TODO: should only be able to select from own doctors
     attendees = forms.ModelMultipleChoiceField(queryset=None)
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
         """
-        Metaclass
+        Meta class
         """
         model = Appointment
         fields = '__all__'
@@ -107,7 +104,6 @@ class AppointmentForm(forms.ModelForm):
         :param args: initial arguments
         :param kwargs: initial kwarguments
         """
-
         self.creator = kwargs.pop('creator')
 
         super(AppointmentForm, self).__init__(*args, **kwargs)
@@ -133,32 +129,53 @@ class AppointmentForm(forms.ModelForm):
 
 
 class ResultForm(forms.ModelForm):
+    """
+    The form to create a result
+    """
     test_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
+        """
+        Meta class
+        """
         model = Result
         fields = '__all__'
         exclude = ['patient', 'doctor', 'is_released', 'release_date']
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
         super(ResultForm, self).__init__(*args, **kwargs)
 
 
 class PrescriptionForm(forms.ModelForm):
+    """
+    The form to create a prescription
+    """
     expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
     description = forms.CharField(widget=forms.Textarea)
     zipcode = forms.IntegerField(widget=forms.NumberInput)
     refills = forms.IntegerField(widget=forms.NumberInput, min_value=0)
-
     # TODO: add form validation
 
     class Meta:
+        """
+        Meta class
+        """
         model = Prescription
         fields = '__all__'
         exclude = ['patient', 'doctor']
 
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
         super(PrescriptionForm, self).__init__(*args, **kwargs)
         self.fields['refills'].label = "Number of Refills"
         self.fields['expiration_date'].label = "Expiration Date"
@@ -193,7 +210,7 @@ class SendMessageForm(forms.Form):
 
 class ReplyMessageForm(forms.Form):
     """
-    Form to send a message
+    Form to reply to a message
     """
     message = forms.CharField(widget=forms.Textarea)
 
@@ -203,14 +220,13 @@ class ReplyMessageForm(forms.Form):
         :param args: initial arguments
         :param kwargs: initial kwarguments
         """
-
         super(ReplyMessageForm, self).__init__(*args, **kwargs)
         self.fields['message'].label = "Your Message"
 
 
 class TransferForm(forms.Form):
     """
-    Form to send a message
+    Form to transfer a patient
     """
     transfer_to = forms.ModelChoiceField(queryset=None)
 
@@ -229,11 +245,14 @@ class TransferForm(forms.Form):
 
 
 class DoctorRegistrationForm(forms.ModelForm):
+    """
+    Form to register a doctor
+    """
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         """
-        Metaclass
+        Meta class
         """
         model = Doctor
         fields = ['username', 'password', 'first_name', 'last_name', 'nurses', 'hospitals']
@@ -251,11 +270,14 @@ class DoctorRegistrationForm(forms.ModelForm):
 
 
 class NurseRegistrationForm(forms.ModelForm):
+    """
+    Form to register a nurse
+    """
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         """
-        Metaclass
+        Meta class
         """
         model = Nurse
         fields = ['username', 'password', 'first_name', 'last_name', 'doctors', 'hospitals']
@@ -273,11 +295,14 @@ class NurseRegistrationForm(forms.ModelForm):
 
 
 class AdminRegistrationForm(forms.ModelForm):
+    """
+    Form to register an admin
+    """
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
         """
-        Metaclass
+        Meta class
         """
         model = Administrator
         fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']

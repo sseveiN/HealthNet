@@ -150,10 +150,21 @@ class Appointment(models.Model):
     attendees = models.ManyToManyField(User)
 
     def has_conflict(self):
+        """
+        Check if the appointment has a conflict with any
+        other appointment for all attendees
+        :return:
+        """
         return Calendar.has_conflict(self.attendees.all(), self.tstart, self.tend, self)
 
     def __unicode__(self):
+        """
+        :return: The unicode representation of the object
+        """
         return self.name
 
     def __str__(self):
+        """
+        :return: The string representation of the object
+        """
         return self.__unicode__()
