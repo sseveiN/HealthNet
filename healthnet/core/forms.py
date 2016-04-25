@@ -249,6 +249,27 @@ class DoctorRegistrationForm(forms.ModelForm):
             self.fields['nurses'].required = False
             self.fields['hospitals'].required = False
 
+class EditDoctorInfoForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Doctor
+        fields = ['password', 'first_name', 'last_name', 'hospitals']
+        exclude = ['username', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments', 'nurses']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+
+            super(EditDoctorInfoForm, self).__init__(*args, **kwargs)
+            self.fields['nurses'].required = False
+            self.fields['hospitals'].required = False
 
 class NurseRegistrationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -268,6 +289,27 @@ class NurseRegistrationForm(forms.ModelForm):
             :param kwargs:
             """
             super(NurseRegistrationForm, self).__init__(*args, **kwargs)
+            self.fields['doctors'].required = False
+            self.fields['hospitals'].required = False
+
+class EditNurseInfoForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta:
+        """
+        Metaclass
+        """
+        model = Nurse
+        fields = ['username', 'password', 'first_name', 'last_name', 'doctors', 'hospitals']
+        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+
+        def __init__(self, *args, **kwargs):
+            """
+            Initialize the form
+            :param args:
+            :param kwargs:
+            """
+            super(EditNurseInfoForm, self).__init__(*args, **kwargs)
             self.fields['doctors'].required = False
             self.fields['hospitals'].required = False
 
