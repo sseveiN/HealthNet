@@ -12,7 +12,7 @@ To start the application simply run `python manage.py runserver` and direct your
 ## Credits
 Thanks to https://github.com/dyve/ for use of his django-bootstrap3 form integration library.
 Thanks to the developers of jQuery, Bootstrap and Fullcalendar.io for use of their products.
-Thanks to https://github.com/lepture/ for use of his mistune markdown library.
+Thanks to https://github.com/trentm/ for use of his markdown2 library.
 
 Thanks to our core developers:
 - Dakota Baber

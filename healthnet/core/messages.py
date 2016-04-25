@@ -1,5 +1,5 @@
 from django.utils.html import linebreaks
-from vendor.mistune import markdown
+from vendor.markdown2 import markdown
 
 from django.db import models
 
