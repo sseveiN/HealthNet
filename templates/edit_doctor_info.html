@@ -13,9 +13,17 @@
     <ul class="list-unstyled">
         <li><b>Full Name:</b> {{ doctor_user.get_full_name }}</li>
         <li><b>Username:</b> {{ doctor_user.username }}</li>
+
     </ul>
-    <ul class="list-unstyled">
-    </ul>
+
+    <h3>Hospitals</h3>
+        {% for h in hospitals%}
+            <ul class="list-unstyled">
+                <li>{{ h.name }}</li>
+                <li>{{ h.get_address_str }}</li>
+            </ul>
+        {% endfor %}
+
     </div>
 
     <div style="float: right; width: 50%; padding-right: 50px;">

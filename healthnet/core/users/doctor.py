@@ -13,3 +13,6 @@ class Doctor(User):
 
     def get_patients(self):
         return Patient.objects.filter(doctors=self)
+
+    def get_hospitals(self):
+        return self.hospitals.all().order_by('name')

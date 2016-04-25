@@ -702,7 +702,8 @@ def edit_doctor_info(request, pk=None):
     context = {
         'show_name': show_name,
         'doctor_user': user,
-        'edit_info': form
+        'edit_info': form,
+        'hospitals': u.get_hospitals()
     }
     return user.render_for_user(request, 'edit_doctor_info.html', context)
 

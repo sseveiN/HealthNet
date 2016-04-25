@@ -14,10 +14,12 @@
         <li><b>Full Name:</b> {{ nurse_user.get_full_name }}</li>
         <li><b>Username:</b> {{ nurse_user.username }}</li>
     </ul>
-    <ul class="list-unstyled">
-        <li><b>Hospital:</b> {% if hospital %}{{ hospital }}{% else %}None{% endif %}</li>
 
-    </ul>
+    <h3>Hospital</h3>
+            <ul class="list-unstyled">
+                <li>{{ hospital.name }}</li>
+                <li>{{ hospital.get_address_str }}</li>
+            </ul>
     </div>
 
     <div style="float: right; width: 50%; padding-right: 50px;">
