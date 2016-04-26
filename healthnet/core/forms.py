@@ -249,7 +249,7 @@ class DoctorRegistrationForm(forms.ModelForm):
     Form to register a doctor
     """
 
-    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'))
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
@@ -271,7 +271,7 @@ class DoctorRegistrationForm(forms.ModelForm):
 
 class EditDoctorInfoForm(forms.ModelForm):
 
-    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'))
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
     m2m_field = 'hospitals'
     m2m_fields = []
     class Meta:
