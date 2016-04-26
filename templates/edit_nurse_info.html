@@ -8,33 +8,34 @@
 
     {% if show_name %}<h1>{{ nurse_user.get_full_name }} Info</h1>{% endif %}
 
-    <div style="float: left; width: 50%; padding-right: 50px;">
-    <h3>Basic Info</h3>
-    <ul class="list-unstyled">
-        <li><b>Full Name:</b> {{ nurse_user.get_full_name }}</li>
-        <li><b>Username:</b> {{ nurse_user.username }}</li>
-    </ul>
+    <div class="row">
+        <div class="col-md-6">
+            <h3>Basic Info</h3>
+            <ul class="list-unstyled">
+                <li><b>Full Name:</b> {{ nurse_user.get_full_name }}</li>
+                <li><b>Username:</b> {{ nurse_user.username }}</li>
+            </ul>
 
-    <h3>Hospital</h3>
+            <h3>Hospital</h3>
             <ul class="list-unstyled">
                 <li>{{ hospital.name }}</li>
                 <li>{{ hospital.get_address_str }}</li>
             </ul>
-    </div>
+        </div>
 
-    <div style="float: right; width: 50%; padding-right: 50px;">
+        <div class="col-md-6">
+            <h3>Update Info</h3>
 
-    <h3>Update Info</h3>
-
-    <form action="" method="post" class="form">
-        {% csrf_token %}
-        {% bootstrap_form edit_info %}
-        {% buttons %}
-            <button type="submit" class="btn btn-primary">
-                {% bootstrap_icon "save-file" %} Update
-            </button>
-        {% endbuttons %}
-    </form>
+            <form action="" method="post" class="form">
+                {% csrf_token %}
+                {% bootstrap_form edit_info %}
+                {% buttons %}
+                    <button type="submit" class="btn btn-primary">
+                        {% bootstrap_icon "save-file" %} Update
+                    </button>
+                {% endbuttons %}
+            </form>
+        </div>
     </div>
 
 {% endblock content %}
