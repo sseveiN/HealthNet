@@ -5,7 +5,7 @@ from io import StringIO
 import django
 from django.core import management
 from django.core.management import BaseCommand
-from django.db import connection
+from django.db import connection, transaction
 
 from healthnet.core.users.user import User, UserType
 from django.contrib.auth.models import User as SuperUser
@@ -71,8 +71,10 @@ class Command(BaseCommand):
         buf = StringIO()
         management.call_command('sqlflush', interactive=False, stdout=buf)
 
-        for cmd in buf.getvalue().splitlines():
-            connection.cursor().execute(cmd.strip())
+        with connection.cursor() as c:
+            for cmd in buf.getvalue().splitlines():
+                c.execute(cmd.strip())
+                c.commit()
 
         # migrate
         management.call_command('makemigrations', interactive=False, stdout=None)
@@ -127,5 +129,6 @@ class Command(BaseCommand):
         admin.save()
         print("\n")
 
+        # Done
         self.print_ok("Install is complete.")
-        self.print_ok("You may now run 'python manage.py runserver'.")
+        self.print_ok("You may now run 'python manage.py runserver 8000'.")
