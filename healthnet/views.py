@@ -405,7 +405,7 @@ def transfer(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     # User can only transfer if they are nurse or doctor or admin
-    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) and not user.is_type(
+    if not user.is_type(UserType.Doctor) and not user.is_type(
             UserType.Administrator) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to transfer this patient!")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -878,7 +878,7 @@ def result(request, pk):
             'patient': user,
             'pk': pk
         }
-    elif user.is_type(UserType.Doctor):
+    elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
@@ -969,7 +969,7 @@ def prescription(request, pk):
             'patient': user,
             'pk': pk
         }
-    elif user.is_type(UserType.Doctor):
+    elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'prescriptions': Prescription.objects.filter(patient=patient).distinct(),
@@ -1077,7 +1077,7 @@ def view_profile(request, pk):
             'sex': patient.get_sex_str(),
             'hospital': patient.hospital
         }
-    elif user.is_type(UserType.Doctor):
+    elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'patient': patient,
