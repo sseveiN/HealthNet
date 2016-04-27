@@ -7,10 +7,13 @@ import json
 from datetime import date as date_type, datetime
 from datetime import datetime as datetime_type
 
-import dateutil
-
 
 class HealthNetImport(object):
+    """
+    Imports HealthNet data created by other implementations
+    of HealthNet.
+    """
+
     # This will map an arbitrary index to a real pk
     __pk_map = {
         'hospitals': {},
@@ -22,129 +25,18 @@ class HealthNetImport(object):
 
     data = None
 
-    """
-    Represents a function with the following args and types:
-        String name
-        String addr
-    Example:
-        def create_hospital(name, address):
-            # create the hospital object
-    """
+    # The create_* variables below represent functions that
+    # take the same arguments as their add_* counterparts in
+    # HealthNetExport, however they should return the pk of the
+    # object they created.
     create_hospital = None
-
-    """
-    Represents a function with the following args and types:
-        String username
-        String password_hash
-        String first_name
-        String middle_name
-        String last_name
-        String dob
-        String addr
-        String email
-        String phone
-        int primary_hospital_id
-        [int] hospital_ids
-    """
     create_admin = None
-
-    """
-    Represents a function with the following args and types:
-        String username
-        String password_hash
-        String first_name
-        String middle_name
-        String last_name
-        String dob
-        String addr
-        String email
-        String phone
-        [int] hospital_ids
-        [int] patient_ids
-    """
     create_doctor = None
-
-    """
-    Represents a function with the following args and types:
-        String username
-        String password_hash
-        String first_name
-        String middle_name
-        String last_name
-        String dob
-        String addr
-        String email
-        String phone
-        int primary_hospital_id
-        [int] doctor_ids
-    And returns the pk of the created object
-    """
     create_nurse = None
-
-    """
-    Represents a function with the following args and types:
-        String username
-        String password_hash
-        String first_name
-        String middle_name
-        String last_name
-        String dob
-        String addr
-        String email
-        String phone
-        String emergency_contact
-        String eye_color
-        String bloodtype
-        int height
-        int weight
-        int primary_hospital_id
-        int primary_doctor_id
-        [int] doctor_ids
-    And returns the pk of the created object
-    """
     create_patient = None
-
-    """
-    Represents a function with the following args and types:
-        String name
-        int dosage
-        String notes
-        int doctor_id
-        int patient_id
-    """
     create_prescription = None
-
-    """
-    Represents a function with the following args and types:
-        String name
-        String date
-        String description
-        String results
-        bool released
-        int doctor_id
-        int patient_id
-    """
     create_test = None
-
-    """
-    Represents a function with the following args and types:
-        String start_timestamp
-        String end_timestamp
-        String location
-        String description
-        [int] attendee_ids
-    """
     create_appointment = None
-
-    """
-        Represents a function with the following args and types:
-        int user_id
-        String request_method
-        bool request_secure
-        String request_addr
-        String description
-        int hospital_id
-    """
     create_log = None
 
     def __init__(self, json_data, create_hospital_func=None, create_admin_func=None, create_doctor_func=None,
@@ -164,6 +56,11 @@ class HealthNetImport(object):
 
     @staticmethod
     def __parse_date(timestr):
+        """
+        Parses an iso date to a datetime object
+        :param timestr: ISO 8061 formatted string
+        :return: Datetime object representation of the string
+        """
         return datetime.strptime(timestr, "%Y-%m-%dT%H:%M:%S")
 
     def import_all(self):
@@ -257,7 +154,7 @@ class HealthNetImport(object):
         for i in self.data['appointments']:
             self.create_appointment(start=self.__parse_date(i['start']), end=self.__parse_date(i['end']),
                                     location=i['location'], description=i['description'],
-                                    attendee_ids=i['attendee_ids'])
+                                    doctor_ids=i['doctor_ids'], nurse_ids=i['nurse_ids'], patient_ids=i['patient_ids'])
 
     def import_prescriptions(self):
         if self.create_prescription is None:
@@ -475,14 +372,16 @@ class HealthNetExport(object):
         }]
 
     def add_appointment(self, start: datetime_type, end: datetime_type, location: str, description: str,
-                        attendee_ids: list):
+                        doctor_ids: list, nurse_ids: list, patient_ids: list):
         """
         Add an appointment to be exported
         :param start: The start date of the appointment
         :param end: The end date of the appointment
         :param location: The physical location of the appointment
         :param description: A description of the appointment
-        :param attendee_ids: A list of ids of the attendees
+        :param doctor_ids: A list of ids of the doctors atteniding
+        :param nurse_ids: A list of ids of the nurses attending
+        :param patient_ids: A list of ids of the patients attending
         :return: None
         """
         self.__export_scheme['appointments'] += [{
@@ -490,10 +389,12 @@ class HealthNetExport(object):
             'end': end.isoformat(),
             'location': location,
             'description': description,
-            'attendee_ids': attendee_ids
+            'doctor_ids': doctor_ids,
+            'nurse_ids': nurse_ids,
+            'patient_ids': patient_ids
         }]
 
-    def add_prescriptions(self, name: str, dosage: int, notes: str, doctor_id: int, patient_id: int):
+    def add_prescription(self, name: str, dosage: int, notes: str, doctor_id: int, patient_id: int):
         """
         Add a prescription to be exported
         :param name: The name of the drug
@@ -602,23 +503,69 @@ class HealthNetExport(object):
             for j in range(len(output_schema['patients'][i]['doctor_ids'])):
                 self.set_pk_for_field_with_idx(output_schema, 'patients', i, 'doctors', 'doctor_ids', j)
 
+        # Appointment pk_map
+        for i in range(len(output_schema['appointments'])):
+            for j in range(len(output_schema['appointments'][i]['doctor_ids'])):
+                self.set_pk_for_field_with_idx(output_schema, 'appointments', i, 'doctors', 'doctor_ids', j)
+
+            for j in range(len(output_schema['appointments'][i]['patient_ids'])):
+                self.set_pk_for_field_with_idx(output_schema, 'appointments', i, 'patients', 'patient_ids', j)
+
+            for j in range(len(output_schema['appointments'][i]['nurse_ids'])):
+                self.set_pk_for_field_with_idx(output_schema, 'appointments', i, 'nurses', 'nurse_ids', j)
+
+        # Prescription pk_map
+        for i in range(len(output_schema['prescriptions'])):
+            self.set_pk_for_field(output_schema, 'prescriptions', i, 'patients', 'patient_id')
+            self.set_pk_for_field(output_schema, 'prescriptions', i, 'doctors', 'doctor_id')
+
+        # Tests pk_map
+        for i in range(len(output_schema['tests'])):
+            self.set_pk_for_field(output_schema, 'tests', i, 'patients', 'patient_id')
+            self.set_pk_for_field(output_schema, 'tests', i, 'doctors', 'doctor_id')
+
+        # Logs pk_map
+        for i in range(len(output_schema['log_entries'])):
+            self.set_pk_for_field(output_schema, 'log_entries', i, 'hospitals', 'hospital_id')
+
         # return the json string
         return json.dumps(output_schema)
 
     def set_pk_for_field_with_idx(self, schema_map, schema_key, schema_index, pk_key, key_to_replace, idx):
+        """
+        Maps a real pk to its arbitrary index in an array
+        :param schema_map: The schema map
+        :param schema_key: The key of the item in the schema
+        :param schema_index: The index of the item in the schema
+        :param pk_key: The key to look up the new pk in
+        :param key_to_replace: The key to replace the pk for
+        :param idx: The index of the item in the array
+        :return: None
+        """
         if schema_map[schema_key][schema_index][key_to_replace][idx] is None:
             return
 
         try:
-            schema_map[schema_key][schema_index][key_to_replace][idx] = self.__pk_map[pk_key][schema_map[schema_key][schema_index][key_to_replace][idx]]
-        except:
+            schema_map[schema_key][schema_index][key_to_replace][idx] = self.__pk_map[pk_key][
+                schema_map[schema_key][schema_index][key_to_replace][idx]]
+        except KeyError:
             pass
 
     def set_pk_for_field(self, schema_map, schema_key, schema_index, pk_key, key_to_replace):
+        """
+        Maps a real pk to its arbitrary index
+        :param schema_map: The schema map
+        :param schema_key: The key of the item in the schema
+        :param schema_index: The index of the item in the schema
+        :param pk_key: The key to look up the new pk in
+        :param key_to_replace: The key to replace the pk for
+        :return: None
+        """
         if schema_map[schema_key][schema_index][key_to_replace] is None:
             return
 
         try:
-            schema_map[schema_key][schema_index][key_to_replace] = self.__pk_map[pk_key][schema_map[schema_key][schema_index][key_to_replace]]
-        except:
+            schema_map[schema_key][schema_index][key_to_replace] = self.__pk_map[pk_key][
+                schema_map[schema_key][schema_index][key_to_replace]]
+        except KeyError:
             pass
