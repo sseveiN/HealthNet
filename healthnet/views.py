@@ -371,7 +371,7 @@ def toggle_admit(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     # User can only admit if they are nurse or doctor
-    if not user.is_type(UserType.Doctor) and not User.is_type(UserType.Nurse) or not user.has_patient(patient):
+    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to admit/discharge this patient!")
     else:
         # noinspection PyBroadException
