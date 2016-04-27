@@ -41,7 +41,8 @@ class Patient(User):
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True,
                                               unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
-    hospital = models.ForeignKey('Hospital', null=True, blank=True, default=None)
+
+    hospital = models.ForeignKey('Hospital', unique=False, blank=True, null=True)
     is_admitted = models.BooleanField(default=False)
 
     address_line_1 = models.CharField(max_length=255)

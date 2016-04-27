@@ -9,7 +9,8 @@ class Administrator(User):
     An Administrator
     """
     User.is_admin = models.BooleanField(default=True)
-    hospitals = models.ForeignKey('Hospital', null=True, blank=True)
+
+    hospital = models.ForeignKey('Hospital', unique=False, blank=True, null=True)
 
     def get_patients(self):
         return Patient.objects.all()

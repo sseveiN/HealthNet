@@ -371,7 +371,7 @@ def toggle_admit(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     # User can only admit if they are nurse or doctor
-    if not user.is_type(UserType.Doctor) and not User.is_type(UserType.Nurse) or not user.has_patient(patient):
+    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to admit/discharge this patient!")
     else:
         # noinspection PyBroadException
@@ -405,7 +405,7 @@ def transfer(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     # User can only transfer if they are nurse or doctor or admin
-    if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) and not user.is_type(
+    if not user.is_type(UserType.Doctor) and not user.is_type(
             UserType.Administrator) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to transfer this patient!")
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -624,7 +624,7 @@ def doctor_registration(request):
             new_doctor.is_doctor = True
             new_doctor.is_pending = True
             new_doctor.set_password(password)
-            new_doctor.nurses = registration_form.cleaned_data['nurses']
+            new_doctor.hospitals = registration_form.cleaned_data['hospitals']
             new_doctor.save()
             Logging.info("Doctor '%s' created" % username)
 
@@ -642,6 +642,7 @@ def doctor_registration(request):
     }
 
     return render(request, 'doctor_registration.html', context)
+
 
 def edit_doctor_info(request, pk=None):
     """
@@ -693,7 +694,7 @@ def edit_doctor_info(request, pk=None):
             messages.success(request, "Your profile information has been successfully saved!")
             # return redirect('dashboard')
 
-            return HttpResponseRedirect(reverse('index', kwargs={'pk': pk}))
+            return HttpResponseRedirect(reverse('edit_doctor_info', kwargs={'pk': primary_key}))
     else:
         u = Doctor.objects.get(pk=primary_key)
         form = EditDoctorInfoForm(instance=u)  # No request.POST
@@ -701,7 +702,8 @@ def edit_doctor_info(request, pk=None):
     context = {
         'show_name': show_name,
         'doctor_user': user,
-        'edit_info': form
+        'edit_info': form,
+        'hospitals': u.get_hospitals()
     }
     return user.render_for_user(request, 'edit_doctor_info.html', context)
 
@@ -731,7 +733,6 @@ def nurse_registration(request):
             new_nurse.is_nurse = True
             new_nurse.is_pending = True
             new_nurse.set_password(password)
-            new_nurse.doctors = registration_form.cleaned_data['doctors']
             new_nurse.save()
             Logging.info("Nurse '%s' created" % username)
 
@@ -801,7 +802,7 @@ def edit_nurse_info(request, pk=None):
             messages.success(request, "Your profile information has been successfully saved!")
             # return redirect('dashboard')
 
-            return HttpResponseRedirect(reverse('index', kwargs={'pk': pk}))
+            return HttpResponseRedirect(reverse('edit_nurse_info', kwargs={'pk': primary_key}))
     else:
         u = Nurse.objects.get(pk=primary_key)
         form = EditNurseInfoForm(instance=u)  # No request.POST
@@ -809,7 +810,8 @@ def edit_nurse_info(request, pk=None):
     context = {
         'show_name': show_name,
         'nurse_user': user,
-        'edit_info': form
+        'edit_info': form,
+        'hospital': u.hospital
     }
     return user.render_for_user(request, 'edit_nurse_info.html', context)
 
@@ -876,7 +878,7 @@ def result(request, pk):
             'patient': user,
             'pk': pk
         }
-    elif user.is_type(UserType.Doctor):
+    elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
@@ -967,7 +969,7 @@ def prescription(request, pk):
             'patient': user,
             'pk': pk
         }
-    elif user.is_type(UserType.Doctor):
+    elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'prescriptions': Prescription.objects.filter(patient=patient).distinct(),
@@ -1075,7 +1077,7 @@ def view_profile(request, pk):
             'sex': patient.get_sex_str(),
             'hospital': patient.hospital
         }
-    elif user.is_type(UserType.Doctor):
+    elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'patient': patient,

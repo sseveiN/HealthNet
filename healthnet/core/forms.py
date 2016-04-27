@@ -11,7 +11,7 @@ from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
-from healthnet.models import Appointment, Result, Prescription
+from healthnet.models import Appointment, Result, Prescription, Hospital
 
 
 class LoginForm(forms.Form):
@@ -37,7 +37,7 @@ class RegistrationForm(forms.ModelForm):
 
         fields = ['health_insurance_number', 'health_insurance_provider', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'home_phone', 'work_phone',
-                  'marital_status', 'primary_care_provider', 'doctors', 'height', 'weight',
+                  'marital_status', 'primary_care_provider', 'doctors', 'hospital', 'height', 'weight',
                   'cholesterol']
         exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
                    'records']
@@ -67,7 +67,7 @@ class EditPatientInfoForm(forms.ModelForm):
         model = Patient
         fields = ['health_insurance_number', 'home_phone', 'work_phone', 'marital_status',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'health_insurance_provider',
-                  'primary_care_provider', 'doctors', 'height', 'weight', 'cholesterol']
+                  'primary_care_provider', 'doctors', 'hospital', 'height', 'weight', 'cholesterol']
         exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions',
                    'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
 
@@ -248,6 +248,8 @@ class DoctorRegistrationForm(forms.ModelForm):
     """
     Form to register a doctor
     """
+
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
@@ -255,7 +257,7 @@ class DoctorRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Doctor
-        fields = ['username', 'password', 'first_name', 'last_name', 'nurses', 'hospitals']
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -265,43 +267,53 @@ class DoctorRegistrationForm(forms.ModelForm):
             :param kwargs:
             """
             super(DoctorRegistrationForm, self).__init__(*args, **kwargs)
-            self.fields['nurses'].required = False
-            self.fields['hospitals'].required = False
+
 
 class EditDoctorInfoForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput())
 
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
+    m2m_field = 'hospitals'
+    m2m_fields = []
     class Meta:
         """
         Metaclass
         """
         model = Doctor
-        fields = ['password', 'first_name', 'last_name', 'hospitals']
-        exclude = ['username', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments', 'nurses']
+        fields = ['first_name', 'last_name', 'hospitals']
+        exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
-        def __init__(self, *args, **kwargs):
-            """
-            Initialize the form
-            :param args:
-            :param kwargs:
-            """
+    def save(self, commit=True):
+        """
+        Saving m2m
+        """
+        instance = super(EditDoctorInfoForm, self).save(commit=True)
+        if self.m2m_field:
+            self.m2m_fields = [self.m2m_field]
 
-            super(EditDoctorInfoForm, self).__init__(*args, **kwargs)
-            self.fields['nurses'].required = False
-            self.fields['hospitals'].required = False
+        for field in self.m2m_fields:
+            m2mfield = getattr(instance, field)
+            for obj in self.cleaned_data.get(field):
+                m2mfield.add(obj)
+
+        if commit:
+            instance.save()
+            #self.save_m2m()
+
+        return instance
 
 class NurseRegistrationForm(forms.ModelForm):
     """
     Form to register a nurse
     """
     password = forms.CharField(widget=forms.PasswordInput())
+    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
 
     class Meta:
         """
         Meta class
         """
         model = Nurse
-        fields = ['username', 'password', 'first_name', 'last_name', 'doctors', 'hospitals']
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospital']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -311,19 +323,19 @@ class NurseRegistrationForm(forms.ModelForm):
             :param kwargs:
             """
             super(NurseRegistrationForm, self).__init__(*args, **kwargs)
-            self.fields['doctors'].required = False
-            self.fields['hospitals'].required = False
+
 
 class EditNurseInfoForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput())
+
+    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
 
     class Meta:
         """
         Metaclass
         """
         model = Nurse
-        fields = ['username', 'password', 'first_name', 'last_name', 'doctors', 'hospitals']
-        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+        fields = ['first_name', 'last_name', 'hospital']
+        exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
             """
@@ -332,8 +344,6 @@ class EditNurseInfoForm(forms.ModelForm):
             :param kwargs:
             """
             super(EditNurseInfoForm, self).__init__(*args, **kwargs)
-            self.fields['doctors'].required = False
-            self.fields['hospitals'].required = False
 
 
 class AdminRegistrationForm(forms.ModelForm):
@@ -347,8 +357,8 @@ class AdminRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Administrator
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']
-        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+        fields = ['username', 'password', 'first_name', 'last_name']
+        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments', 'hospital']
 
         def __init__(self, *args, **kwargs):
             """
@@ -357,7 +367,6 @@ class AdminRegistrationForm(forms.ModelForm):
             :param kwargs:
             """
             super(AdminRegistrationForm, self).__init__(*args, **kwargs)
-            self.fields['hospital'].required = False
 
 
 RegisterSelectType = EnumField('Patient', 'Doctor', 'Nurse', 'Administrator')
