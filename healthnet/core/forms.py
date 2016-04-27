@@ -250,6 +250,7 @@ class DoctorRegistrationForm(forms.ModelForm):
     """
 
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
+    nurses = forms.ModelMultipleChoiceField(queryset=Nurse.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
@@ -257,7 +258,7 @@ class DoctorRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Doctor
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals', 'nurses']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -272,14 +273,18 @@ class DoctorRegistrationForm(forms.ModelForm):
 class EditDoctorInfoForm(forms.ModelForm):
 
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
-    m2m_field = 'hospitals'
-    m2m_fields = []
+    nurses = forms.ModelMultipleChoiceField(queryset=Nurse.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
+
+    m2m_hospital= 'hospitals'
+    m2m_nurse = 'nurses'
+    m2m_hospitals = []
+    m2m_nurses = []
     class Meta:
         """
         Metaclass
         """
         model = Doctor
-        fields = ['first_name', 'last_name', 'hospitals']
+        fields = ['first_name', 'last_name', 'hospitals', 'nurses']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
     def save(self, commit=True):
@@ -287,10 +292,17 @@ class EditDoctorInfoForm(forms.ModelForm):
         Saving m2m
         """
         instance = super(EditDoctorInfoForm, self).save(commit=True)
-        if self.m2m_field:
-            self.m2m_fields = [self.m2m_field]
+        if self.m2m_hospital:
+            self.m2m_hospitals = [self.m2m_hospital]
+        if self.m2m_nurse:
+            self.m2m_nurses = [self.m2m_nurse]
 
-        for field in self.m2m_fields:
+        for field in self.m2m_hospitals:
+            m2mfield = getattr(instance, field)
+            for obj in self.cleaned_data.get(field):
+                m2mfield.add(obj)
+
+        for field in self.m2m_nurses:
             m2mfield = getattr(instance, field)
             for obj in self.cleaned_data.get(field):
                 m2mfield.add(obj)
@@ -307,13 +319,14 @@ class NurseRegistrationForm(forms.ModelForm):
     """
     password = forms.CharField(widget=forms.PasswordInput())
     hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
+    doctors = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
 
     class Meta:
         """
         Meta class
         """
         model = Nurse
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospital']
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospital', 'doctors']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -328,13 +341,17 @@ class NurseRegistrationForm(forms.ModelForm):
 class EditNurseInfoForm(forms.ModelForm):
 
     hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
+    doctors = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
+
+    m2m_doctor = 'doctors'
+    m2m_doctors = []
 
     class Meta:
         """
         Metaclass
         """
         model = Nurse
-        fields = ['first_name', 'last_name', 'hospital']
+        fields = ['first_name', 'last_name', 'hospital', 'doctors']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -344,6 +361,26 @@ class EditNurseInfoForm(forms.ModelForm):
             :param kwargs:
             """
             super(EditNurseInfoForm, self).__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        """
+        Saving m2m
+        """
+        instance = super(EditNurseInfoForm, self).save(commit=True)
+        if self.m2m_doctor:
+            self.m2m_doctors = [self.m2m_doctor]
+
+        for field in self.m2m_doctors:
+            m2mfield = getattr(instance, field)
+            for obj in self.cleaned_data.get(field):
+                m2mfield.add(obj)
+
+        if commit:
+            instance.save()
+            #self.save_m2m()
+
+        return instance
+
 
 
 class AdminRegistrationForm(forms.ModelForm):
