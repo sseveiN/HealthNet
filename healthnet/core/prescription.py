@@ -1,7 +1,6 @@
+import django
 from django.db import models
 
-from healthnet.core.users.doctor import Doctor
-from healthnet.core.users.patient import Patient
 from healthnet.models import States
 
 
@@ -9,8 +8,8 @@ class Prescription(models.Model):
     """
     Prescription Model
     """
-    patient = models.ForeignKey(Patient, unique=False, blank=True, null=True)
-    doctor = models.ForeignKey(Doctor, unique=False, blank=True, null=True)
+    patient = models.ForeignKey('Patient', unique=False, blank=True, null=True)
+    doctor = models.ForeignKey('Doctor', unique=False, blank=True, null=True)
 
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
@@ -19,6 +18,7 @@ class Prescription(models.Model):
     zipcode = models.CharField(max_length=5)
 
     name = models.CharField(max_length=255)
+    issue_date = models.DateField(default=django.utils.timezone.now())
     expiration_date = models.DateField()
     refills = models.IntegerField()
 

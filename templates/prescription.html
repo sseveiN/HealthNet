@@ -34,7 +34,7 @@
         <tbody>
 
         {% for p in prescriptions %}
-            <tr class="prescriptions-{{ p.get_level_str | lower }}">
+            <tr class="prescription">
                 <td align="center">{{ p.refills }}</td>
                 <td>{{ p.name }}</td>
                 <td>{{ p.expiration_date }}</td>

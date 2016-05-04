@@ -1,9 +1,10 @@
-from datetime import date
+from datetime import date, datetime, timedelta
 
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
+from healthnet.core.prescription import Prescription
 from healthnet.core.users.user import User
 from healthnet.models import States
 
@@ -44,6 +45,7 @@ class Patient(User):
 
     hospital = models.ForeignKey('Hospital', unique=False, blank=True, null=True)
     is_admitted = models.BooleanField(default=False)
+    last_admit_date = models.DateField(blank=True, null=True)
 
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
@@ -52,6 +54,16 @@ class Patient(User):
     zipcode = models.CharField(max_length=5)
 
     is_pending = False
+
+    # Statistics stuff
+    average_visit_length = models.IntegerField(default=0)  # seconds
+    visits = models.IntegerField(default=0)
+
+    def get_average_visit_length_str(self):
+        return timedelta(seconds=self.average_visit_length)
+
+    def get_prescriptions(self):
+        return Prescription.objects.filter(patient=self)
 
     def get_sex_str(self):
         return Gender.get_str(self.sex)
@@ -67,11 +79,27 @@ class Patient(User):
         today = date.today()
         return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
 
-    def toggle_admit(self):
-        self.is_admitted = not self.is_admitted
+    def toggle_admit(self, force=False):
+        self.is_admitted = not self.is_admitted or force
+
+        if self.is_admitted:
+            # Set last admitted date
+            self.last_admit_date = datetime.utcnow()
+
+            # Increment visits
+            self.visits += 1
+        else:
+            # Calculate average visit
+            if self.last_admit_date is not None:
+                self.average_visit_length += (datetime.utcnow() - self.last_admit_date).total_seconds()
+                self.average_visit_length /= 2
+
+            # Clear admit date
+            self.last_admit_date = None
+
         self.save()
 
     def transfer(self, hospital):
         self.hospital = hospital
-        self.is_admitted = True
+        self.toggle_admit(True)
         self.save()

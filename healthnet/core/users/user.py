@@ -79,12 +79,14 @@ class User(AbstractBaseUser):
             user = Administrator(username=username, first_name=first_name, last_name=last_name)
             user.is_admin = True
         elif usertype == UserType.Doctor:
+            from healthnet.core.users.doctor import Doctor
             user = Doctor(username=username, first_name=first_name, last_name=last_name)
             user.is_doctor = True
         elif usertype == UserType.Nurse:
             user = Nurse(username=username, first_name=first_name, last_name=last_name)
             user.is_nurse = True
         elif usertype == UserType.Patient:
+            from healthnet.core.users.patient import Patient
             user = Patient(username=username, first_name=first_name, last_name=last_name)
             user.is_patient = True
         else:
@@ -224,6 +226,10 @@ class User(AbstractBaseUser):
     def render_for_user(self, request, template, context):
         user_context = dict(context)
         user_context.update(self.get_view_context())
+
+        if self.is_type(UserType.Administrator):
+            user_context['admin_hospital'] = Administrator.objects.get(pk=self.pk).hospital.pk
+
         return render(request, template, user_context)
 
     def get_typed_patient(self):
@@ -302,6 +308,4 @@ class UserBackend(object):
 
 # Resolve cyclic dependencies
 from healthnet.core.users.administrator import Administrator
-from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
-from healthnet.core.users.patient import Patient

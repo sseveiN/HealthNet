@@ -53,6 +53,7 @@ urlpatterns = [
     url(r'^edit_nurse_info/', views.edit_nurse_info, name="edit_nurse_info"),
     url(r'^admin_registration/', views.admin_registration, name="admin_registration"),
     url(r'^view_profile/(?P<pk>\d+)/$', views.view_profile, name="view_profile"),
+    url(r'^statistics/(?P<pk>\d+)/$', views.statistics, name="statistics"),
     url(r'^register_choose/$', views.register_choose, name="register_choose"),
 
     # DEBUG

@@ -1,8 +1,7 @@
+import operator
+
 from django.db import models
 
-from healthnet.core.users.user import User
-from healthnet.core.users.administrator import Administrator
-from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
 
 from healthnet.models import States
@@ -19,6 +18,49 @@ class Hospital(models.Model):
     city = models.CharField(max_length=255)
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=5)
+
+    def get_patients(self):
+        """
+        Get all the patients in this hospital
+        :return: A list of patients in the hospital
+        """
+        return Patient.objects.filter(hospital=self)
+
+    def get_visits_and_length(self):
+        """
+        Get the average number of visits and the average visit length
+        :return: A tuple of the average number of visits and the length
+        """
+        pats = self.get_patients()
+        visits, length = [], []
+        for p in pats:
+            visits += [p.visits]
+            length += [p.average_visit_length]
+        return visits, length
+
+    def get_popular_prescriptions(self):
+        pats = self.get_patients().all()
+        names = {}
+        for pat in pats:
+            for p in pat.get_prescriptions():
+                if p.name not in names:
+                    names[p.name] = 0
+                names[p.name] += 1
+        return sorted(names.items(), key=operator.itemgetter(1))
+
+    def get_average_prescription_length(self):
+        pats = self.get_patients().all()
+        sum = 0
+        count = 0
+        for pat in pats:
+            for p in pat.get_prescriptions():
+                sum += (p.expiration_date - p.issue_date).total_seconds()
+                count += 1
+
+        if count == 0:
+            return 0
+
+        return sum / count
 
     def has_user(self, user):
         for u in self.patient_set.all():

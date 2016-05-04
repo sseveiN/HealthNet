@@ -6,7 +6,9 @@
                 {% include "fragments/message_navigation.html" %}
             {% else %}
                 {% if request.session.current_user_is_admin %}
-                    <li><a href="{% url 'views.log' %}">Activity Log</a></li>{% endif %}
+                    <li><a href="{% url 'views.log' %}">Activity Log</a></li>
+                    <li><a href="{% url 'views.statistics' admin_hospital %}">Hospital Statistics</a></li>
+                {% endif %}
                 {% if request.session.current_user_is_patient or request.session.current_user_is_doctor or request.session.current_user_is_nurse %}
                     <li><a href="{% url 'views.appointment' %}">Create Appointment</a></li>{% endif %}
             {% endif %}

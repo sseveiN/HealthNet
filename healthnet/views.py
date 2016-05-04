@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from django.contrib import messages
@@ -8,9 +9,11 @@ from django.shortcuts import render, redirect
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
     ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, \
     AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType, EditNurseInfoForm, EditDoctorInfoForm
+from healthnet.core.hospital import Hospital
 from healthnet.core.logging import LogEntry
 from healthnet.core.logging import Logging
 from healthnet.core.messages import Message, MessageType
+from healthnet.core.users.administrator import Administrator
 from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
@@ -887,9 +890,55 @@ def result(request, pk):
             'pk': pk
         }
     else:
-        return HttpResponse("Access Denied!")
+        return redirect('index')
 
     return user.render_for_user(request, 'result.html', context)
+
+
+def statistics(request, pk):
+    """
+    Shows statistics for a hospital
+    :param request: The HTTP request
+    :param pk: The pk of the hospital
+    :return: The view to render
+    """
+    user = User.get_logged_in(request)
+
+    if user is None:
+        return redirect('index')
+
+    if not user.is_type(UserType.Administrator):
+        return redirect('index')
+
+    user = Administrator.objects.get(pk=user.pk)
+    hospital = Hospital.objects.get(pk=pk)
+
+    if user.hospital.pk != hospital.pk:
+        messages.error(request, "You don't have permission to view statistics about this hospital")
+        return redirect('index')
+
+    patients = hospital.get_patients()
+    visits, length = hospital.get_visits_and_length()
+    popular_scripts = hospital.get_popular_prescriptions()
+
+    # Bar graph prescription name and number scripts
+        # Average Prescription length
+    # Bar graph, patients vs admitted
+    # Scatter average visit and length for all patients
+    # Table of patient specifics
+    context = {
+        'number_patients': patients.count(),
+        'average_visits': visits,
+        'average_visit_length': length,
+        'num_patients_discharged': patients.filter(is_admitted=False).count(),
+        'num_patients_admitted': patients.filter(is_admitted=True).count(),
+        'patients': patients,
+        'popular_scripts_names_json': json.dumps([p[0] for p in popular_scripts[:5]]),
+        'popular_scripts_values_json': json.dumps([p[1] for p in popular_scripts[:5]]),
+        'average_script_length': hospital.get_average_prescription_length()
+    }
+
+    return user.render_for_user(request, 'statistics.html', context)
 
 
 def release_test_result(request, pk):
