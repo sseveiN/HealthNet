@@ -37,7 +37,7 @@ class RegistrationForm(forms.ModelForm):
 
         fields = ['health_insurance_number', 'health_insurance_provider', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'home_phone', 'work_phone',
-                  'marital_status', 'primary_care_provider', 'doctors', 'hospital', 'height', 'weight',
+                  'marital_status', 'primary_care_provider', 'hospital', 'height', 'weight',
                   'cholesterol']
         exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
                    'records']
@@ -52,7 +52,7 @@ class RegistrationForm(forms.ModelForm):
 
         self.fields['height'].label = 'Height (in)'
         self.fields['weight'].label = 'Weight (lb)'
-        self.fields['cholesterol'].label = 'Weight (mg/dL)'
+        self.fields['cholesterol'].label = 'Cholesterol (mg/dL)'
         self.fields['dob'].label = "Date of Birth"
 
 
@@ -67,7 +67,7 @@ class EditPatientInfoForm(forms.ModelForm):
         model = Patient
         fields = ['health_insurance_number', 'home_phone', 'work_phone', 'marital_status',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'health_insurance_provider',
-                  'primary_care_provider', 'doctors', 'hospital', 'height', 'weight', 'cholesterol']
+                  'primary_care_provider', 'hospital', 'height', 'weight', 'cholesterol']
         exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions',
                    'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login', 'records']
 
@@ -250,7 +250,6 @@ class DoctorRegistrationForm(forms.ModelForm):
     """
 
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
-    nurses = forms.ModelMultipleChoiceField(queryset=Nurse.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
@@ -258,7 +257,7 @@ class DoctorRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Doctor
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals', 'nurses']
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -273,18 +272,18 @@ class DoctorRegistrationForm(forms.ModelForm):
 class EditDoctorInfoForm(forms.ModelForm):
 
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
-    nurses = forms.ModelMultipleChoiceField(queryset=Nurse.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
 
     m2m_hospital= 'hospitals'
-    m2m_nurse = 'nurses'
     m2m_hospitals = []
     m2m_nurses = []
+
+
     class Meta:
         """
         Metaclass
         """
         model = Doctor
-        fields = ['first_name', 'last_name', 'hospitals', 'nurses']
+        fields = ['first_name', 'last_name', 'hospitals']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
     def save(self, commit=True):
@@ -294,24 +293,17 @@ class EditDoctorInfoForm(forms.ModelForm):
         instance = super(EditDoctorInfoForm, self).save(commit=True)
         if self.m2m_hospital:
             self.m2m_hospitals = [self.m2m_hospital]
-        if self.m2m_nurse:
-            self.m2m_nurses = [self.m2m_nurse]
 
         for field in self.m2m_hospitals:
             m2mfield = getattr(instance, field)
             for obj in self.cleaned_data.get(field):
                 m2mfield.add(obj)
 
-        for field in self.m2m_nurses:
-            m2mfield = getattr(instance, field)
-            for obj in self.cleaned_data.get(field):
-                m2mfield.add(obj)
-
         if commit:
             instance.save()
-            #self.save_m2m()
 
         return instance
+
 
 class NurseRegistrationForm(forms.ModelForm):
     """
@@ -319,14 +311,13 @@ class NurseRegistrationForm(forms.ModelForm):
     """
     password = forms.CharField(widget=forms.PasswordInput())
     hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
-    doctors = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
 
     class Meta:
         """
         Meta class
         """
         model = Nurse
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospital', 'doctors']
+        fields = ['username', 'password', 'first_name', 'last_name', 'hospital']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -341,17 +332,13 @@ class NurseRegistrationForm(forms.ModelForm):
 class EditNurseInfoForm(forms.ModelForm):
 
     hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
-    doctors = forms.ModelMultipleChoiceField(queryset=Doctor.objects.all().order_by('first_name'), widget=forms.CheckboxSelectMultiple, required=False)
-
-    m2m_doctor = 'doctors'
-    m2m_doctors = []
 
     class Meta:
         """
         Metaclass
         """
         model = Nurse
-        fields = ['first_name', 'last_name', 'hospital', 'doctors']
+        fields = ['first_name', 'last_name', 'hospital']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -367,20 +354,11 @@ class EditNurseInfoForm(forms.ModelForm):
         Saving m2m
         """
         instance = super(EditNurseInfoForm, self).save(commit=True)
-        if self.m2m_doctor:
-            self.m2m_doctors = [self.m2m_doctor]
-
-        for field in self.m2m_doctors:
-            m2mfield = getattr(instance, field)
-            for obj in self.cleaned_data.get(field):
-                m2mfield.add(obj)
 
         if commit:
             instance.save()
-            #self.save_m2m()
 
         return instance
-
 
 
 class AdminRegistrationForm(forms.ModelForm):

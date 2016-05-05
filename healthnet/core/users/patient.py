@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 
+import django
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
 
@@ -36,16 +37,15 @@ class Patient(User):
     health_insurance_provider = models.CharField(max_length=30, blank=True,
                                                  null=True)  # All the provider codes ive seen are 5 + 10 numbers
     health_insurance_number = models.CharField(max_length=12,
-                                               unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}\d{11}$',
-                                                                                       message='Health insurance number must be 11 numbers beginging with one letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
-    doctors = models.ManyToManyField('Doctor', blank=True)
+                                               unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
+                                                                                       message='Health insurance alphanumeric begining with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True,
                                               unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
 
     hospital = models.ForeignKey('Hospital', unique=False, blank=True, null=True)
     is_admitted = models.BooleanField(default=False)
-    last_admit_date = models.DateField(blank=True, null=True)
+    last_admit_date = models.DateTimeField(blank=True, null=True)
 
     address_line_1 = models.CharField(max_length=255)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
@@ -84,14 +84,14 @@ class Patient(User):
 
         if self.is_admitted:
             # Set last admitted date
-            self.last_admit_date = datetime.utcnow()
+            self.last_admit_date = django.utils.timezone.now()
 
             # Increment visits
             self.visits += 1
         else:
             # Calculate average visit
             if self.last_admit_date is not None:
-                self.average_visit_length += (datetime.utcnow() - self.last_admit_date).total_seconds()
+                self.average_visit_length += (django.utils.timezone.now() - self.last_admit_date).total_seconds()
                 self.average_visit_length /= 2
 
             # Clear admit date

@@ -234,15 +234,19 @@ class User(AbstractBaseUser):
 
     def get_typed_patient(self):
         if self.is_type(UserType.Patient):
+            from healthnet.core.users.patient import Patient
             return Patient.objects.get(username=self.username)
 
         if self.is_type(UserType.Doctor):
+            from healthnet.core.users.doctor import Doctor
             return Doctor.objects.get(username=self.username)
 
         if self.is_type(UserType.Nurse):
+            from healthnet.core.users.nurse import Nurse
             return Nurse.objects.get(username=self.username)
 
         if self.is_type(UserType.Administrator):
+            from healthnet.core.users.administrator import Administrator
             return Administrator.objects.get(username=self.username)
 
         return self
@@ -253,6 +257,7 @@ class User(AbstractBaseUser):
         return []
 
     def has_patient(self, patient):
+        from healthnet.core.users.patient import Patient
         if type(patient) == User or type(patient) == Patient:
             patient = patient.pk
 

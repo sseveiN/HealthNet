@@ -378,15 +378,15 @@ def toggle_admit(request, pk):
         messages.error(request, "You aren't allowed to admit/discharge this patient!")
     else:
         # noinspection PyBroadException
-        try:
-            patient.toggle_admit()
-            Logging.info("'%s' admittance status changed to '%s' by '%s'" % (
-                patient.username, str(patient.is_admitted), user.username))
-            messages.success(request,
-                             "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
-        except:
-            messages.error(request, "There was an error %s this patient!" % (
-                'admitting' if patient.is_admitted else 'discharging'))
+        # try:
+        patient.toggle_admit()
+        Logging.info("'%s' admittance status changed to '%s' by '%s'" % (
+            patient.username, str(patient.is_admitted), user.username))
+        messages.success(request,
+                         "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
+        # except:
+        #     messages.error(request, "There was an error %s this patient!" % (
+        #         'admitting' if patient.is_admitted else 'discharging'))
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
