@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import django
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
@@ -43,7 +44,7 @@ class Logging(object):
         :param level: level of the log
         :param msg: message being logged
         """
-        time = datetime.now()
+        time = django.utils.timezone.now()
         entry = LogEntry(message=msg, level=level, datetime=time)
         if print_stdout:
             print('%s: [%s] %s' % (entry.datetime.strftime("%Y-%m-%d %H:%M"), entry.get_level_display(), entry.message))

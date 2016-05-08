@@ -16,6 +16,7 @@ class Result(models.Model):
     release_date = models.DateField(blank=True, null=True)
     description = models.CharField(max_length=255)
     is_released = models.BooleanField(default=False)
+    file = models.FileField(upload_to='results', blank=True, null=True)
 
     # def create_result(doctor):
     #    time = datetime.now()

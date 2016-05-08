@@ -10,7 +10,7 @@ from healthnet.core.users.user import User
 from healthnet.models import States
 
 Gender = EnumField('Male', 'Female', 'Unspecified')
-MaritalStatus = EnumField('Married', 'LivingCommonLaw', 'Widowed', 'Separated', 'Divorced', 'Single', 'Unspecified')
+MaritalStatus = EnumField('Married', 'Living Common Law', 'Widowed', 'Separated', 'Divorced', 'Single', 'Unspecified')
 
 
 class Patient(User):
@@ -39,11 +39,10 @@ class Patient(User):
     health_insurance_number = models.CharField(max_length=12,
                                                unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
                                                                                        message='Health insurance alphanumeric begining with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
-    primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", blank=True, null=True,
-                                              unique=False)
+    primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
 
-    hospital = models.ForeignKey('Hospital', unique=False, blank=True, null=True)
+    hospital = models.ForeignKey('Hospital', unique=False)
     is_admitted = models.BooleanField(default=False)
     last_admit_date = models.DateTimeField(blank=True, null=True)
 
@@ -61,6 +60,9 @@ class Patient(User):
 
     def get_average_visit_length_str(self):
         return timedelta(seconds=self.average_visit_length)
+
+    def get_hospitals(self):
+        return [self.hospital]
 
     def get_prescriptions(self):
         return Prescription.objects.filter(patient=self)

@@ -13,7 +13,9 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url
+from django.conf.urls.static import static
 from django.contrib import admin
 
 from healthnet import views
@@ -61,4 +63,4 @@ urlpatterns = [
     url(r'^debug/create_admin_user', views.create_admin_user, name="create_admin_user"),
     url(r'^debug/create_test_doctor', views.create_test_doctor, name="create_test_doctor"),
     url(r'^debug/create_test_nurse', views.create_test_nurse, name="create_test_nurse"),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

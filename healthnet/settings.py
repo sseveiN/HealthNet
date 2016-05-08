@@ -30,6 +30,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+MEDIA_URL = '/uploads/'
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 INSTALLED_APPS = [

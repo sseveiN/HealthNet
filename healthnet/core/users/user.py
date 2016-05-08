@@ -37,6 +37,7 @@ class User(AbstractBaseUser):
     The user class inherited by other user types
     """
     username = models.CharField(max_length=25, null=False, unique=True)
+    email = models.EmailField()
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
 
@@ -44,6 +45,9 @@ class User(AbstractBaseUser):
     is_doctor = models.BooleanField(default=False)
     is_patient = models.BooleanField(default=False)
     is_nurse = models.BooleanField(default=False)
+
+    # This should ALWAYS be false, only to be compatible with django admin
+    is_staff = models.BooleanField(default=False)
 
     is_pending = models.BooleanField(default=True)
 
@@ -232,7 +236,7 @@ class User(AbstractBaseUser):
 
         return render(request, template, user_context)
 
-    def get_typed_patient(self):
+    def get_typed_user(self):
         if self.is_type(UserType.Patient):
             from healthnet.core.users.patient import Patient
             return Patient.objects.get(username=self.username)
@@ -253,7 +257,7 @@ class User(AbstractBaseUser):
 
     def get_patients(self):
         if self.is_type(UserType.Doctor) or self.is_type(UserType.Nurse) or self.is_type(UserType.Administrator):
-            return self.get_typed_patient().get_patients()
+            return self.get_typed_user().get_patients()
         return []
 
     def has_patient(self, patient):

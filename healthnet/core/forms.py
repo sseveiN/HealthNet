@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import django
 from django import forms
 from django.forms import SelectDateWidget
 from django.http import request
@@ -27,7 +28,8 @@ class RegistrationForm(forms.ModelForm):
     Form for registration
     """
     password = forms.CharField(widget=forms.PasswordInput)
-    dob = forms.DateField(widget=SelectDateWidget(years=range(datetime.now().year, datetime.now().year - 110, -1)))
+    dob = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
+    primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())
 
     class Meta:
         """
@@ -35,7 +37,7 @@ class RegistrationForm(forms.ModelForm):
         """
         model = Patient
 
-        fields = ['health_insurance_number', 'health_insurance_provider', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
+        fields = ['health_insurance_number', 'health_insurance_provider', 'email', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'home_phone', 'work_phone',
                   'marital_status', 'primary_care_provider', 'hospital', 'height', 'weight',
                   'cholesterol']
@@ -57,6 +59,8 @@ class RegistrationForm(forms.ModelForm):
 
 
 class EditPatientInfoForm(forms.ModelForm):
+    primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())
+
     """
     Form to edit patient info
     """
@@ -65,7 +69,7 @@ class EditPatientInfoForm(forms.ModelForm):
         Meta class
         """
         model = Patient
-        fields = ['health_insurance_number', 'home_phone', 'work_phone', 'marital_status',
+        fields = ['health_insurance_number', 'email', 'home_phone', 'work_phone', 'marital_status',
                   'address_line_1', 'address_line_2', 'city', 'state', 'zipcode', 'health_insurance_provider',
                   'primary_care_provider', 'hospital', 'height', 'weight', 'cholesterol']
         exclude = ['username', 'password', 'first_name', 'last_name', 'dob', 'sex', 'age', 'prescriptions',
@@ -114,6 +118,7 @@ class AppointmentForm(forms.ModelForm):
         self.fields['tend'].help_text = "Format Example: 10/25/06 14:30"
 
         self.fields['attendees'].queryset = User.objects.exclude(pk=self.creator.pk)
+        self.fields['creator'] = self.creator
 
     @staticmethod
     def edit_appointment(pk):
@@ -132,7 +137,7 @@ class ResultForm(forms.ModelForm):
     """
     The form to create a result
     """
-    test_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
+    test_date = forms.DateField(widget=forms.SelectDateWidget, initial=django.utils.timezone.now())
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -150,13 +155,14 @@ class ResultForm(forms.ModelForm):
         :param kwargs: initial kwarguments
         """
         super(ResultForm, self).__init__(*args, **kwargs)
+        self.fields['file'].label = "Test Files"
 
 
 class PrescriptionForm(forms.ModelForm):
     """
     The form to create a prescription
     """
-    expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=datetime.now())
+    expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=django.utils.timezone.now())
     description = forms.CharField(widget=forms.Textarea)
     zipcode = forms.IntegerField(widget=forms.NumberInput)
     refills = forms.IntegerField(widget=forms.NumberInput, min_value=0)
@@ -257,7 +263,7 @@ class DoctorRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Doctor
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospitals']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'hospitals']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -273,7 +279,7 @@ class EditDoctorInfoForm(forms.ModelForm):
 
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
 
-    m2m_hospital= 'hospitals'
+    m2m_hospital = 'hospitals'
     m2m_hospitals = []
     m2m_nurses = []
 
@@ -283,7 +289,7 @@ class EditDoctorInfoForm(forms.ModelForm):
         Metaclass
         """
         model = Doctor
-        fields = ['first_name', 'last_name', 'hospitals']
+        fields = ['email', 'first_name', 'last_name', 'hospitals']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
     def save(self, commit=True):
@@ -317,7 +323,7 @@ class NurseRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Nurse
-        fields = ['username', 'password', 'first_name', 'last_name', 'hospital']
+        fields = ['email', 'username', 'password', 'first_name', 'last_name', 'hospital']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -338,7 +344,7 @@ class EditNurseInfoForm(forms.ModelForm):
         Metaclass
         """
         model = Nurse
-        fields = ['first_name', 'last_name', 'hospital']
+        fields = ['email', 'first_name', 'last_name', 'hospital']
         exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
@@ -372,7 +378,7 @@ class AdminRegistrationForm(forms.ModelForm):
         Meta class
         """
         model = Administrator
-        fields = ['username', 'password', 'first_name', 'last_name']
+        fields = ['email', 'username', 'password', 'first_name', 'last_name']
         exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments', 'hospital']
 
         def __init__(self, *args, **kwargs):

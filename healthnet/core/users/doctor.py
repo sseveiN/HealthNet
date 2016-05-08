@@ -15,4 +15,8 @@ class Doctor(User):
         return Patient.objects.filter(primary_care_provider=self)
 
     def get_hospitals(self):
-        return self.hospitals.all().order_by('name')
+        return self.hospitals.all()
+
+    @staticmethod
+    def get_approved():
+        return Doctor.objects.filter(is_pending=False)

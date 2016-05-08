@@ -11,7 +11,7 @@
 
 {% block content %}
     {% load bootstrap3 %}
-    <form method="post" action=".">
+    <form enctype="multipart/form-data" method="post" action=".">
         {% csrf_token %}
         {% bootstrap_form result_form %}
         {% buttons %}

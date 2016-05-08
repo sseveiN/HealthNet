@@ -81,11 +81,15 @@ def dashboard(request):
     if user.is_type(UserType.Administrator):
         pending = User.objects.filter(is_pending=True)
 
+    patients = user.get_patients()
+    if user.is_type(UserType.Doctor):
+        patients = Patient.objects.all()
+
     context = {
         'appointments': appointments,
         'appointments_json': appointments_json,
         'username': request.user.username,
-        'patients': user.get_patients(),
+        'patients': patients,
         'pending_users': pending
     }
 
@@ -231,7 +235,7 @@ def edit_info(request, pk=None):
             profile.user = request.user
             profile.save()
             messages.success(request, "Your profile information has been successfully saved!")
-            # return redirect('dashboard')
+            Logging.warning('%s updated patient info for %s' %(user, u))
 
             return HttpResponseRedirect(reverse('view_profile', kwargs={'pk': primary_key}))
     else:
@@ -333,20 +337,20 @@ def edit_appointment(request, pk):
         messages.error(request, "You aren't allowed to cancel this appointment!")
     else:
         if request.method == 'POST':
-            form = AppointmentForm(request.POST, instance=apt)
+            form = AppointmentForm(request.POST, instance=apt, creator=apt.creator)
 
             if form.is_valid():  # is_valid is function not property
                 new_apt = form.save(commit=False)
                 if new_apt.has_conflict():
                     messages.error(request, "There is a conflict with the selected times!")
-                    form = AppointmentForm(instance=apt)
+                    form = AppointmentForm(instance=apt, creator=apt.creator)
                     apt.save()
                 else:
                     new_apt.save()
                     Logging.info("Appointment with pk '%s' edited by '%s" % (apt.pk, user.username))
                     return redirect('dashboard')
         else:
-            form = AppointmentForm(instance=apt)  # No request.POST
+            form = AppointmentForm(instance=apt, creator=apt.creator)  # No request.POST
 
         # move it outside of else
         context = {
@@ -414,16 +418,16 @@ def transfer(request, pk):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
         if request.method == 'POST':
-            form = TransferForm(request.POST, transferer=user)
+            form = TransferForm(request.POST, transferer=user.get_typed_user())
 
             if form.is_valid():
                 patient.transfer(form.cleaned_data['transfer_to'])
-                Logging.info("Patient '%s' has been transfered to '%s' hospital by user '%s'." % (
+                Logging.info("Patient '%s' has been transferred to '%s' hospital by user '%s'." % (
                     str(patient), str(form.cleaned_data['transfer_to']), str(user)))
                 messages.success(request, "The patient has been transferred!")
                 return redirect('dashboard')
         else:
-            form = TransferForm(transferer=user)
+            form = TransferForm(transferer=user.get_typed_user())
 
         context = {
             'current_hospital': str(patient.get_hospitals()[0]) if len(patient.get_hospitals()) > 0 else None,
@@ -980,7 +984,7 @@ def create_test_result(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        result_form = ResultForm(request.POST, initial={'doctor': doctor, 'patient': patient})
+        result_form = ResultForm(request.POST, request.FILES, initial={'doctor': doctor, 'patient': patient})
 
         if result_form.is_valid() and user.is_type(UserType.Doctor):
             new_result = result_form.save()
@@ -1126,6 +1130,7 @@ def view_profile(request, pk):
             'sex': patient.get_sex_str(),
             'hospital': patient.hospital
         }
+        Logging.info('%s viewed the profile information of %s' % (user, patient))
     elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {

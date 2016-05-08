@@ -148,6 +148,7 @@ class Appointment(models.Model):
     tstart = models.DateTimeField()
     tend = models.DateTimeField()
     attendees = models.ManyToManyField(User)
+    creator = models.ForeignKey(User, related_name="created_appointments")
 
     def has_conflict(self):
         """
