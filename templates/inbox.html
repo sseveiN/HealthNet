@@ -15,7 +15,7 @@
                         class="label label-default message-type {{ msg.get_type_str | lower }}">{{ msg.get_type_str }}</span>
                 </p>
                 {% else %}
-                    <p class="message-from"><b>SYSTEM NOTIFICATION</b> from {{ msg.date | naturaltime }}</p>
+                    <p class="message-from"><b>SYSTEM NOTIFICATION</b> received {{ msg.date | naturaltime }}</p>
                 {% endif %}
                 <p class="message-content">{{ msg.get_html | safe }}</p>
                 <div class="message-links">{% if is_sent %}{% else %}

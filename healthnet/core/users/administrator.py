@@ -16,7 +16,8 @@ class Administrator(User):
         return Appointment.objects.filter(pk=None)
 
     def get_hospitals(self):
-        return [self.hospital]
+        from healthnet.core.hospital import Hospital
+        return Hospital.objects.filter(pk=self.hospital.pk)
 
     def get_patients(self):
         from healthnet.core.users.patient import Patient
@@ -28,5 +29,5 @@ class Administrator(User):
 
     def get_doctors(self):
         from healthnet.core.users.doctor import Doctor
-        return Doctor.objects.filter(hospital=self.hospital)
+        return Doctor.objects.filter(hospitals=self.hospital)
 

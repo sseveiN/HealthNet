@@ -124,9 +124,6 @@ class AppointmentForm(forms.ModelForm):
         if not self.is_doctor:
             self.fields['tstart'].widget = forms.HiddenInput()
             self.fields['tend'].widget = forms.HiddenInput()
-            self.fields['start'].attrs['readonly'] = True
-            self.fields['tend'].attrs['readonly'] = True
-
 
     @staticmethod
     def edit_appointment(pk):
