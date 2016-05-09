@@ -22,7 +22,7 @@
       <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url "views.create_prescription" pk %}">Create New</a></li>
       <li role="presentation" class="divider"></li>
         {% for p in pmenu %}
-            <li role="presentation"><a role="menuitem" tabindex="-1" href="#">{{ p.name }}</a></li>
+            <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url "views.create_prescription" pk p.name %}">{{ p.name }}</a></li>
         {% endfor %}
     </ul>{% endif %}</div>
 
