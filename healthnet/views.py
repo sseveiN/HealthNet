@@ -3,6 +3,7 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 
@@ -105,22 +106,37 @@ def appointment(request):
                 what they need to fix
     """
     user = User.get_logged_in(request)
-    primary_key = user.pk
+
+    if user is None:
+        return redirect('index')
+
+    if user.is_type(UserType.Patient):
+        attendees = Doctor.objects.filter(pk=user.get_typed_user().primary_care_provider.pk)
+    elif user.is_type(UserType.Doctor):
+        attendees = user.get_typed_user().get_patients()
+    elif user.is_type(UserType.Nurse):
+        attendees = user.get_typed_user().get_attendee_queryset()
+    else:
+        messages.error(request, "You are not allowed to create appointments!")
+        return HttpResponseRedirect('/dashboard')
 
     if request.method == 'POST':
-        appointment_form = AppointmentForm(request.POST, creator=user)
+        appointment_form = AppointmentForm(request.POST, attendees=attendees)
 
         if appointment_form.is_valid():
             name = appointment_form.cleaned_data['name']
 
-            appointment_form = AppointmentForm(request.POST, creator=user)
+            appointment_form = AppointmentForm(request.POST, attendees=attendees)
+
+            if not user.is_type(UserType.Nurse):
+                appointment_form.attendees.add(user)
+
+            appointment_form.creator = user
             new_apt = appointment_form.save()
-            me = User.objects.get(pk=primary_key)
-            new_apt.attendees.add(me)
 
             if new_apt.has_conflict():
                 messages.error(request, "There is a conflict with the selected times!")
-                appointment_form = AppointmentForm(request.POST, creator=user)
+                appointment_form = AppointmentForm(request.POST, attendees=attendees)
                 new_apt.delete()
             else:
                 new_apt.save()
@@ -129,7 +145,7 @@ def appointment(request):
         else:
             print('invalid')
     else:
-        appointment_form = AppointmentForm(creator=user)
+        appointment_form = AppointmentForm(attendees=attendees)
 
     context = {
         'appointment_form': appointment_form
@@ -888,7 +904,7 @@ def result(request, pk):
         patient = Patient.objects.get(pk=pk)
         context = {
             'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
-            'unreleased_test_results': Result.objects.filter(doctor=user, is_released=False).distinct(),
+            'unreleased_test_results': Result.objects.filter(patient=patient, is_released=False).distinct(),
             'patient': patient,
             'pk': pk
         }

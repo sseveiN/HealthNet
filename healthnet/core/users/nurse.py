@@ -13,3 +13,14 @@ class Nurse(User):
     def get_patients(self):
         from healthnet.core.users.patient import Patient
         return Patient.objects.filter(hospital=self.hospital)
+
+    def get_attendee_queryset(self):
+        a = None
+        for d in self.hospital.get_doctors():
+            if a is None:
+                a = User.objects.filter(pk=d.pk)
+            else:
+                a |= User.objects.filter(pk=d.pk)
+            for p in d.get_patients():
+                a |= User.objects.filter(pk=p.pk)
+        return a
