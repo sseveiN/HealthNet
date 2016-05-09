@@ -3,15 +3,14 @@ from datetime import datetime
 from django.db import models
 
 from healthnet.core.users.doctor import Doctor
-from healthnet.core.users.patient import Patient
 
 
 class Result(models.Model):
     """
     Test Result Model
     """
-    patient = models.ForeignKey(Patient, unique=False, blank=True, null=True)
-    doctor = models.ForeignKey(Doctor, unique=False, blank=True, null=True)
+    patient = models.ForeignKey('Patient', unique=False, blank=True, null=True)
+    doctor = models.ForeignKey('Doctor', unique=False, blank=True, null=True)
     test_date = models.DateField()
     test_type = models.CharField(max_length=255)
     release_date = models.DateField(blank=True, null=True)

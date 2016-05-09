@@ -62,6 +62,7 @@ urlpatterns = [
     url(r'^view_profile/(?P<pk>\d+)/$', views.view_profile, name="view_profile"),
     url(r'^statistics/(?P<pk>\d+)/(?P<start>\d{2}-\d{2}-\d{4})/(?P<end>\d{2}-\d{2}-\d{4})$', views.statistics, name="statistics"),
     url(r'^statistics/(?P<pk>\d+)/$', views.statistics, name="statistics"),
+    url(r'^export/$', views.export, name="export"),
     url(r'^register_choose/$', views.register_choose, name="register_choose"),
 
     # DEBUG

@@ -3,7 +3,6 @@
 {% block title %} Activity Log {% endblock title %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css"/>
 {% endblock css %}
 
 {% block content %}
@@ -92,7 +91,7 @@
                     borderWidth: 1,
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
-                    data: [{{ num_patients_admitted }}, {{ num_patients_discharged }}, {{ number_paitents }}]
+                    data: [{{ num_patients_admitted }}, {{ num_patients_discharged }}, {{ number_patients }}]
                 }
             ]
         },

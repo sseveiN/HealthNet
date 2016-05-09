@@ -457,6 +457,35 @@ def log(request, start=None, end=None):
     return user.render_for_user(request, 'log.html', context)
 
 
+def export(request, start=None, end=None):
+    """
+    User tries to access the log
+    :param end: The log end date
+    :param start: The log start date
+    :param request: request to access the log
+    :return: If User is noone, they go to the index page
+                If they are not an admin, they get denined
+                If they are an admin, they got to the log page
+    """
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Check user type
+    if not user.is_type(UserType.Patient):
+        return redirect('dashboard')
+
+    patient = user.get_typed_user()
+
+    context = {
+        'time': datetime.now(),
+        'patient': patient
+    }
+
+    return render(request, 'export_patient.html', context)
+
 def cancel_appointment(request, pk):
     """
     User tries to cancel an appointment

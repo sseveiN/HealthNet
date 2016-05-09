@@ -5,8 +5,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
-from healthnet.core.messages import Message, MessageType
 from healthnet.core.prescription import Prescription
+from healthnet.core.result import Result
 from healthnet.core.users.user import User
 from healthnet.models import States
 
@@ -58,6 +58,9 @@ class Patient(User):
     # Statistics stuff
     average_visit_length = models.IntegerField(default=0)  # seconds
     visits = models.IntegerField(default=0)
+
+    def get_test_results(self, released=True):
+        return Result.objects.filter(patient=self, is_released=released)
 
     def get_average_visit_length_str(self):
         return timedelta(seconds=self.average_visit_length)

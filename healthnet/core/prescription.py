@@ -25,7 +25,6 @@ class Prescription(models.Model):
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=5)
 
-
     def get_address_str(self):
         """
         Get the string representation of an address
