@@ -11,12 +11,15 @@
 
 {% block content %}
     {% load bootstrap3 %}
-    <form method="post" action=".">
+
+    <form action="" method="post" class="form">
         {% csrf_token %}
         {% bootstrap_form appointment_form %}
-        <button type="submit" class="btn btn-primary">
-            {% bootstrap_icon "plus" %} Create Appointment
-        </button>
+        {% buttons %}
+            <button type="submit" class="btn btn-primary">
+                {% bootstrap_icon "plus" %} Create Appointment
+            </button>
+        {% endbuttons %}
     </form>
 {% endblock content %}
 

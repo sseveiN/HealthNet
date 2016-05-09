@@ -92,7 +92,7 @@ class AppointmentForm(forms.ModelForm):
     """
     Form to create an appointment
     """
-    attendees = forms.ModelMultipleChoiceField(queryset=None)
+    attendees = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -101,6 +101,7 @@ class AppointmentForm(forms.ModelForm):
         """
         model = Appointment
         fields = '__all__'
+        exclude = ['creator']
 
     def __init__(self, *args, **kwargs):
         """
@@ -108,7 +109,7 @@ class AppointmentForm(forms.ModelForm):
         :param args: initial arguments
         :param kwargs: initial kwarguments
         """
-        self.creator = kwargs.pop('creator')
+        self.attendees = kwargs.pop('attendees')
 
         super(AppointmentForm, self).__init__(*args, **kwargs)
 
@@ -117,8 +118,7 @@ class AppointmentForm(forms.ModelForm):
         self.fields['tstart'].help_text = "Format Example: 10/25/06 11:30"
         self.fields['tend'].help_text = "Format Example: 10/25/06 14:30"
 
-        self.fields['attendees'].queryset = User.objects.exclude(pk=self.creator.pk)
-        self.fields['creator'] = self.creator
+        self.fields['attendees'].queryset = self.attendees
 
     @staticmethod
     def edit_appointment(pk):

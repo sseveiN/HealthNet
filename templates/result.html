@@ -29,13 +29,19 @@
         </tr>
         </thead>
         <tbody>
-        {% if request.session.current_user_is_doctor %}
+        {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse %}
             {% for result in unreleased_test_results %}
                 <tr class="unreleased-test">
                     <td>{{ result.pk }}</td>
-                    <td><a href="{% url "views.release_test_result" result.pk %}">
+                    <td>
+                        {% if request.session.current_user_is_doctor %}
+                        <a href="{% url "views.release_test_result" result.pk %}">
                         <button type="button" class="btn btn-warning btn-xs">Release</button>
-                    </a></td>
+                        </a>
+                        {% else %}
+                        Unreleased
+                        {% endif %}
+                    </td>
                     <td>{{ result.test_date }}</td>
                     <td>{{ result.description }}</td>
                     <td>{% if result.file %}<a href="{{ result.file.url }}"><span class="glyphicon glyphicon-download-alt"></span></a>{% endif %}</td>

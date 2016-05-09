@@ -19,6 +19,10 @@ class Hospital(models.Model):
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=5)
 
+    def get_doctors(self):
+        from healthnet.core.users.doctor import Doctor
+        return Doctor.objects.filter(hospitals=self)
+
     def get_patients(self):
         """
         Get all the patients in this hospital
