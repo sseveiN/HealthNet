@@ -4,6 +4,7 @@ import django
 from django import forms
 from django.forms import SelectDateWidget
 from django.http import request
+from django.core.validators import RegexValidator
 
 from healthnet.core.enumfield import EnumField
 from healthnet.core.messages import MessageType
@@ -23,18 +24,41 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput())
 
 
+class RequiredRegistrationForm(forms.Form):
+    """
+    Form for required information of the patient
+    """
+
+    health_id = forms.CharField(max_length=12, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
+                                                                                       message='Health insurance alphanumeric beginning with a letter.')])
+    email = forms.EmailField()
+    username = forms.CharField(max_length=25)
+    password = forms.CharField(widget=forms.PasswordInput())
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50)
+    dob = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
+    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all(), empty_label=None)
+    """pcp = forms.ModelChoiceField(queryset=Doctor.objects.filter(hospitals = hospital), empty_label=None)
+    """
+class RegistrationForm(forms.Form):
+
+    pcp = forms.ModelChoiceField(queryset=Doctor.objects.none(), empty_label=None)
+
+
+
+"""
 class RegistrationForm(forms.ModelForm):
-    """
-    Form for registration
-    """
+
+    Form for patient registration
+
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
     primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())
 
     class Meta:
-        """
+
         Meta class
-        """
+
         model = Patient
 
         fields = ['health_insurance_number', 'health_insurance_provider', 'email', 'username', 'password', 'first_name', 'last_name', 'dob', 'sex',
@@ -42,14 +66,14 @@ class RegistrationForm(forms.ModelForm):
                   'marital_status', 'primary_care_provider', 'hospital', 'height', 'weight',
                   'cholesterol']
         exclude = ['prescriptions', 'appointments', 'is_admin', 'is_doctor', 'is_patient', 'is_nurse', 'last_login',
-                   'records']
+                   'records', 'health_insurance_provider', 'sex', 'address_line_1', 'address_line_2', 'city', 'state', 'zipcode']
 
     def __init__(self, *args, **kwargs):
-        """
+
         Initialize the form
         :param args: initial arguments
         :param kwargs: initial kwarguments
-        """
+
         super(RegistrationForm, self).__init__(*args, **kwargs)
 
         self.fields['height'].label = 'Height (in)'
@@ -57,6 +81,8 @@ class RegistrationForm(forms.ModelForm):
         self.fields['cholesterol'].label = 'Cholesterol (mg/dL)'
         self.fields['dob'].label = "Date of Birth"
 
+
+"""
 
 class EditPatientInfoForm(forms.ModelForm):
     primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())

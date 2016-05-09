@@ -39,7 +39,7 @@ class Patient(User):
                                                  null=True)  # All the provider codes ive seen are 5 + 10 numbers
     health_insurance_number = models.CharField(max_length=12,
                                                unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
-                                                                                       message='Health insurance alphanumeric begining with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
+                                                                                       message='Health insurance alphanumeric beginning with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
 
@@ -52,6 +52,11 @@ class Patient(User):
     city = models.CharField(max_length=255, blank=True)
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=5,blank=True)
+
+    next_of_kin = models.CharField(max_length=255, blank=True)
+    emergency_contact_name = models.CharField(max_length=255, blank=True)
+    emergency_contact_number = models.CharField(max_length=255, blank=True)
+
 
     is_pending = False
 
