@@ -77,17 +77,19 @@ class Calendar(models.Model):
         :param desc: description of appointment
         :param start: start time
         :param end: end time
-        :return: apt: appointment object
+        :return: conflict, apt: whether or not there was a conflict, appointment object
         """
+
+        if Calendar.has_conflict(attendees, start, end):
+            return True, 'Appointment could not be created because there was a conflict.'
+
         apt = Appointment.objects.create(name=name, description=desc, creator=creator, tstart=start, tend=end)
         apt.attendees = attendees
-        if Calendar.has_conflict(attendees, start, end):
-            return False, 'Appointment could not be created because there was a conflict.'
         apt.save()
 
         Logging.info("Created appointment with pk '%s'" % str(apt.pk))
 
-        return True, apt
+        return False, apt
 
     @staticmethod
     def update_appointment(appointment, attendees=None, name=None, desc=None, start=None, end=None):

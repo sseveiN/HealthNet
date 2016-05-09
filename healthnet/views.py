@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 
 from django.contrib import messages
+from django.contrib.humanize.templatetags import humanize
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
@@ -189,18 +190,18 @@ def create_appointment_3(request):
                 attendees |= User.objects.filter(pk=user.pk)
 
             conflicting, apt = Calendar.create_appointment(
-                attendees,
-                user,
-                name,
-                appointment_form.cleaned_data['description'],
-                tstart,
-                tstart + timedelta(minutes=30)
+                    attendees,
+                    user,
+                    name,
+                    appointment_form.cleaned_data['description'],
+                    tstart,
+                    tstart + timedelta(minutes=30)
             )
 
             appointment_form.creator = user
 
             if conflicting:
-                messages.error(request, "There is a conflict with the selected times!")
+                messages.error(request, apt)
                 appointment_form = AppointmentThree(request.POST)
             else:
                 del request.session['create_appointment_attendees']
@@ -208,6 +209,11 @@ def create_appointment_3(request):
 
                 messages.success(request, "Your appointment has been created")
                 Logging.info("Created appointment '%s'" % name)
+
+                for a in attendees:
+                    a.notify("A new appointment has been created for you.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
+                                    apt.name, apt.description, apt.tstart, apt.tend))
+
                 return redirect('dashboard')
     else:
         appointment_form = AppointmentThree()
@@ -219,6 +225,8 @@ def create_appointment_3(request):
     }
 
     return user.render_for_user(request, 'appointment.html', context)
+
+
 #
 #
 # def appointment(request):
@@ -491,7 +499,8 @@ def edit_appointment(request, pk):
         messages.error(request, "You aren't allowed to cancel this appointment!")
     else:
         if request.method == 'POST':
-            form = AppointmentForm(request.POST, instance=apt, attendees=attendees, is_doctor=user.is_type(UserType.Doctor))
+            form = AppointmentForm(request.POST, instance=apt, attendees=attendees,
+                                   is_doctor=user.is_type(UserType.Doctor))
 
             if form.is_valid():  # is_valid is function not property
                 new_apt = form.save(commit=False)
@@ -502,9 +511,17 @@ def edit_appointment(request, pk):
                 else:
                     new_apt.save()
                     Logging.info("Appointment with pk '%s' edited by '%s" % (apt.pk, user.username))
+                    messages.success(request, 'Your appointment has been updated')
+
+                    for a in apt.attendees:
+                        a.notify(
+                                "An appointment you are attending has been updated.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
+                                    apt.name, apt.description, apt.tstart, apt.tend))
+
                     return redirect('dashboard')
         else:
-            form = AppointmentForm(instance=apt, attendees=attendees, is_doctor=user.is_type(UserType.Doctor))  # No request.POST
+            form = AppointmentForm(instance=apt, attendees=attendees,
+                                   is_doctor=user.is_type(UserType.Doctor))  # No request.POST
 
         # move it outside of else
         context = {
@@ -657,6 +674,10 @@ def send_message(request, pk=None):
     if user is None:
         return redirect('index')
 
+    if user.is_type(UserType.Patient):
+        messages.error(request, "You're not allowed to send messages.")
+        return redirect('inbox')
+
     if request.method == 'POST':
         form = SendMessageForm(request.POST, sender=user, initial={'recipient': pk, 'type': MessageType.Normal})
 
@@ -687,8 +708,18 @@ def reply_message(request, pk):
     if user is None:
         return redirect('index')
 
+    # check isn't patient
+    if user.is_type(UserType.Patient):
+        messages.error(request, "You're not allowed to send messages.")
+        return redirect('inbox')
+
     # Get message based on pk argument
     msg = Message.objects.get(pk=pk)
+
+    # Check not trying to reply to notification
+    if msg.is_notification:
+        messages.error(request, "You can't reply to a notification.")
+        return redirect('inbox')
 
     # check user can see this message
     if msg.recipient_id is not user.pk:
@@ -1117,6 +1148,7 @@ def release_test_result(request, pk):
         r = Result.objects.get(pk=pk)
         r.release_result()
         Logging.info('%s released a test with description \'%s\' for %s' % (user, r.description, r.patient))
+        r.patient.notify("A new test result was released for you by %s." % user)
         messages.success(request, "The result was successfully released!")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -1146,6 +1178,10 @@ def create_test_result(request, pk):
             new_result.patient = patient
             new_result.save()
             messages.success(request, "The new test results were successfully saved!")
+
+            if new_result.is_released:
+                new_result.patient.notify("A new test result was released for you by %s." % doctor)
+
             return HttpResponseRedirect(reverse('result', kwargs={'pk': pk}))
         else:
             print('invalid')
@@ -1207,7 +1243,10 @@ def create_prescription(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode})
+        prescription_form = PrescriptionForm(
+                initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
+                         'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
+                         'zipcode': patient.zipcode})
 
         if prescription_form.is_valid() and user.is_type(UserType.Doctor):
             new = prescription_form.save()
@@ -1215,13 +1254,15 @@ def create_prescription(request, pk):
             new.patient = patient
             new.save()
             Logging.warning("%s has created a %s prescription expiring on %s for %s" % (
-            doctor, new.name, new.expiration_date, patient))
+                doctor, new.name, new.expiration_date, patient))
             messages.success(request, "The prescription was successfully created!")
+            patient.notify("A new prescription for %s was issued to you by %s." % (new.name, new.doctor))
             return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
-        else:
-            print('invalid')
     else:
-        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode})
+        prescription_form = PrescriptionForm(
+                initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
+                         'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
+                         'zipcode': patient.zipcode})
 
     context = {
         'prescription_form': prescription_form
