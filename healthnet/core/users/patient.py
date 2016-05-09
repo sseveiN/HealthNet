@@ -46,11 +46,11 @@ class Patient(User):
     is_admitted = models.BooleanField(default=False)
     last_admit_date = models.DateTimeField(blank=True, null=True)
 
-    address_line_1 = models.CharField(max_length=255)
+    address_line_1 = models.CharField(max_length=255,blank=True)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
-    city = models.CharField(max_length=255)
+    city = models.CharField(max_length=255, blank=True)
     state = models.IntegerField(choices=States.get_choices())
-    zipcode = models.CharField(max_length=5)
+    zipcode = models.CharField(max_length=5,blank=True)
 
     is_pending = False
 

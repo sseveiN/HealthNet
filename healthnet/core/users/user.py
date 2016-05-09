@@ -232,7 +232,8 @@ class User(AbstractBaseUser):
         user_context.update(self.get_view_context())
 
         if self.is_type(UserType.Administrator):
-            user_context['admin_hospital'] = Administrator.objects.get(pk=self.pk).hospital.pk
+            if Administrator.objects.get(pk=self.pk).hospital is not None:
+                user_context['admin_hospital'] = Administrator.objects.get(pk=self.pk).hospital.pk
 
         return render(request, template, user_context)
 
