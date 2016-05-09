@@ -20,10 +20,11 @@
     <span class="caret"></span></button>
     <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
       <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url "views.create_prescription" pk %}">Create New</a></li>
-      <li role="presentation" class="divider"></li>
+      {% if pmenu %}
+        <li role="presentation" class="divider"></li>
         {% for p in pmenu %}
             <li role="presentation"><a role="menuitem" tabindex="-1" href="{% url "views.create_prescription" pk p.name %}">{{ p.name }}</a></li>
-        {% endfor %}
+        {% endfor %}{% endif %}
     </ul>{% endif %}</div>
 
     <br />
@@ -74,7 +75,11 @@
                     null {% if request.session.current_user_is_doctor %}, {
                         "bSortable": false,
                         "sWidth": '3em'
-                    }{% endif %}
+                    }{% endif %}{% if request.session.current_user_is_patient %}, {
+                         "bSortable": false,
+                        "sWidth": '8em'
+                    }
+                {% endif %}
                 ],
                 "order": [[1, "desc"]],
                 "iDisplayLength": 25

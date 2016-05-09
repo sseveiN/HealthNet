@@ -163,6 +163,9 @@ class PrescriptionForm(forms.ModelForm):
     The form to create a prescription
     """
     expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=django.utils.timezone.now())
+
+    issue_date = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)), initial=django.utils.timezone.now())
+
     description = forms.CharField(widget=forms.Textarea)
     zipcode = forms.IntegerField(widget=forms.NumberInput)
     refills = forms.IntegerField(widget=forms.NumberInput, min_value=0)

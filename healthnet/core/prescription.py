@@ -8,6 +8,14 @@ class Prescription(models.Model):
     """
     Prescription Model
     """
+
+    name = models.CharField(max_length=255)
+    issue_date = models.DateField(default=django.utils.timezone.now())
+    expiration_date = models.DateField()
+    refills = models.IntegerField()
+
+    description = models.CharField(max_length=255)
+
     patient = models.ForeignKey('Patient', unique=False, blank=True, null=True)
     doctor = models.ForeignKey('Doctor', unique=False, blank=True, null=True)
 
@@ -17,12 +25,6 @@ class Prescription(models.Model):
     state = models.IntegerField(choices=States.get_choices())
     zipcode = models.CharField(max_length=5)
 
-    name = models.CharField(max_length=255)
-    issue_date = models.DateField(default=django.utils.timezone.now())
-    expiration_date = models.DateField()
-    refills = models.IntegerField()
-
-    description = models.CharField(max_length=255)
 
     def get_address_str(self):
         """
