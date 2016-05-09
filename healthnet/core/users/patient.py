@@ -5,6 +5,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
+from healthnet.core.messages import Message, MessageType
 from healthnet.core.prescription import Prescription
 from healthnet.core.users.user import User
 from healthnet.models import States

@@ -265,6 +265,9 @@ class User(AbstractBaseUser):
         return []
 
     def has_patient(self, patient):
+        if patient.primary_care_provider.pk == self.pk:
+            return True
+
         from healthnet.core.users.patient import Patient
         if type(patient) == User or type(patient) == Patient:
             patient = patient.pk
@@ -273,6 +276,12 @@ class User(AbstractBaseUser):
             if patient == p.pk:
                 return True
         return False
+
+    def notify(self, msg):
+        from healthnet.core.messages import Message, MessageType
+        msg = Message.send(self, self, msg, MessageType.Normal)
+        msg.is_notification = True
+        msg.save()
 
     def approve(self):
         self.is_pending = False

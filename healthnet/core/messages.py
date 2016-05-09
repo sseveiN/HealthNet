@@ -18,6 +18,7 @@ class Message(models.Model):
     text = models.TextField()
     previous_message = models.ForeignKey('Message', blank=True, null=True)
     is_read = models.BooleanField(default=False)
+    is_notification = models.BooleanField(default=False)
     date = models.DateTimeField(auto_now_add=True, blank=True)
 
     def get_html(self):
