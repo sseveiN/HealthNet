@@ -302,7 +302,6 @@ def registration(request):
             new_patient.is_patient = True
             new_patient.is_pending = False
             new_patient.set_password(password)
-            new_patient.doctors = registration_form.cleaned_data['doctors']
             new_patient.save()
             Logging.info("User '%s' created" % username)
 
@@ -1174,6 +1173,7 @@ def prescription(request, pk):
     if user.is_type(UserType.Patient):
         context = {
             'prescriptions': Prescription.objects.filter(patient=user).distinct(),
+            'pmenu': Prescription.objects.order_by().values('name').distinct(),
             'patient': user,
             'pk': pk
         }
@@ -1181,6 +1181,7 @@ def prescription(request, pk):
         patient = Patient.objects.get(pk=pk)
         context = {
             'prescriptions': Prescription.objects.filter(patient=patient).distinct(),
+            'pmenu': Prescription.objects.order_by().values('name').distinct(),
             'patient': patient,
             'pk': pk
         }
@@ -1206,7 +1207,7 @@ def create_prescription(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        prescription_form = PrescriptionForm(request.POST, initial={'doctor': doctor, 'patient': patient})
+        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode})
 
         if prescription_form.is_valid() and user.is_type(UserType.Doctor):
             new = prescription_form.save()
@@ -1220,7 +1221,7 @@ def create_prescription(request, pk):
         else:
             print('invalid')
     else:
-        prescription_form = PrescriptionForm(initial={'doctor': Doctor.objects.get(username=user.username)})
+        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode})
 
     context = {
         'prescription_form': prescription_form

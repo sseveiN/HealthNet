@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^edit_appointment/(?P<pk>\d+)/', views.edit_appointment, name="edit_appointment"),
     url(r'^release_test_result/(?P<pk>\d+)/', views.release_test_result, name="release_test_result"),
     url(r'^create_test_result/(?P<pk>\d+)/', views.create_test_result, name="create_test_result"),
+    url(r'^create_prescription/(?P<pk>\d+)/(?P<id>[\w\-]+)/', views.create_prescription, name="create_prescription"),
     url(r'^create_prescription/(?P<pk>\d+)/', views.create_prescription, name="create_prescription"),
     url(r'^toggle_admit/(?P<pk>\d+)/$', views.toggle_admit, name="toggle_admit"),
     url(r'^transfer/(?P<pk>\d+)/$', views.transfer, name="transfer"),
