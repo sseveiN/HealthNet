@@ -256,12 +256,18 @@ class User(AbstractBaseUser):
 
         return self
 
+    def get_appointments(self):
+        return self.get_typed_user().get_appointments()
+
     def get_patients(self):
         if self.is_type(UserType.Doctor) or self.is_type(UserType.Nurse) or self.is_type(UserType.Administrator):
             return self.get_typed_user().get_patients()
         return []
 
     def has_patient(self, patient):
+        if patient.primary_care_provider.pk == self.pk:
+            return True
+
         from healthnet.core.users.patient import Patient
         if type(patient) == User or type(patient) == Patient:
             patient = patient.pk
@@ -270,6 +276,12 @@ class User(AbstractBaseUser):
             if patient == p.pk:
                 return True
         return False
+
+    def notify(self, msg):
+        from healthnet.core.messages import Message, MessageType
+        msg = Message.send(self, self, msg, MessageType.Normal)
+        msg.is_notification = True
+        msg.save()
 
     def approve(self):
         self.is_pending = False

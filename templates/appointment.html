@@ -2,32 +2,110 @@
 
 {% load staticfiles %}
 
-{% block title %} Appointment {% endblock title %}
+{% block title %} Create Appointment {% endblock title %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{% static "css/main.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "css/fullcalendar.css" %}"/>
+    <style type="text/css">
+        .fc-event {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAS0lEQVQYV2NkgIL/DAz/GRkYGEFcZDYSH1UChyJGRiJMAtsCJvBYh+wUnG5CcS+K1egmIzsLbjU+RVANmG7E5kGMcMMVCjiDBz08ARKOPAXWrSXPAAAAAElFTkSuQmCC);
+            background-color: white;
+            color: transparent;
+            border: none;
+        }
+    </style>
 {% endblock css %}
 
 
 {% block content %}
     {% load bootstrap3 %}
+    <h1>Create Appointment - Step {{ step }} of {{ total_steps }}</h1>
+
+    {% if step == 2 %}
+        <br/>
+        <p><b>When do you want the appointment to be?</b></p>
+        <p><b>Selected Time:</b> <span class="date_string">None</span></p>
+        <br/>
+        <div id="calendar"></div>
+    {% endif %}
 
     <form action="" method="post" class="form">
         {% csrf_token %}
         {% bootstrap_form appointment_form %}
         {% buttons %}
             <button type="submit" class="btn btn-primary">
-                {% bootstrap_icon "plus" %} Create Appointment
+                {% if step == total_steps %}
+                    {% bootstrap_icon "plus" %} Create Appointment
+                {% else %}
+                     {% bootstrap_icon "arrow-right" %} Next
+                {% endif %}
             </button>
         {% endbuttons %}
     </form>
+
+    {% if step == 2 %}
+        <div id="selected-modal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Appointment Time Selected</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>
+                            <h3 class="text-success">You selected the following appointment time:</h3>
+                            <b class="date_string">None</b>
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Ok</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
 {% endblock content %}
 
 {% block scripts %}
-    <script type="text/javascript">
-        $(function () {
-            $('#id_tstart').datetimepicker();
-            $('#id_tend').datetimepicker();
+    {% if step == 2 %}
+        <script type="text/javascript" src="http://fullcalendar.io/js/fullcalendar-2.6.1/fullcalendar.min.js"></script>
+        <script type="text/javascript" src="http://momentjs.com/downloads/moment.min.js"></script>
+
+        <script type="text/javascript">
+        $(document).ready(function () {
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: ' agendaWeek,agendaDay'
+                },
+                defaultView: 'agendaWeek',
+                events: {{ appointments | safe }},
+                eventLimit: false,
+                dayClick: function(date, jsEvent, view) {
+                    if(view.name == 'month') {
+                        alert('Please select from week or day view.')
+                        return;
+                    }
+
+                    var date_str = date.format();
+                    var pretty_date_str = moment(date_str).format('dddd, MMMM D YYYY h:mm A');
+                    $("#id_time").val(date_str);
+                    $(".date_string").text(pretty_date_str);
+                    $("#selected-modal").modal('show');
+                }
+            });
+
+            $('.fc-button-group').removeClass().addClass('btn-group');
+            $('.fc-button').removeClass().addClass('btn');
         });
-    </script>
+        </script>
+    {% endif %}
+{#    <script type="text/javascript">#}
+{#        $(function () {#}
+{#            $('#id_tstart').datetimepicker();#}
+{#            $('#id_tend').datetimepicker();#}
+{#        });#}
+{#    </script>#}
 {% endblock %}

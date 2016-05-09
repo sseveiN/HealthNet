@@ -9,14 +9,18 @@
         {% if not msgs %}<p>You have no {% if is_sent %}sent {% endif %}messages.</p>{% endif %}
         {% for msg in msgs %}
             <li class="message {% if is_sent %}{% else %}{{ msg.get_read_status_str }}{% endif %}">
+                {% if not msg.is_notification %}
                 <p class="message-from">from <b>{{ msg.sender }}</b> {% if is_sent %}to
                     <b>{{ msg.recipient }} </b>{% endif %}{{ msg.date | naturaltime }} <span
                         class="label label-default message-type {{ msg.get_type_str | lower }}">{{ msg.get_type_str }}</span>
                 </p>
+                {% else %}
+                    <p class="message-from"><b>SYSTEM NOTIFICATION</b> from {{ msg.date | naturaltime }}</p>
+                {% endif %}
                 <p class="message-content">{{ msg.get_html | safe }}</p>
                 <div class="message-links">{% if is_sent %}{% else %}
-                    <a href="{% url 'toggle_read' msg.pk %}">mark as {{ msg.get_read_status_str_inv }}</a>{% endif %} <a
-                        href="{% url 'reply_message' msg.pk %}">reply</a></div>
+                    <a href="{% url 'toggle_read' msg.pk %}">mark as {{ msg.get_read_status_str_inv }}</a>{% endif %}
+                    {% if  not request.session.current_user_is_patient and not msg.is_notification %}<a href="{% url 'reply_message' msg.pk %}">reply</a></div>{% endif %}
             </li>
         {% endfor %}
     </ul>

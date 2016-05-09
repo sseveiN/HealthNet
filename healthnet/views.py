@@ -1,15 +1,16 @@
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib import messages
+from django.contrib.humanize.templatetags import humanize
 from django.core.urlresolvers import reverse
-from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
     ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, \
-    AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType, EditNurseInfoForm, EditDoctorInfoForm
+    AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType, EditNurseInfoForm, EditDoctorInfoForm, \
+    AppointmentOne, AppointmentTwo, AppointmentThree
 from healthnet.core.hospital import Hospital
 from healthnet.core.logging import LogEntry
 from healthnet.core.logging import Logging
@@ -97,60 +98,191 @@ def dashboard(request):
     return user.render_for_user(request, 'dashboard.html', context)
 
 
-def appointment(request):
-    """
-    User tries to create an appointment
-    :param request: request to create an appointment
-    :return: If the appointment is created, the dashboard, otherwise
-                they stay on the appointment form with a message saying
-                what they need to fix
-    """
+def create_appointment_1(request):
     user = User.get_logged_in(request)
 
+    # Require login
     if user is None:
         return redirect('index')
 
     if user.is_type(UserType.Patient):
-        attendees = Doctor.objects.filter(pk=user.get_typed_user().primary_care_provider.pk)
+        attendees = User.objects.filter(pk=user.get_typed_user().primary_care_provider.pk)
     elif user.is_type(UserType.Doctor):
-        attendees = user.get_typed_user().get_patients()
+        attendees = user.get_typed_user().get_patient_users()
     elif user.is_type(UserType.Nurse):
         attendees = user.get_typed_user().get_attendee_queryset()
     else:
         messages.error(request, "You are not allowed to create appointments!")
-        return HttpResponseRedirect('/dashboard')
+        return redirect('dashboard')
 
     if request.method == 'POST':
-        appointment_form = AppointmentForm(request.POST, attendees=attendees)
+        appointment_form = AppointmentOne(request.POST, attendees=attendees)
+
+        if appointment_form.is_valid():
+            request.session['create_appointment_attendees'] = appointment_form.cleaned_data['attendees']
+            return redirect('create_appointment_2')
+    else:
+        appointment_form = AppointmentOne(attendees=attendees)
+
+    context = {
+        'step': 1,
+        'total_steps': 3,
+        'appointment_form': appointment_form
+    }
+
+    return user.render_for_user(request, 'appointment.html', context)
+
+
+def create_appointment_2(request):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    if 'create_appointment_attendees' not in request.session:
+        return redirect('create_appointment_1')
+
+    if request.method == 'POST':
+        appointment_form = AppointmentTwo(request.POST)
+
+        if appointment_form.is_valid():
+            request.session['create_appointment_time'] = appointment_form.cleaned_data['time']
+            return redirect('create_appointment_3')
+    else:
+        appointment_form = AppointmentTwo()
+
+    attendees = request.session['create_appointment_attendees']
+    attendees |= User.objects.filter(pk=user.pk)
+
+    context = {
+        'step': 2,
+        'total_steps': 3,
+        'appointments': Calendar.get_appointments_json_multi(attendees, show_info=False),
+        'appointment_form': appointment_form
+    }
+
+    return user.render_for_user(request, 'appointment.html', context)
+
+
+def create_appointment_3(request):
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    if 'create_appointment_attendees' not in request.session:
+        return redirect('create_appointment_1')
+
+    if 'create_appointment_time' not in request.session:
+        return redirect('create_appointment_2')
+
+    if request.method == 'POST':
+        appointment_form = AppointmentThree(request.POST)
 
         if appointment_form.is_valid():
             name = appointment_form.cleaned_data['name']
-
-            appointment_form = AppointmentForm(request.POST, attendees=attendees)
+            tstart = request.session['create_appointment_time']
+            attendees = request.session['create_appointment_attendees']
 
             if not user.is_type(UserType.Nurse):
-                appointment_form.attendees.add(user)
+                attendees |= User.objects.filter(pk=user.pk)
+
+            conflicting, apt = Calendar.create_appointment(
+                    attendees,
+                    user,
+                    name,
+                    appointment_form.cleaned_data['description'],
+                    tstart,
+                    tstart + timedelta(minutes=30)
+            )
 
             appointment_form.creator = user
-            new_apt = appointment_form.save()
 
-            if new_apt.has_conflict():
-                messages.error(request, "There is a conflict with the selected times!")
-                appointment_form = AppointmentForm(request.POST, attendees=attendees)
-                new_apt.delete()
+            if conflicting:
+                messages.error(request, apt)
+                appointment_form = AppointmentThree(request.POST)
             else:
-                new_apt.save()
+                del request.session['create_appointment_attendees']
+                del request.session['create_appointment_time']
+
+                messages.success(request, "Your appointment has been created")
                 Logging.info("Created appointment '%s'" % name)
-                return HttpResponseRedirect('/dashboard')
-        else:
-            print('invalid')
+
+                for a in attendees:
+                    a.notify("A new appointment has been created for you.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
+                                    apt.name, apt.description, apt.tstart, apt.tend))
+
+                return redirect('dashboard')
     else:
-        appointment_form = AppointmentForm(attendees=attendees)
+        appointment_form = AppointmentThree()
 
     context = {
+        'step': 3,
+        'total_steps': 3,
         'appointment_form': appointment_form
     }
+
     return user.render_for_user(request, 'appointment.html', context)
+
+
+#
+#
+# def appointment(request):
+#     """
+#     User tries to create an appointment
+#     :param request: request to create an appointment
+#     :return: If the appointment is created, the dashboard, otherwise
+#                 they stay on the appointment form with a message saying
+#                 what they need to fix
+#     """
+#     user = User.get_logged_in(request)
+#
+#     if user is None:
+#         return redirect('index')
+#
+#     if user.is_type(UserType.Patient):
+#         attendees = Doctor.objects.filter(pk=user.get_typed_user().primary_care_provider.pk)
+#     elif user.is_type(UserType.Doctor):
+#         attendees = user.get_typed_user().get_patients()
+#     elif user.is_type(UserType.Nurse):
+#         attendees = user.get_typed_user().get_attendee_queryset()
+#     else:
+#         messages.error(request, "You are not allowed to create appointments!")
+#         return HttpResponseRedirect('/dashboard')
+#
+#     if request.method == 'POST':
+#         appointment_form = AppointmentForm(request.POST, attendees=attendees)
+#
+#         if appointment_form.is_valid():
+#             name = appointment_form.cleaned_data['name']
+#
+#             appointment_form = AppointmentForm(request.POST, attendees=attendees)
+#
+#             if not user.is_type(UserType.Nurse):
+#                 appointment_form.attendees.add(user)
+#
+#             appointment_form.creator = user
+#             new_apt = appointment_form.save()
+#
+#             if new_apt.has_conflict():
+#                 messages.error(request, "There is a conflict with the selected times!")
+#                 appointment_form = AppointmentForm(request.POST, attendees=attendees)
+#                 new_apt.delete()
+#             else:
+#                 new_apt.save()
+#                 Logging.info("Created appointment '%s'" % name)
+#                 return HttpResponseRedirect('/dashboard')
+#         else:
+#             print('invalid')
+#     else:
+#         appointment_form = AppointmentForm(attendees=attendees)
+#
+#     context = {
+#         'appointment_form': appointment_form
+#     }
+#     return user.render_for_user(request, 'appointment.html', context)
 
 
 def registration(request):
@@ -250,7 +382,7 @@ def edit_info(request, pk=None):
             profile.user = request.user
             profile.save()
             messages.success(request, "Your profile information has been successfully saved!")
-            Logging.warning('%s updated patient info for %s' %(user, u))
+            Logging.warning('%s updated patient info for %s' % (user, u))
 
             return HttpResponseRedirect(reverse('view_profile', kwargs={'pk': primary_key}))
     else:
@@ -317,6 +449,11 @@ def cancel_appointment(request, pk):
     # Get appointment based on pk argument
     apt = Appointment.objects.get(pk=pk)
 
+    # Can't delete if in past
+    if apt.is_in_past():
+        messages.error(request, "You can't cancel an appointment in the past!")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
     # User can only delete if they are an attendee
     if user not in apt.attendees.all():
         messages.error(request, "You aren't allowed to cancel this appointment!")
@@ -346,26 +483,45 @@ def edit_appointment(request, pk):
     if user is None:
         return redirect('index')
 
+    if user.is_type(UserType.Patient):
+        attendees = User.objects.filter(pk=user.get_typed_user().primary_care_provider.pk)
+    elif user.is_type(UserType.Doctor):
+        attendees = user.get_typed_user().get_patient_users()
+    elif user.is_type(UserType.Nurse):
+        attendees = user.get_typed_user().get_attendee_queryset()
+    else:
+        messages.error(request, "You are not allowed to edit appointments!")
+        return redirect('dashboard')
+
     apt = Appointment.objects.get(pk=pk)
 
     if user not in apt.attendees.all():
         messages.error(request, "You aren't allowed to cancel this appointment!")
     else:
         if request.method == 'POST':
-            form = AppointmentForm(request.POST, instance=apt, creator=apt.creator)
+            form = AppointmentForm(request.POST, instance=apt, attendees=attendees,
+                                   is_doctor=user.is_type(UserType.Doctor))
 
             if form.is_valid():  # is_valid is function not property
                 new_apt = form.save(commit=False)
                 if new_apt.has_conflict():
                     messages.error(request, "There is a conflict with the selected times!")
-                    form = AppointmentForm(instance=apt, creator=apt.creator)
+                    form = AppointmentForm(instance=apt, attendees=attendees, is_doctor=user.is_type(UserType.Doctor))
                     apt.save()
                 else:
                     new_apt.save()
                     Logging.info("Appointment with pk '%s' edited by '%s" % (apt.pk, user.username))
+                    messages.success(request, 'Your appointment has been updated')
+
+                    for a in apt.attendees:
+                        a.notify(
+                                "An appointment you are attending has been updated.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
+                                    apt.name, apt.description, apt.tstart, apt.tend))
+
                     return redirect('dashboard')
         else:
-            form = AppointmentForm(instance=apt, creator=apt.creator)  # No request.POST
+            form = AppointmentForm(instance=apt, attendees=attendees,
+                                   is_doctor=user.is_type(UserType.Doctor))  # No request.POST
 
         # move it outside of else
         context = {
@@ -518,6 +674,10 @@ def send_message(request, pk=None):
     if user is None:
         return redirect('index')
 
+    if user.is_type(UserType.Patient):
+        messages.error(request, "You're not allowed to send messages.")
+        return redirect('inbox')
+
     if request.method == 'POST':
         form = SendMessageForm(request.POST, sender=user, initial={'recipient': pk, 'type': MessageType.Normal})
 
@@ -548,8 +708,18 @@ def reply_message(request, pk):
     if user is None:
         return redirect('index')
 
+    # check isn't patient
+    if user.is_type(UserType.Patient):
+        messages.error(request, "You're not allowed to send messages.")
+        return redirect('inbox')
+
     # Get message based on pk argument
     msg = Message.objects.get(pk=pk)
+
+    # Check not trying to reply to notification
+    if msg.is_notification:
+        messages.error(request, "You can't reply to a notification.")
+        return redirect('inbox')
 
     # check user can see this message
     if msg.recipient_id is not user.pk:
@@ -941,7 +1111,7 @@ def statistics(request, pk):
     popular_scripts = hospital.get_popular_prescriptions()
 
     # Bar graph prescription name and number scripts
-        # Average Prescription length
+    # Average Prescription length
     # Bar graph, patients vs admitted
     # Scatter average visit and length for all patients
     # Table of patient specifics
@@ -978,6 +1148,7 @@ def release_test_result(request, pk):
         r = Result.objects.get(pk=pk)
         r.release_result()
         Logging.info('%s released a test with description \'%s\' for %s' % (user, r.description, r.patient))
+        r.patient.notify("A new test result was released for you by %s." % user)
         messages.success(request, "The result was successfully released!")
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -1007,6 +1178,10 @@ def create_test_result(request, pk):
             new_result.patient = patient
             new_result.save()
             messages.success(request, "The new test results were successfully saved!")
+
+            if new_result.is_released:
+                new_result.patient.notify("A new test result was released for you by %s." % doctor)
+
             return HttpResponseRedirect(reverse('result', kwargs={'pk': pk}))
         else:
             print('invalid')
@@ -1068,20 +1243,26 @@ def create_prescription(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode})
+        prescription_form = PrescriptionForm(
+                initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
+                         'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
+                         'zipcode': patient.zipcode})
 
         if prescription_form.is_valid() and user.is_type(UserType.Doctor):
             new = prescription_form.save()
             new.doctor = doctor
             new.patient = patient
             new.save()
-            Logging.warning("%s has created a %s prescription expiring on %s for %s" % (doctor, new.name, new.expiration_date, patient))
+            Logging.warning("%s has created a %s prescription expiring on %s for %s" % (
+                doctor, new.name, new.expiration_date, patient))
             messages.success(request, "The prescription was successfully created!")
+            patient.notify("A new prescription for %s was issued to you by %s." % (new.name, new.doctor))
             return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
-        else:
-            print('invalid')
     else:
-        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode})
+        prescription_form = PrescriptionForm(
+                initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
+                         'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
+                         'zipcode': patient.zipcode})
 
     context = {
         'prescription_form': prescription_form

@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import django
 from django.core.urlresolvers import reverse
 from django.db import models
 
@@ -18,8 +19,8 @@ class Calendar(models.Model):
         :return: apts: list of appointments
         """
         apts = []
-        for apt in attendee.appointment_set.all():
-            if date.date() == apt.tstart.date():
+        for apt in attendee.get_appointments():
+            if date.date() == apt.tstart.date() and not apt.is_in_past():
                 apts += [apt]
         return apts
 
@@ -31,7 +32,7 @@ class Calendar(models.Model):
         :return:
         """
         apts = []
-        for apt in attendee.appointment_set.all():
+        for apt in attendee.get_appointments().all():
             apts += [
                 {
                     'id': apt.pk,
@@ -45,24 +46,50 @@ class Calendar(models.Model):
         return json.dumps(apts)
 
     @staticmethod
-    def create_appointment(attendees, name, desc, start, end):
+    def get_appointments_json_multi(attendees: list, show_info=True):
+        """
+        Get the appointments that the current user is in
+        :param attendees: Users to get appointments for
+        :return:
+        """
+        apts = []
+        for attendee in attendees:
+            for apt in attendee.get_appointments().all():
+                apts += [
+                    {
+                        'id': apt.pk,
+                        'title': apt.name if show_info else "",
+                        'description': apt.description if show_info else "",
+                        'url': reverse('edit_appointment', kwargs={'pk': apt.pk}) if show_info else "",
+                        'start': apt.tstart.astimezone().strftime("%c"),
+                        'end': apt.tend.astimezone().strftime("%c"),
+                    }
+                ]
+        return json.dumps(apts)
+
+    @staticmethod
+    def create_appointment(attendees, creator, name, desc, start, end):
         """
         Creates an appointment
         :param attendees: people(doctors, patients) that are involved
+        :param creator: the creator of the appointment
         :param name: name of appointment
         :param desc: description of appointment
         :param start: start time
         :param end: end time
-        :return: apt: appointment object
+        :return: conflict, apt: whether or not there was a conflict, appointment object
         """
-        apt = Appointment.objects.create(name=name, description=desc, attendees=attendees, tstart=start, tend=end)
+
         if Calendar.has_conflict(attendees, start, end):
-            return False, 'Appointment could not be created because there was a conflict.'
+            return True, 'Appointment could not be created because there was a conflict.'
+
+        apt = Appointment.objects.create(name=name, description=desc, creator=creator, tstart=start, tend=end)
+        apt.attendees = attendees
         apt.save()
 
         Logging.info("Created appointment with pk '%s'" % str(apt.pk))
 
-        return True, apt
+        return False, apt
 
     @staticmethod
     def update_appointment(appointment, attendees=None, name=None, desc=None, start=None, end=None):
@@ -157,6 +184,9 @@ class Appointment(models.Model):
         :return:
         """
         return Calendar.has_conflict(self.attendees.all(), self.tstart, self.tend, self)
+
+    def is_in_past(self):
+        return django.utils.timezone.now() > self.tend
 
     def __unicode__(self):
         """

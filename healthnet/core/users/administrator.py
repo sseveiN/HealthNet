@@ -11,6 +11,10 @@ class Administrator(User):
 
     hospital = models.ForeignKey('Hospital', unique=False, blank=True, null=True)
 
+    def get_appointments(self):
+        from healthnet.core.calendar import Appointment
+        return Appointment.objects.filter(pk=None)
+
     def get_hospitals(self):
         return [self.hospital]
 
