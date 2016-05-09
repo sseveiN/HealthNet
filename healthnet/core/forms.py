@@ -110,6 +110,7 @@ class AppointmentForm(forms.ModelForm):
         :param kwargs: initial kwarguments
         """
         self.attendees = kwargs.pop('attendees')
+        self.is_doctor = kwargs.pop('is_doctor')
 
         super(AppointmentForm, self).__init__(*args, **kwargs)
 
@@ -119,6 +120,13 @@ class AppointmentForm(forms.ModelForm):
         self.fields['tend'].help_text = "Format Example: 10/25/06 14:30"
 
         self.fields['attendees'].queryset = self.attendees
+
+        if not self.is_doctor:
+            self.fields['tstart'].widget = forms.HiddenInput()
+            self.fields['tend'].widget = forms.HiddenInput()
+            self.fields['start'].attrs['readonly'] = True
+            self.fields['tend'].attrs['readonly'] = True
+
 
     @staticmethod
     def edit_appointment(pk):
@@ -408,3 +416,68 @@ class RegistrationSelectForm(forms.Form):
         super(RegistrationSelectForm, self).__init__(*args, **kwargs)
 
         self.fields['type'].label = "What are you?"
+
+
+class AppointmentOne(forms.Form):
+    attendees = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        self.attendees = kwargs.pop('attendees')
+
+        super(AppointmentOne, self).__init__(*args, **kwargs)
+
+        self.fields['attendees'].label = "Who is attending this appointment?"
+        self.fields['attendees'].queryset = self.attendees
+
+
+class AppointmentTwo(forms.Form):
+    time = forms.DateTimeField(input_formats=['%Y-%m-%dT%H:%M:%S'], widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        super(AppointmentTwo, self).__init__(*args, **kwargs)
+
+
+class AppointmentThree(forms.ModelForm):
+    """
+    Form to create an appointment
+    """
+    description = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        """
+        Meta class
+        """
+        model = Appointment
+        fields = '__all__'
+        exclude = ['creator', 'tend', 'tstart', 'attendees']
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+
+        super(AppointmentThree, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def edit_appointment(pk):
+        """
+        Edit the appointment
+        :param pk: pk of the appointment
+        :return: the appointment form
+        """
+        appointment = Appointment.objects.get(pk)
+        appointment_form = AppointmentForm(request.POST, instance=appointment)
+        appointment_form.save()
+        return appointment_form

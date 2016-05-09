@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
 MEDIA_URL = '/uploads/'
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 INSTALLED_APPS = [
     'bootstrap3',

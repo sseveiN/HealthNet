@@ -61,6 +61,10 @@ class Patient(User):
     def get_average_visit_length_str(self):
         return timedelta(seconds=self.average_visit_length)
 
+    def get_appointments(self):
+        from healthnet.core.calendar import Appointment
+        return Appointment.objects.filter(attendees=User.objects.get(pk=self.pk))
+
     def get_hospitals(self):
         return [self.hospital]
 

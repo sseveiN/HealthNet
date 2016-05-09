@@ -256,6 +256,9 @@ class User(AbstractBaseUser):
 
         return self
 
+    def get_appointments(self):
+        return self.get_typed_user().get_appointments()
+
     def get_patients(self):
         if self.is_type(UserType.Doctor) or self.is_type(UserType.Nurse) or self.is_type(UserType.Administrator):
             return self.get_typed_user().get_patients()
