@@ -50,19 +50,23 @@ class Patient(User):
     address_line_1 = models.CharField(max_length=255,blank=True)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
     city = models.CharField(max_length=255, blank=True)
-    state = models.IntegerField(choices=States.get_choices())
+    state = models.IntegerField(choices=States.get_choices(), default=1)
     zipcode = models.CharField(max_length=5,blank=True)
 
     next_of_kin = models.CharField(max_length=255, blank=True)
-    emergency_contact_name = models.CharField(max_length=255, blank=True)
-    emergency_contact_number = models.CharField(max_length=255, blank=True)
-
+    emergency_contact = models.CharField(max_length=255, blank=True)
+    emergency_contact_number = models.CharField(max_length=12, blank=True)
 
     is_pending = False
 
     # Statistics stuff
     average_visit_length = models.IntegerField(default=0)  # seconds
     visits = models.IntegerField(default=0)
+
+    def create_patient(health_id, email, username, password, first_name, last_name, dob, hospital, pcp):
+        patient = Patient(health_insurance_number=health_id, email=email, username=username, password=password, first_name=first_name, last_name=last_name, dob=dob, hospital=hospital, primary_care_provider=pcp)
+        return patient
+
 
     def get_average_visit_length_str(self):
         return timedelta(seconds=self.average_visit_length)

@@ -13,7 +13,7 @@ from healthnet.core.users.doctor import Doctor
 from healthnet.core.users.nurse import Nurse
 from healthnet.core.users.patient import Patient
 from healthnet.core.users.user import User
-from healthnet.models import Appointment, Result, Prescription, Hospital
+from healthnet.models import Appointment, Result, Prescription, Hospital, States
 
 
 class LoginForm(forms.Form):
@@ -23,33 +23,10 @@ class LoginForm(forms.Form):
     username = forms.CharField(label="Username", max_length=25)
     password = forms.CharField(widget=forms.PasswordInput())
 
-
-class RequiredRegistrationForm(forms.Form):
-    """
-    Form for required information of the patient
-    """
-
-    health_id = forms.CharField(max_length=12, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
-                                                                                       message='Health insurance alphanumeric beginning with a letter.')])
-    email = forms.EmailField()
-    username = forms.CharField(max_length=25)
-    password = forms.CharField(widget=forms.PasswordInput())
-    first_name = forms.CharField(max_length=50)
-    last_name = forms.CharField(max_length=50)
-    dob = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
-    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all(), empty_label=None)
-    """pcp = forms.ModelChoiceField(queryset=Doctor.objects.filter(hospitals = hospital), empty_label=None)
-    """
-class RegistrationForm(forms.Form):
-
-    pcp = forms.ModelChoiceField(queryset=Doctor.objects.none(), empty_label=None)
-
-
-
 """
 class RegistrationForm(forms.ModelForm):
 
-    Form for patient registration
+    Form for registration
 
     password = forms.CharField(widget=forms.PasswordInput)
     dob = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
@@ -73,16 +50,62 @@ class RegistrationForm(forms.ModelForm):
         Initialize the form
         :param args: initial arguments
         :param kwargs: initial kwarguments
-        
+
+
         super(RegistrationForm, self).__init__(*args, **kwargs)
 
         self.fields['height'].label = 'Height (in)'
         self.fields['weight'].label = 'Weight (lb)'
         self.fields['cholesterol'].label = 'Cholesterol (mg/dL)'
         self.fields['dob'].label = "Date of Birth"
-
-
 """
+
+class RequiredRegistrationForm(forms.Form):
+    """
+    Form for required information of the patient
+    """
+
+    health_id = forms.CharField(max_length=12, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
+                                                                                       message='Health insurance alphanumeric beginning with a letter.')])
+    email = forms.EmailField()
+    username = forms.CharField(max_length=25)
+    password = forms.CharField(widget=forms.PasswordInput())
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50)
+    dob = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
+    hospital = forms.ModelChoiceField(queryset=Hospital.objects.all(), empty_label=None)
+
+class RegistrationForm(forms.Form):
+
+    Gender = EnumField('Male', 'Female', 'Unspecified')
+    MaritalStatus = EnumField('Married', 'Living Common Law', 'Widowed', 'Separated', 'Divorced', 'Single', 'Unspecified')
+
+    pcp = forms.ModelChoiceField(queryset=Doctor.objects.none(), empty_label=None)
+
+    health_insurance_provider = forms.CharField(max_length=30, required=False)
+    home_phone = forms.CharField(max_length=12, required=False)
+    work_phone = forms.CharField(max_length=12, required=False)
+    sex = forms.ChoiceField(choices=Gender.get_choices(), required=False)
+    marital_status = forms.ChoiceField(choices=MaritalStatus.get_choices(), required=False)
+    address_line_1 = forms.CharField(max_length=255, required=False)
+    address_line_2 = forms.CharField(max_length=255, required=False)
+    city = forms.CharField(max_length=255, required=False)
+    state = forms.ChoiceField(choices=States.get_choices(), required=False)
+    zipcode = forms.CharField(max_length=5, required=False)
+    next_of_kin = forms.CharField(max_length=255, required=False)
+    emergency_contact = forms.CharField(max_length=255, required=False)
+    emergency_contact_number = forms.CharField(max_length=12, required=False)
+    height = forms.IntegerField(max_value=96, min_value=0, required=False)
+    weight = forms.IntegerField(max_value=400, min_value=0, required=False)
+    cholesterol = forms.IntegerField(max_value=300, min_value=0, required=False)
+
+
+
+    def __init__(self, *args, **kwargs):
+        qs = kwargs.pop('qs', Doctor.objects.all())
+        super(RegistrationForm, self).__init__(*args, **kwargs)
+        self.fields['pcp'].queryset = qs
+
 
 class EditPatientInfoForm(forms.ModelForm):
     primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())
@@ -118,7 +141,7 @@ class AppointmentForm(forms.ModelForm):
     """
     Form to create an appointment
     """
-    attendees = forms.ModelMultipleChoiceField(queryset=None)
+    attendees = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
     description = forms.CharField(widget=forms.Textarea)
 
     class Meta:
@@ -127,6 +150,7 @@ class AppointmentForm(forms.ModelForm):
         """
         model = Appointment
         fields = '__all__'
+        exclude = ['creator']
 
     def __init__(self, *args, **kwargs):
         """
@@ -135,6 +159,7 @@ class AppointmentForm(forms.ModelForm):
         :param kwargs: initial kwarguments
         """
         self.creator = kwargs.pop('creator')
+        self.is_doctor = kwargs.pop('is_doctor')
 
         super(AppointmentForm, self).__init__(*args, **kwargs)
 
@@ -143,8 +168,14 @@ class AppointmentForm(forms.ModelForm):
         self.fields['tstart'].help_text = "Format Example: 10/25/06 11:30"
         self.fields['tend'].help_text = "Format Example: 10/25/06 14:30"
 
-        self.fields['attendees'].queryset = User.objects.exclude(pk=self.creator.pk)
-        self.fields['creator'] = self.creator
+        self.fields['attendees'].queryset = self.attendees
+
+        if not self.is_doctor:
+            self.fields['tstart'].widget = forms.HiddenInput()
+            self.fields['tend'].widget = forms.HiddenInput()
+            self.fields['start'].attrs['readonly'] = True
+            self.fields['tend'].attrs['readonly'] = True
+
 
     @staticmethod
     def edit_appointment(pk):
@@ -437,3 +468,68 @@ class RegistrationSelectForm(forms.Form):
         super(RegistrationSelectForm, self).__init__(*args, **kwargs)
 
         self.fields['type'].label = "What are you?"
+
+
+class AppointmentOne(forms.Form):
+    attendees = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        self.attendees = kwargs.pop('attendees')
+
+        super(AppointmentOne, self).__init__(*args, **kwargs)
+
+        self.fields['attendees'].label = "Who is attending this appointment?"
+        self.fields['attendees'].queryset = self.attendees
+
+
+class AppointmentTwo(forms.Form):
+    time = forms.DateTimeField(input_formats=['%Y-%m-%dT%H:%M:%S'], widget=forms.HiddenInput())
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+        super(AppointmentTwo, self).__init__(*args, **kwargs)
+
+
+class AppointmentThree(forms.ModelForm):
+    """
+    Form to create an appointment
+    """
+    description = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        """
+        Meta class
+        """
+        model = Appointment
+        fields = '__all__'
+        exclude = ['creator', 'tend', 'tstart', 'attendees']
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the form
+        :param args: initial arguments
+        :param kwargs: initial kwarguments
+        """
+
+        super(AppointmentThree, self).__init__(*args, **kwargs)
+
+    @staticmethod
+    def edit_appointment(pk):
+        """
+        Edit the appointment
+        :param pk: pk of the appointment
+        :return: the appointment form
+        """
+        appointment = Appointment.objects.get(pk)
+        appointment_form = AppointmentForm(request.POST, instance=appointment)
+        appointment_form.save()
+        return appointment_form

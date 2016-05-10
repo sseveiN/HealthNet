@@ -6,11 +6,12 @@ from django.contrib.humanize.templatetags import humanize
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
     ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, \
     AdminRegistrationForm, RegistrationSelectForm, RegisterSelectType, EditNurseInfoForm, EditDoctorInfoForm, \
-    AppointmentOne, AppointmentTwo, AppointmentThree
+    AppointmentOne, AppointmentTwo, AppointmentThree, RequiredRegistrationForm
 from healthnet.core.hospital import Hospital
 from healthnet.core.logging import LogEntry
 from healthnet.core.logging import Logging
@@ -284,14 +285,15 @@ def create_appointment_3(request):
 #     }
 #     return user.render_for_user(request, 'appointment.html', context)
 
+"""
 
 def registration(request):
-    """
+
     User tries to register for account
     :param request: request to register for an account
     :return: If successful, user taken to dashboard, else, they are instructed
                 to register again, with a message saying what they need to fix
-    """
+
     user = User.get_logged_in(request)
 
     # Don't allow if logged in
@@ -321,6 +323,126 @@ def registration(request):
             return HttpResponseRedirect('dashboard')
     else:
         registration_form = RegistrationForm()
+
+    context = {
+        'registration_form': registration_form
+    }
+
+    return render(request, 'register.html', context)
+"""
+
+def registration1(request):
+    """
+    First page of registration for patient
+    :param request:
+    :return:
+    """
+
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        registration_form = RequiredRegistrationForm(request.POST)
+
+        if registration_form.is_valid():
+
+            if Patient.objects.filter(health_insurance_number=registration_form.cleaned_data['health_id']).count() > 0:
+                messages.error(request, "Please provide a unique health insurance number.")
+                registration_form = RequiredRegistrationForm(request.POST)
+
+            elif User.objects.filter(email=registration_form.cleaned_data['email']).count() > 0:
+                messages.error(request, "Please provide a unique email address.")
+                registration_form = RequiredRegistrationForm(request.POST)
+
+            elif User.objects.filter(username=registration_form.cleaned_data['username']).count() > 0:
+                messages.error(request, "Please provide a unique username.")
+                registration_form = RequiredRegistrationForm(request.POST)
+
+            else:
+                request.session['health_id'] = registration_form.cleaned_data['health_id']
+                request.session['email'] = registration_form.cleaned_data['email']
+                request.session['username'] = registration_form.cleaned_data['username']
+                request.session['password'] = registration_form.cleaned_data['password']
+                request.session['first_name'] = registration_form.cleaned_data['first_name']
+                request.session['last_name'] = registration_form.cleaned_data['last_name']
+                request.session['dob'] = registration_form.cleaned_data['dob']
+                request.session['hospital'] = registration_form.cleaned_data['hospital']
+
+
+                return redirect('registration2')
+    else:
+        registration_form = RequiredRegistrationForm()
+
+    context = {
+        'registration_form': registration_form
+    }
+
+    return render(request, 'register.html', context)
+
+
+
+def registration2(request):
+    """
+    User tries to register for account
+    :param request: request to register for an account
+    :return: If successful, user taken to dashboard, else, they are instructed
+                to register again, with a message saying what they need to fix
+    """
+    user = User.get_logged_in(request)
+
+    # Don't allow if logged in
+    if user is not None:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        registration_form = RegistrationForm(request.POST)
+
+        if registration_form.is_valid():
+
+
+            new_user = Patient.create_patient(request.session['health_id'], request.session['email'], request.session['username'], request.session['password'], request.session['first_name'], request.session['last_name'], request.session['dob'], request.session['hospital'], registration_form.cleaned_data['pcp'] )
+
+            username = request.session['username']
+            password = request.session['password']
+
+
+            new_user.save()
+
+            new_patient = new_user
+            new_patient.height = registration_form.cleaned_data['height']
+            new_patient.weight = registration_form.cleaned_data['weight']
+            new_patient.cholesterol = registration_form.cleaned_data['cholesterol']
+            new_patient.home_phone = registration_form.cleaned_data['home_phone']
+            new_patient.work_phone = registration_form.cleaned_data['work_phone']
+            new_patient.sex = registration_form.cleaned_data['sex']
+            new_patient.marital_status = registration_form.cleaned_data['marital_status']
+            new_patient.health_insurance_provider = registration_form.cleaned_data['health_insurance_provider']
+            new_patient.address_line_1 = registration_form.cleaned_data['address_line_1']
+            new_patient.address_line_2 = registration_form.cleaned_data['address_line_2']
+            new_patient.city = registration_form.cleaned_data['city']
+            new_patient.state = registration_form.cleaned_data['state']
+            new_patient.zipcode = registration_form.cleaned_data['zipcode']
+            new_patient.next_of_kin = registration_form.cleaned_data['next_of_kin']
+            new_patient.emergency_contact = registration_form.cleaned_data['emergency_contact']
+            new_patient.emergency_contact_number = registration_form.cleaned_data['emergency_contact_number']
+
+            new_patient.is_patient = True
+            new_patient.is_pending = False
+            new_patient.set_password(password)
+            new_patient.save()
+            Logging.info("User '%s' created" % username)
+
+            if new_user is not None:
+                Logging.info("User created with username '%s" % username)
+                User.login(request, username, password)
+                return HttpResponseRedirect('/dashboard')
+
+            return HttpResponseRedirect('dashboard')
+    else:
+        registration_form = RegistrationForm(qs=Doctor.objects.filter(hospitals=request.session['hospital']), initial={"sex": 2, "marital_status" : 6})
 
     context = {
         'registration_form': registration_form
