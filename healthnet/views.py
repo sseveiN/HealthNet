@@ -608,6 +608,7 @@ def export(request, start=None, end=None):
 
     return render(request, 'export_patient.html', context)
 
+
 def cancel_appointment(request, pk):
     """
     User tries to cancel an appointment

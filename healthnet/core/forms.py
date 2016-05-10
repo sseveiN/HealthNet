@@ -158,7 +158,7 @@ class AppointmentForm(forms.ModelForm):
         :param args: initial arguments
         :param kwargs: initial kwarguments
         """
-        self.creator = kwargs.pop('creator')
+        self.attendees = kwargs.pop('attendees')
         self.is_doctor = kwargs.pop('is_doctor')
 
         super(AppointmentForm, self).__init__(*args, **kwargs)
