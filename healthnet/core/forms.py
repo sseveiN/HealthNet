@@ -26,7 +26,6 @@ class RequiredRegistrationForm(forms.Form):
     """
     Form for required information of the patient
     """
-
     health_id = forms.CharField(label="Health Insurance Number", max_length=12,
                                 validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
                                                            message='Health insurance alphanumeric beginning with a letter.')])
@@ -41,6 +40,9 @@ class RequiredRegistrationForm(forms.Form):
 
 
 class RegistrationForm(forms.Form):
+    """
+    Form for non-required information of the patient
+    """
     Gender = EnumField('Male', 'Female', 'Unspecified')
     MaritalStatus = EnumField('Married', 'Living Common Law', 'Widowed', 'Separated', 'Divorced', 'Single',
                               'Unspecified')
@@ -71,11 +73,10 @@ class RegistrationForm(forms.Form):
 
 
 class EditPatientInfoForm(forms.ModelForm):
-    primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())
-
     """
     Form to edit patient info
     """
+    primary_care_provider = forms.ModelChoiceField(queryset=Doctor.get_approved().all())
 
     class Meta:
         """
@@ -278,7 +279,6 @@ class DoctorRegistrationForm(forms.ModelForm):
     """
     Form to register a doctor
     """
-
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'),
                                                widget=forms.CheckboxSelectMultiple)
     password = forms.CharField(widget=forms.PasswordInput())
@@ -301,6 +301,9 @@ class DoctorRegistrationForm(forms.ModelForm):
 
 
 class EditDoctorInfoForm(forms.ModelForm):
+    """
+    Form to edit doctor info
+    """
     hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'),
                                                widget=forms.CheckboxSelectMultiple)
 
@@ -361,6 +364,9 @@ class NurseRegistrationForm(forms.ModelForm):
 
 
 class EditNurseInfoForm(forms.ModelForm):
+    """
+    Form to edit nurse info
+    """
     hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
 
     class Meta:
@@ -437,6 +443,9 @@ class RegistrationSelectForm(forms.Form):
 
 
 class AppointmentOne(forms.Form):
+    """
+    Step one of appointment creation form
+    """
     attendees = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
 
     def __init__(self, *args, **kwargs):
@@ -454,6 +463,9 @@ class AppointmentOne(forms.Form):
 
 
 class AppointmentTwo(forms.Form):
+    """
+    Step two of appointment creation form
+    """
     time = forms.DateTimeField(input_formats=['%Y-%m-%dT%H:%M:%S'], widget=forms.HiddenInput())
 
     def __init__(self, *args, **kwargs):
@@ -467,7 +479,7 @@ class AppointmentTwo(forms.Form):
 
 class AppointmentThree(forms.ModelForm):
     """
-    Form to create an appointment
+    Step three of appointment creation form
     """
     description = forms.CharField(widget=forms.Textarea)
 

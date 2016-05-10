@@ -29,6 +29,11 @@ class EnumField(object):
         return self.get_choices()
 
     def get_str(self, state_num):
+        """
+        Get the string representation of this enumfield
+        :param state_num: The number of the state to check
+        :return: The string representation of the state
+        """
         for num, state in enumerate(self.__dict__):
             if num == state_num:
                 return state

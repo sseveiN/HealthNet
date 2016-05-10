@@ -108,6 +108,11 @@ def dashboard(request):
 
 
 def create_appointment_1(request):
+    """
+    The first step in the create appointment form
+    :param request: The http request
+    :return: The page to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -143,6 +148,11 @@ def create_appointment_1(request):
 
 
 def create_appointment_2(request):
+    """
+    The second step in the create appointment form
+    :param request: The http request
+    :return: The page to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -175,6 +185,11 @@ def create_appointment_2(request):
 
 
 def create_appointment_3(request):
+    """
+    The third step in the create appointment form
+    :param request: The http request
+    :return: The page to render
+    """
     user = User.get_logged_in(request)
 
     # Require login
@@ -237,117 +252,12 @@ def create_appointment_3(request):
     return user.render_for_user(request, 'appointment.html', context)
 
 
-#
-#
-# def appointment(request):
-#     """
-#     User tries to create an appointment
-#     :param request: request to create an appointment
-#     :return: If the appointment is created, the dashboard, otherwise
-#                 they stay on the appointment form with a message saying
-#                 what they need to fix
-#     """
-#     user = User.get_logged_in(request)
-#
-#     if user is None:
-#         return redirect('index')
-#
-#     if user.is_type(UserType.Patient):
-#         attendees = Doctor.objects.filter(pk=user.get_typed_user().primary_care_provider.pk)
-#     elif user.is_type(UserType.Doctor):
-#         attendees = user.get_typed_user().get_patients()
-#     elif user.is_type(UserType.Nurse):
-#         attendees = user.get_typed_user().get_attendee_queryset()
-#     else:
-#         messages.error(request, "You are not allowed to create appointments!")
-#         return HttpResponseRedirect('/dashboard')
-#
-#     if request.method == 'POST':
-#         appointment_form = AppointmentForm(request.POST, attendees=attendees)
-#
-#         if appointment_form.is_valid():
-#             name = appointment_form.cleaned_data['name']
-#
-#             appointment_form = AppointmentForm(request.POST, attendees=attendees)
-#
-#             if not user.is_type(UserType.Nurse):
-#                 appointment_form.attendees.add(user)
-#
-#             appointment_form.creator = user
-#             new_apt = appointment_form.save()
-#
-#             if new_apt.has_conflict():
-#                 messages.error(request, "There is a conflict with the selected times!")
-#                 appointment_form = AppointmentForm(request.POST, attendees=attendees)
-#                 new_apt.delete()
-#             else:
-#                 new_apt.save()
-#                 Logging.info("Created appointment '%s'" % name)
-#                 return HttpResponseRedirect('/dashboard')
-#         else:
-#             print('invalid')
-#     else:
-#         appointment_form = AppointmentForm(attendees=attendees)
-#
-#     context = {
-#         'appointment_form': appointment_form
-#     }
-#     return user.render_for_user(request, 'appointment.html', context)
-
-"""
-
-def registration(request):
-
-    User tries to register for account
-    :param request: request to register for an account
-    :return: If successful, user taken to dashboard, else, they are instructed
-                to register again, with a message saying what they need to fix
-
-    user = User.get_logged_in(request)
-
-    # Don't allow if logged in
-    if user is not None:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        registration_form = RegistrationForm(request.POST)
-
-        if registration_form.is_valid():
-            username = registration_form.cleaned_data['username']
-            password = registration_form.cleaned_data['password']
-
-            new_user = RegistrationForm(request.POST)
-            new_patient = new_user.save()
-            new_patient.is_patient = True
-            new_patient.is_pending = False
-            new_patient.set_password(password)
-            new_patient.save()
-            Logging.info("User '%s' created" % username)
-
-            if new_user is not None:
-                Logging.info("User created with username '%s" % username)
-                User.login(request, username, password)
-                return HttpResponseRedirect('/dashboard')
-
-            return HttpResponseRedirect('dashboard')
-    else:
-        registration_form = RegistrationForm()
-
-    context = {
-        'registration_form': registration_form
-    }
-
-    return render(request, 'register.html', context)
-"""
-
-
 def registration1(request):
     """
     First page of registration for patient
-    :param request:
-    :return:
+    :param request: The http request
+    :return: The page to render
     """
-
     user = User.get_logged_in(request)
 
     # Don't allow if logged in
@@ -730,16 +640,11 @@ def toggle_admit(request, pk):
     if not user.is_type(UserType.Doctor) and not user.is_type(UserType.Nurse) or not user.has_patient(patient):
         messages.error(request, "You aren't allowed to admit/discharge this patient!")
     else:
-        # noinspection PyBroadException
-        # try:
         patient.toggle_admit()
         Logging.info("'%s' admittance status changed to '%s' by '%s'" % (
             patient.username, str(patient.is_admitted), user.username))
         messages.success(request,
                          "The patient was successfully %s!" % ('admitted' if patient.is_admitted else 'discharged'))
-        # except:
-        #     messages.error(request, "There was an error %s this patient!" % (
-        #         'admitting' if patient.is_admitted else 'discharging'))
 
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -1583,57 +1488,58 @@ def register_choose(request):
 
 # DEBUG VIEWS
 # The views below are DEBUG use only.
-def create_test_user(request):
-    """
-    Creates a test patient
-    :param request: request to create a test patient
-    :return: If not r, returns o
-                Else, returns
-    """
-    r, o = User.create_user('test', 'test', UserType.Patient, 'Test', 'User')
-    if not r:
-        return HttpResponse(o)
-    Logging.warning("Created debug test patient user")
-    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
 
-
-def create_admin_user(request):
-    """
-    Creates a test admin
-    :param request: request to create a test admin
-    :return: If not r, returns o
-                Else, returns
-    """
-    r, o = User.create_user('admin', 'admin', UserType.Administrator, 'Admin', 'User')
-    if not r:
-        return HttpResponse(o)
-    Logging.warning("Created debug test admin user")
-    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
-
-
-def create_test_doctor(request):
-    """
-    Creates a test doctor
-    :param request: request to create a test doctor
-    :return: If not r, returns o
-                Else, returns
-    """
-    r, o = User.create_user('doctor', 'doctor', UserType.Doctor, 'Doctor', 'House')
-    if not r:
-        return HttpResponse(o)
-    Logging.warning("Created debug test doctor user")
-    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
-
-
-def create_test_nurse(request):
-    """
-    Creates a test nurse
-    :param request: request to create a test nurse
-    :return: If not r, returns o
-                Else, returns
-    """
-    r, o = User.create_user('nurse', 'nurse', UserType.Nurse, 'Nurse', 'Sue')
-    if not r:
-        return HttpResponse(o)
-    Logging.warning("Created debug test nurse user")
-    return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+# def create_test_user(request):
+#     """
+#     Creates a test patient
+#     :param request: request to create a test patient
+#     :return: If not r, returns o
+#                 Else, returns
+#     """
+#     r, o = User.create_user('test', 'test', UserType.Patient, 'Test', 'User')
+#     if not r:
+#         return HttpResponse(o)
+#     Logging.warning("Created debug test patient user")
+#     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+#
+#
+# def create_admin_user(request):
+#     """
+#     Creates a test admin
+#     :param request: request to create a test admin
+#     :return: If not r, returns o
+#                 Else, returns
+#     """
+#     r, o = User.create_user('admin', 'admin', UserType.Administrator, 'Admin', 'User')
+#     if not r:
+#         return HttpResponse(o)
+#     Logging.warning("Created debug test admin user")
+#     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+#
+#
+# def create_test_doctor(request):
+#     """
+#     Creates a test doctor
+#     :param request: request to create a test doctor
+#     :return: If not r, returns o
+#                 Else, returns
+#     """
+#     r, o = User.create_user('doctor', 'doctor', UserType.Doctor, 'Doctor', 'House')
+#     if not r:
+#         return HttpResponse(o)
+#     Logging.warning("Created debug test doctor user")
+#     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
+#
+#
+# def create_test_nurse(request):
+#     """
+#     Creates a test nurse
+#     :param request: request to create a test nurse
+#     :return: If not r, returns o
+#                 Else, returns
+#     """
+#     r, o = User.create_user('nurse', 'nurse', UserType.Nurse, 'Nurse', 'Sue')
+#     if not r:
+#         return HttpResponse(o)
+#     Logging.warning("Created debug test nurse user")
+#     return HttpResponse("result: %s, obj: %s:" % (str(r), str(o)))
