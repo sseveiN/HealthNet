@@ -181,11 +181,15 @@ class Appointment(models.Model):
         """
         Check if the appointment has a conflict with any
         other appointment for all attendees
-        :return:
+        :return: Whether or not there is a conflict
         """
         return Calendar.has_conflict(self.attendees.all(), self.tstart, self.tend, self)
 
     def is_in_past(self):
+        """
+        Check if an appointment is in the past
+        :return: Whether or not the appointment is in the past
+        """
         return django.utils.timezone.now() > self.tend
 
     def __unicode__(self):

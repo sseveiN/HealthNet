@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import django
 from django.db import models
 
 
@@ -25,7 +26,11 @@ class Result(models.Model):
     #    return True, result
 
     def release_result(self):
-        self.release_date = datetime.now()
+        """
+        Release a result
+        :return: Whether or not the result was released
+        """
+        self.release_date = django.utils.timezone.now()
         self.is_released = True
         self.save()
         return True

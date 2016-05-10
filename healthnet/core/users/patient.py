@@ -22,7 +22,6 @@ class Patient(User):
         health insurance number, doctors, primary care provider, prescriptions
     """
     User.is_patient = models.BooleanField(default=True)
-    records = models.ForeignKey('MedicalRecord', blank=True, null=True)
     height = models.IntegerField(validators=[MaxValueValidator(96), MinValueValidator(0)], blank=True,
                                  null=True)  # Height in in
     weight = models.IntegerField(validators=[MaxValueValidator(400), MinValueValidator(0)], blank=True,
@@ -36,11 +35,11 @@ class Patient(User):
     marital_status = models.IntegerField(choices=MaritalStatus.get_choices(), default=MaritalStatus.Unspecified,
                                          blank=True, null=True)
     health_insurance_provider = models.CharField(max_length=30, blank=True,
-                                                 null=True)  # All the provider codes ive seen are 5 + 10 numbers
+                                                 null=True)
     health_insurance_number = models.CharField(max_length=12,
                                                unique=True, validators=[
             RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
-                           message='Health insurance alphanumeric beginning with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
+                           message='Health insurance alphanumeric beginning with a letter.')])
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
 
@@ -66,6 +65,10 @@ class Patient(User):
 
     @staticmethod
     def create_patient(health_id, email, username, password, first_name, last_name, dob, hospital, pcp):
+        """
+        Create a new patient
+        :return: A patient
+        """
         patient = Patient(health_insurance_number=health_id, email=email, username=username, password=password,
                           first_name=first_name, last_name=last_name, dob=dob, hospital=hospital,
                           primary_care_provider=pcp)
@@ -75,36 +78,82 @@ class Patient(User):
         return patient
 
     def get_test_results(self, released=True):
-        return Result.objects.filter(patient=self, is_released=released)
+        """
+        Get this patients test results
+        :param released: Whether or not to show only released results
+        :return: A queryset of results
+        """
+        if released:
+            return Result.objects.filter(patient=self, is_released=True)
+        return Result.objects.filter(patient=self)
 
     def get_average_visit_length_str(self):
+        """
+        Get a string representation of the average visit length
+        :return: A string representing average visit length
+        """
         return timedelta(seconds=self.average_visit_length)
 
     def get_appointments(self):
+        """
+        Get all the appointments for this patient
+        :return: A queryset of appointments
+        """
         from healthnet.core.calendar import Appointment
         return Appointment.objects.filter(attendees=User.objects.get(pk=self.pk))
 
     def get_hospitals(self):
-        return [self.hospital]
+        """
+        Get all the hospitals for this patient
+        :return: A queryset of hospitals
+        """
+        from healthnet.core.hospital import Hospital
+        return Hospital.objects.filter(pk=self.hospital.pk)
 
     def get_prescriptions(self):
+        """
+        Get all the prescriptions for this patient
+        :return: A queryset of prescriptions
+        """
         return Prescription.objects.filter(patient=self)
 
     def get_sex_str(self):
+        """
+        Get the gender str for this patient
+        :return: A string representing gender
+        """
         return Gender.get_str(self.sex)
 
     def get_marital_status_str(self):
+        """
+        Get the marital status str for this patient
+        :return: A string representing marital status
+        """
         return MaritalStatus.get_str(self.marital_status)
 
     def get_address_str(self):
+        """
+        Get the address str for this patient
+        :return: A string representation of an address
+        """
         return '%s%s, %s, %s %s' % \
                (self.address_line_1, self.address_line_2, self.city, States.get_str(self.state), self.zipcode)
 
     def get_age(self):
+        """
+        Get the age of a patient
+        :return: An integer representing the patients age
+        """
         today = date.today()
         return today.year - self.dob.year - ((today.month, today.day) < (self.dob.month, self.dob.day))
 
     def toggle_admit(self, force=False):
+        """
+        Toggle whether or not the patient is admitted
+        to their hospital
+        :param force: Whether or not to force admit
+        :return: None
+        """
         self.is_admitted = not self.is_admitted or force
 
         if self.is_admitted:
@@ -125,6 +174,11 @@ class Patient(User):
         self.save()
 
     def transfer(self, hospital):
+        """
+        Transfer a patient to a hospital
+        :param hospital: The hospital to transfer to
+        :return: None
+        """
         self.hospital = hospital
         self.toggle_admit(True)
         self.save()

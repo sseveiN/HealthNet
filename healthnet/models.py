@@ -21,10 +21,3 @@ from healthnet.core.logging import LogEntry
 from healthnet.core.calendar import Calendar, Appointment
 from healthnet.core.prescription import Prescription
 from healthnet.core.result import Result
-
-
-class MedicalRecord(models.Model):
-    """
-    MedicalRecord Model
-    """
-    pass

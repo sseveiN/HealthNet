@@ -19,13 +19,17 @@ class Hospital(models.Model):
     zipcode = models.CharField(max_length=5)
 
     def get_doctors(self):
+        """
+        Get all doctors in this hospital
+        :return: A queryset of doctors
+        """
         from healthnet.core.users.doctor import Doctor
         return Doctor.objects.filter(hospitals=self)
 
     def get_patients(self):
         """
         Get all the patients in this hospital
-        :return: A list of patients in the hospital
+        :return: A queryset of patients in the hospital
         """
         return Patient.objects.filter(hospital=self)
 
@@ -42,6 +46,10 @@ class Hospital(models.Model):
         return visits, length
 
     def get_popular_prescriptions(self):
+        """
+        Get popular prescriptions for this hospital
+        :return: A dictionary representing prescriptions and the number of times issued
+        """
         pats = self.get_patients().all()
         names = {}
         for pat in pats:
@@ -52,6 +60,10 @@ class Hospital(models.Model):
         return sorted(names.items(), key=operator.itemgetter(1))
 
     def get_average_prescription_length(self):
+        """
+        Gets the average length of prescriptions at this hospital
+        :return: The average length of prescriptions
+        """
         pats = self.get_patients().all()
         sum = 0
         count = 0
@@ -66,6 +78,11 @@ class Hospital(models.Model):
         return sum / count
 
     def has_user(self, user):
+        """
+        Checks if a hospital is associated with a user
+        :param user: The user to check
+        :return: Whether or not the user is associated
+        """
         for u in self.patient_set.all():
             if user.pk == u.pk:
                 return True
@@ -81,11 +98,21 @@ class Hospital(models.Model):
         return False
 
     def get_address_str(self):
+        """
+        Get the address string of this hospital
+        :return:
+        """
         return '%s%s, %s, %s %s' % \
                (self.address_line_1, self.address_line_2, self.city, States.get_str(self.state), self.zipcode)
 
     def __unicode__(self):
+        """
+        :return: The unicode representation of the object
+        """
         return '%s (%s, %s)' % (self.name, self.city, States.get_str(self.state))
 
     def __str__(self):
+        """
+        :return: The string representation of the object
+        """
         return self.__unicode__()

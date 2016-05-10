@@ -21,6 +21,11 @@ class UserType(EnumField):
 
     @staticmethod
     def get_type_name(usertype):
+        """
+        Gets a sting representation of this user type
+        :param usertype: The UserType to get a string for
+        :return: The string representation
+        """
         if usertype == UserType.Administrator:
             return 'Administrator'
         if usertype == UserType.Doctor:
@@ -70,7 +75,6 @@ class User(AbstractBaseUser):
         :param last_name: user's last name
         :return: a new user with the specified parameters
         """
-
         try:
             """Check that a user with that username does not exist"""
             user = User.objects.get(username=username)
@@ -216,22 +220,45 @@ class User(AbstractBaseUser):
             return UserType.Patient
 
     def get_user_type_name(self):
+        """
+        Get the string representation of this users type
+        :return: The string representing the user type
+        """
         return UserType.get_type_name(self.get_user_type())
 
     def get_num_new_msgs(self):
+        """
+        Get the number of new messages this user has
+        :return: An integer representing the number of new messages
+        """
         return self.received_messages.filter(is_read=False).count()
 
     def get_view_context(self):
+        """
+        Get the global view context for this user
+        :return: A dictionary representing view context
+        """
         return {
             'num_msgs': self.get_num_new_msgs()
         }
 
     def mark_messages_read(self):
+        """
+        Mark all the users messages read
+        :return: None
+        """
         for i in self.received_messages.filter(is_read=False):
             i.is_read = True
             i.save()
 
     def render_for_user(self, request, template, context):
+        """
+        Render a view with this users context
+        :param request: the http request
+        :param template: the template to render
+        :param context: additional context to use
+        :return: The rendered page
+        """
         user_context = dict(context)
         user_context.update(self.get_view_context())
 
@@ -242,6 +269,10 @@ class User(AbstractBaseUser):
         return render(request, template, user_context)
 
     def get_typed_user(self):
+        """
+        Gets a user casted to their specific UserType
+        :return: The type casted user
+        """
         if self.is_type(UserType.Patient):
             from healthnet.core.users.patient import Patient
             return Patient.objects.get(username=self.username)
@@ -261,14 +292,28 @@ class User(AbstractBaseUser):
         return self
 
     def get_appointments(self):
+        """
+        Get all the appointments for this user
+        :return: A queryset of appointments
+        """
         return self.get_typed_user().get_appointments()
 
     def get_patients(self):
+        """
+        Get all the patients for this user
+        :return: A queryset of patients
+        """
         if self.is_type(UserType.Doctor) or self.is_type(UserType.Nurse) or self.is_type(UserType.Administrator):
             return self.get_typed_user().get_patients()
-        return []
+        from healthnet.core.users.patient import Patient
+        return Patient.objects.filter(pk=None)
 
     def has_patient(self, patient):
+        """
+        Check if this user has access to a patient
+        :param patient: The patient to check access for
+        :return: Whether or not the user has access
+        """
         if not patient.is_type(UserType.Patient):
             return False
 
@@ -290,26 +335,47 @@ class User(AbstractBaseUser):
         return False
 
     def notify(self, msg):
+        """
+        Send a notification to this user
+        :param msg: The message for the notification
+        :return: None
+        """
         from healthnet.core.messages import Message, MessageType
         msg = Message.send(self, self, msg, MessageType.Normal)
         msg.is_notification = True
         msg.save()
 
     def approve(self):
+        """
+        Approve a user
+        :return: None
+        """
         self.is_pending = False
         self.save()
 
     @staticmethod
     def generify_queryset(typed_user_set):
+        """
+        Casts a queryset of administrator, doctor, nurse or patient to
+        a generic user queryset
+        :param typed_user_set: A query set of non generic users
+        :return: A query set of generic users
+        """
         out = User.objects.filter(pk=None)
         for u in typed_user_set:
             out |= User.objects.filter(pk=u.pk)
         return out
 
     def __unicode__(self):
+        """
+        :return: The unicode representation of the object
+        """
         return '%s (%s)' % (self.get_full_name(), self.get_short_name())
 
     def __str__(self):
+        """
+        :return: The string representation of the object
+        """
         return self.__unicode__()
 
 

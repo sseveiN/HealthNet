@@ -70,8 +70,8 @@ urlpatterns = [
                   url(r'^register_choose/$', views.register_choose, name="register_choose"),
 
                   # DEBUG
-                  url(r'^debug/create_test_user', views.create_test_user, name="create_test_user"),
-                  url(r'^debug/create_admin_user', views.create_admin_user, name="create_admin_user"),
-                  url(r'^debug/create_test_doctor', views.create_test_doctor, name="create_test_doctor"),
-                  url(r'^debug/create_test_nurse', views.create_test_nurse, name="create_test_nurse"),
+                  # url(r'^debug/create_test_user', views.create_test_user, name="create_test_user"),
+                  # url(r'^debug/create_admin_user', views.create_admin_user, name="create_admin_user"),
+                  # url(r'^debug/create_test_doctor', views.create_test_doctor, name="create_test_doctor"),
+                  # url(r'^debug/create_test_nurse', views.create_test_nurse, name="create_test_nurse"),
               ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
