@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from itertools import chain
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -80,7 +81,7 @@ def dashboard(request):
 
     pending = []
     if user.is_type(UserType.Administrator):
-        pending = User.objects.filter(is_pending=True)
+        pending = User.objects.all().filter(is_pending=True)
 
     patients = user.get_patients()
 
@@ -88,8 +89,7 @@ def dashboard(request):
     #     patients = Patient.objects.all()
 
     if user.is_type(UserType.Administrator):
-        admin = user.get_typed_user()
-        patients = Patient.objects.filter(hospital=admin.hospital.pk)
+        patients = Patient.objects.all()
 
     context = {
         'appointments': appointments,
@@ -1291,7 +1291,7 @@ def statistics(request, pk, start=None, end=None):
             pass
 
     # Get stats
-    patients = hospital.get_patients()
+    patients = Patient.objects.all()
     visits, length = hospital.get_visits_and_length()
     popular_scripts = hospital.get_popular_prescriptions()
 

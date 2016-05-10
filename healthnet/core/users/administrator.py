@@ -17,7 +17,7 @@ class Administrator(User):
 
     def get_hospitals(self):
         from healthnet.core.hospital import Hospital
-        return Hospital.objects.filter(pk=self.hospital.pk)
+        return Hospital.objects.all()
 
     def get_patients(self):
         from healthnet.core.users.patient import Patient
@@ -25,9 +25,9 @@ class Administrator(User):
 
     def get_nurses(self):
         from healthnet.core.users.nurse import Nurse
-        return Nurse.objects.filter(hospital=self.hospital)
+        return Nurse.objects.all()
 
     def get_doctors(self):
         from healthnet.core.users.doctor import Doctor
-        return Doctor.objects.filter(hospitals=self.hospital)
+        return Doctor.objects.all()
 

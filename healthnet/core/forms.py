@@ -256,7 +256,7 @@ class TransferForm(forms.Form):
     """
     Form to transfer a patient
     """
-    transfer_to = forms.ModelChoiceField(queryset=None)
+    transfer_to = forms.ModelChoiceField(queryset=Hospital.objects.all())
 
     def __init__(self, *args, **kwargs):
         """
@@ -269,7 +269,7 @@ class TransferForm(forms.Form):
         super(TransferForm, self).__init__(*args, **kwargs)
 
         self.fields['transfer_to'].label = ""
-        self.fields['transfer_to'].queryset = self.transferer.get_hospitals()
+        self.fields['transfer_to'].queryset = Hospital.objects.all()
 
 
 class DoctorRegistrationForm(forms.ModelForm):

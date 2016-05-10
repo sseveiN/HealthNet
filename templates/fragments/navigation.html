@@ -7,11 +7,11 @@
             {% else %}
                 {% if request.session.current_user_is_admin %}
                     <li><a href="{% url 'views.log' %}">Activity Log</a></li>
-                    {% if admin_hospital %}<li><a href="{% url 'views.statistics' admin_hospital %}">Hospital Statistics</a></li>{% endif %}
-                {% endif %}
+                {%  endif %}
+                {% if admin_hospital %}<li><a href="{% url 'views.statistics' admin_hospital %}">Hospital Statistics</a></li>{% endif %}
                 {% if request.session.current_user_is_patient or request.session.current_user_is_doctor or request.session.current_user_is_nurse %}
                     <li><a href="{% url 'views.create_appointment_1' %}">Create Appointment</a></li>{% endif %}
-            {% endif %}
+                {% endif %}
         </ul>
         {% if request.session.current_user_display_name %}
             <p class="navbar-text navbar-right">Hello, {{ request.session.current_user_display_name }}! - <a
