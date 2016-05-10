@@ -104,7 +104,9 @@ def dashboard(request):
 
     if user.is_type(UserType.Administrator):
         admin = user.get_typed_user()
-        context['employees'] = User.generify_queryset(admin.get_doctors().all()) | User.generify_queryset(admin.get_nurses().all())
+        docs = User.generify_queryset(admin.get_doctors().all())
+        nurses = User.generify_queryset(admin.get_nurses().all())
+        context['employees'] = docs | nurses
 
     return user.render_for_user(request, 'dashboard.html', context)
 
@@ -381,7 +383,6 @@ def registration1(request):
                 request.session['dob'] = registration_form.cleaned_data['dob']
                 request.session['hospital'] = registration_form.cleaned_data['hospital']
 
-
                 return redirect('registration2')
     else:
         registration_form = RequiredRegistrationForm()
@@ -391,7 +392,6 @@ def registration1(request):
     }
 
     return render(request, 'register.html', context)
-
 
 
 def registration2(request):

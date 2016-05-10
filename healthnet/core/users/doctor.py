@@ -20,12 +20,9 @@ class Doctor(User):
 
     def get_patient_users(self):
         from healthnet.core.users.patient import Patient
-        users = None
+        users = User.objects.filter(pk=None)
         for p in Patient.objects.filter(primary_care_provider=self):
-            if users is None:
-                users = User.objects.filter(pk=p.pk)
-            else:
-                users |= User.objects.filter(pk=p.pk)
+            users |= User.objects.filter(pk=p.pk)
         return users
 
     def get_hospitals(self):

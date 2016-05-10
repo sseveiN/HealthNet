@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.db import models
+from django.db.models.query import EmptyQuerySet
 from django.shortcuts import render
 
 from healthnet.core.enumfield import EnumField
@@ -289,12 +290,9 @@ class User(AbstractBaseUser):
 
     @staticmethod
     def generify_queryset(typed_user_set):
-        out = None
+        out = User.objects.filter(pk=None)
         for u in typed_user_set:
-            if out is None:
-                out = User.objects.filter(pk=u.pk)
-            else:
-                out = User.objects.filter(pk=u.pk)
+                out |= User.objects.filter(pk=u.pk)
         return out
 
     def __unicode__(self):
