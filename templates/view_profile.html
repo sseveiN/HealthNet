@@ -67,6 +67,9 @@
         <li><b>Hospital Name:</b> {% if hospital %}{{ hospital.name }}{% else %}None{% endif %}</li>
         <li><b>Hospital Address:</b> {% if hospital.get_address_str %}{{ hospital.get_address_str }}{% else %}None{% endif %}</li>
         <li><b>Admitted:</b> {% if patient.is_admitted == True %}Yes{% else %}No{% endif %}</li>
+        <li><b>Next Of Kin:</b>{% if patient.next_of_kin %}{{ patient.next_of_kin }}{% else %}None{% endif %}</li>
+        <li><b>Emergency Contact:</b>{% if patient.emergency_contact %}{{ patient.emergency_contact }}{% else %}None{% endif %}</li>
+        <li><b>Emergency Contact Number:</b>{% if patient.emergency_contact_number %}{{ patient.emergency_contact_number }}{% else %}None{% endif %}</li>
     </ul>
 
     <h3>Health Insurance</h3>
