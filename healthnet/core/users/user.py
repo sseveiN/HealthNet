@@ -267,6 +267,14 @@ class User(AbstractBaseUser):
         return []
 
     def has_patient(self, patient):
+        if not patient.is_type(UserType.Patient):
+            return False
+
+        patient = patient.get_typed_user()
+
+        if patient.primary_care_provider is None:
+            return False
+
         if patient.primary_care_provider.pk == self.pk:
             return True
 
