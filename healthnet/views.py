@@ -673,8 +673,9 @@ def edit_appointment(request, pk):
 
     apt = Appointment.objects.get(pk=pk)
 
-    if user not in apt.attendees.all():
+    if user not in apt.attendees.all() and not user.is_type(UserType.Nurse):
         messages.error(request, "You aren't allowed to cancel this appointment!")
+        return redirect('dashboard')
     else:
         if request.method == 'POST':
             form = AppointmentForm(request.POST, instance=apt, attendees=attendees,
