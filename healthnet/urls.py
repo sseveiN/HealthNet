@@ -23,6 +23,7 @@ from healthnet import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^dashboard/', views.dashboard, name="dashboard"),
+    url(r'^log/(?P<start>\d{2}-\d{2}-\d{4})/(?P<end>\d{2}-\d{2}-\d{4})', views.log, name="log"),
     url(r'^log/', views.log, name="log"),
     url(r'^result/(?P<pk>\d+)/', views.result, name="result"),
     url(r'^prescription/(?P<pk>\d+)/', views.prescription, name="prescription"),
@@ -60,7 +61,9 @@ urlpatterns = [
     url(r'^edit_nurse_info/', views.edit_nurse_info, name="edit_nurse_info"),
     url(r'^admin_registration/', views.admin_registration, name="admin_registration"),
     url(r'^view_profile/(?P<pk>\d+)/$', views.view_profile, name="view_profile"),
+    url(r'^statistics/(?P<pk>\d+)/(?P<start>\d{2}-\d{2}-\d{4})/(?P<end>\d{2}-\d{2}-\d{4})$', views.statistics, name="statistics"),
     url(r'^statistics/(?P<pk>\d+)/$', views.statistics, name="statistics"),
+    url(r'^export/$', views.export, name="export"),
     url(r'^register_choose/$', views.register_choose, name="register_choose"),
 
     # DEBUG

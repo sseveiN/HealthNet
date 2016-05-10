@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.humanize.templatetags import humanize
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
@@ -85,8 +86,13 @@ def dashboard(request):
         pending = User.objects.filter(is_pending=True)
 
     patients = user.get_patients()
+
     if user.is_type(UserType.Doctor):
         patients = Patient.objects.all()
+
+    if user.is_type(UserType.Administrator):
+        admin = user.get_typed_user()
+        patients = Patient.objects.filter(hospital=admin.hospital.pk)
 
     context = {
         'appointments': appointments,
@@ -95,6 +101,10 @@ def dashboard(request):
         'patients': patients,
         'pending_users': pending
     }
+
+    if user.is_type(UserType.Administrator):
+        admin = user.get_typed_user()
+        context['employees'] = User.generify_queryset(admin.get_doctors().all()) | User.generify_queryset(admin.get_nurses().all())
 
     return user.render_for_user(request, 'dashboard.html', context)
 
@@ -213,7 +223,7 @@ def create_appointment_3(request):
 
                 for a in attendees:
                     a.notify("A new appointment has been created for you.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
-                                    apt.name, apt.description, apt.tstart, apt.tend))
+                                    apt.name, apt.description, apt.tstart.strftime('%c'), apt.tend.strftime('%c')))
 
                 return redirect('dashboard')
     else:
@@ -529,9 +539,11 @@ def logout(request):
     return redirect('index')
 
 
-def log(request):
+def log(request, start=None, end=None):
     """
     User tries to access the log
+    :param end: The log end date
+    :param start: The log start date
     :param request: request to access the log
     :return: If User is noone, they go to the index page
                 If they are not an admin, they get denined
@@ -547,12 +559,54 @@ def log(request):
     if not user.is_type(UserType.Administrator):
         return HttpResponse("Access Denied!")
 
+    # Get date range if one is provided
+    entries = LogEntry.objects.all()
+
+    if start is not None and end is not None:
+        try:
+            start = datetime.strptime(start, '%m-%d-%Y')
+            end = datetime.strptime(end, '%m-%d-%Y')
+            entries = LogEntry.objects.filter(datetime__gt=start, datetime__lt=end)
+        except ValueError:
+            pass
+
     context = {
-        'log_entries': LogEntry.objects.all()
+        'start': start.strftime('%B %d, %Y') if start is not None else None,
+        'end': end.strftime('%B %d, %Y') if end is not None else None,
+        'log_entries': entries
     }
 
     return user.render_for_user(request, 'log.html', context)
 
+
+def export(request, start=None, end=None):
+    """
+    User tries to access the log
+    :param end: The log end date
+    :param start: The log start date
+    :param request: request to access the log
+    :return: If User is noone, they go to the index page
+                If they are not an admin, they get denined
+                If they are an admin, they got to the log page
+    """
+    user = User.get_logged_in(request)
+
+    # Require login
+    if user is None:
+        return redirect('index')
+
+    # Check user type
+    if not user.is_type(UserType.Patient):
+        return redirect('dashboard')
+
+    patient = user.get_typed_user()
+
+    context = {
+        'time': datetime.now(),
+        'patient': patient
+    }
+
+    return render(request, 'export_patient.html', context)
 
 def cancel_appointment(request, pk):
     """
@@ -635,10 +689,10 @@ def edit_appointment(request, pk):
                     Logging.info("Appointment with pk '%s' edited by '%s" % (apt.pk, user.username))
                     messages.success(request, 'Your appointment has been updated')
 
-                    for a in apt.attendees:
+                    for a in apt.attendees.all():
                         a.notify(
                                 "An appointment you are attending has been updated.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
-                                    apt.name, apt.description, apt.tstart, apt.tend))
+                                    apt.name, apt.description, apt.tstart.strftime('%c'), apt.tend.strftime('%c')))
 
                     return redirect('dashboard')
         else:
@@ -1190,14 +1244,16 @@ def result(request, pk):
         context = {
             'released_test_results': Result.objects.filter(patient=user, is_released=True).distinct(),
             'patient': user,
+            'rmenu': Result.objects.order_by().values('test_type').distinct(),
             'pk': pk
         }
     elif user.is_type(UserType.Doctor) or user.is_type(UserType.Nurse):
         patient = Patient.objects.get(pk=pk)
         context = {
             'released_test_results': Result.objects.filter(patient=patient, is_released=True).distinct(),
-            'unreleased_test_results': Result.objects.filter(patient=patient, is_released=False).distinct(),
+            'unreleased_test_results': Result.objects.filter(doctor=user, is_released=False).distinct(),
             'patient': patient,
+            'rmenu': Result.objects.order_by().values('test_type').distinct(),
             'pk': pk
         }
     else:
@@ -1206,7 +1262,7 @@ def result(request, pk):
     return user.render_for_user(request, 'result.html', context)
 
 
-def statistics(request, pk):
+def statistics(request, pk, start=None, end=None):
     """
     Shows statistics for a hospital
     :param request: The HTTP request
@@ -1228,16 +1284,29 @@ def statistics(request, pk):
         messages.error(request, "You don't have permission to view statistics about this hospital")
         return redirect('index')
 
+    # Get date range if one is provided
+    if start is not None and end is not None:
+        try:
+            start = datetime.strptime(start, '%m-%d-%Y')
+            end = datetime.strptime(end, '%m-%d-%Y')
+        except ValueError:
+            pass
+
+    # Get stats
     patients = hospital.get_patients()
     visits, length = hospital.get_visits_and_length()
     popular_scripts = hospital.get_popular_prescriptions()
 
     # Bar graph prescription name and number scripts
-    # Average Prescription length
+        # Average Prescription length
     # Bar graph, patients vs admitted
     # Scatter average visit and length for all patients
     # Table of patient specifics
     context = {
+        'start': start.strftime('%B %d, %Y') if start is not None else None,
+        'end': end.strftime('%B %d, %Y') if end is not None else None,
+        'hospital_pk': pk,
+
         'number_patients': patients.count(),
         'average_visits': visits,
         'average_visit_length': length,
@@ -1276,7 +1345,7 @@ def release_test_result(request, pk):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
-def create_test_result(request, pk):
+def create_test_result(request, pk, id=None):
     """
     Create a test result for a user
     :param request: The HTTP request
@@ -1292,7 +1361,7 @@ def create_test_result(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        result_form = ResultForm(request.POST, request.FILES, initial={'doctor': doctor, 'patient': patient})
+        result_form = ResultForm(request.POST, request.FILES, initial={'doctor': doctor, 'patient': patient, 'test_type': id})
 
         if result_form.is_valid() and user.is_type(UserType.Doctor):
             new_result = result_form.save()
@@ -1308,7 +1377,7 @@ def create_test_result(request, pk):
         else:
             print('invalid')
     else:
-        result_form = ResultForm(initial={'doctor': Doctor.objects.get(username=user.username)})
+        result_form = ResultForm(initial={'doctor': Doctor.objects.get(username=user.username), 'test_type': id})
 
     context = {
         'result_form': result_form
@@ -1349,7 +1418,7 @@ def prescription(request, pk):
     return user.render_for_user(request, 'prescription.html', context)
 
 
-def create_prescription(request, pk):
+def create_prescription(request, pk, id=None):
     """
     Create a prescription for a user
     :param request: The HTTP request
@@ -1365,10 +1434,7 @@ def create_prescription(request, pk):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        prescription_form = PrescriptionForm(
-                initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
-                         'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
-                         'zipcode': patient.zipcode})
+        prescription_form = PrescriptionForm(request.POST, initial={'doctor': doctor, 'patient': patient})
 
         if prescription_form.is_valid() and user.is_type(UserType.Doctor):
             new = prescription_form.save()
@@ -1381,10 +1447,7 @@ def create_prescription(request, pk):
             patient.notify("A new prescription for %s was issued to you by %s." % (new.name, new.doctor))
             return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
     else:
-        prescription_form = PrescriptionForm(
-                initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
-                         'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
-                         'zipcode': patient.zipcode})
+        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode, 'name': id})
 
     context = {
         'prescription_form': prescription_form

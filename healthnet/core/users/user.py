@@ -287,6 +287,16 @@ class User(AbstractBaseUser):
         self.is_pending = False
         self.save()
 
+    @staticmethod
+    def generify_queryset(typed_user_set):
+        out = None
+        for u in typed_user_set:
+            if out is None:
+                out = User.objects.filter(pk=u.pk)
+            else:
+                out = User.objects.filter(pk=u.pk)
+        return out
+
     def __unicode__(self):
         return '%s (%s)' % (self.get_full_name(), self.get_short_name())
 

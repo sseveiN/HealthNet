@@ -3,10 +3,16 @@
 {% block title %} Activity Log {% endblock title %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.11/css/jquery.dataTables.min.css"/>
 {% endblock css %}
 
 {% block content %}
+    <div id="daterange" class="pull-right">
+        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
+        <span>{% if start and end %}{{ start }} - {{ end }}{% else %}Choose a date range...{% endif %}</span> <b class="caret"></b>
+    </div>
+
+    <div class="clearfix"></div>
+
     <div id="row">
         <div class="col-md-6">
             <canvas id="patients_chart"></canvas>
@@ -85,7 +91,7 @@
                     borderWidth: 1,
                     hoverBackgroundColor: "rgba(255,99,132,0.4)",
                     hoverBorderColor: "rgba(255,99,132,1)",
-                    data: [{{ num_patients_admitted }}, {{ num_patients_discharged }}, {{ number_paitents }}]
+                    data: [{{ num_patients_admitted }}, {{ num_patients_discharged }}, {{ number_patients }}]
                 }
             ]
         },
@@ -136,6 +142,11 @@
             "order": [[1, "desc"]],
             "iDisplayLength": 25
         });
+    });
+
+    $('#daterange').daterangepicker({}, function(start, end, label) {
+        $('#daterange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+        $(location).attr('href', '{% url 'statistics' hospital_pk '01-01-0001' '02-02-0002' %}'.replace('01-01-0001', start.format('MM-DD-YYYY')).replace('02-02-0002', end.format('MM-DD-YYYY')));
     });
     </script>
 {% endblock scripts %}

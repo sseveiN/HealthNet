@@ -5,8 +5,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.db import models
 
 from healthnet.core.enumfield import EnumField
-from healthnet.core.messages import Message, MessageType
 from healthnet.core.prescription import Prescription
+from healthnet.core.result import Result
 from healthnet.core.users.user import User
 from healthnet.models import States
 
@@ -38,8 +38,7 @@ class Patient(User):
     health_insurance_provider = models.CharField(max_length=30, blank=True,
                                                  null=True)  # All the provider codes ive seen are 5 + 10 numbers
     health_insurance_number = models.CharField(max_length=12,
-                                               unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
-                                                                                       message='Health insurance alphanumeric beginning with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
+                                               unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',                                                                           message='Health insurance alphanumeric beginning with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
 
@@ -67,6 +66,9 @@ class Patient(User):
         patient = Patient(health_insurance_number=health_id, email=email, username=username, password=password, first_name=first_name, last_name=last_name, dob=dob, hospital=hospital, primary_care_provider=pcp)
         return patient
 
+
+    def get_test_results(self, released=True):
+        return Result.objects.filter(patient=self, is_released=released)
 
     def get_average_visit_length_str(self):
         return timedelta(seconds=self.average_visit_length)

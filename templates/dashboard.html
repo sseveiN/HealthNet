@@ -25,6 +25,21 @@
                     {% endif %}
                 </div>
             </li>
+
+            <li class="dashboard-item">
+                <div class="dashboard-header clearfix">
+                    <h1 class="pull-left">Hospital Employees</h1>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
+                </div>
+
+                <div id="accounts-section" class="collapse in">
+                    {% if employees %}
+                        {% include "fragments/employees.html" with employees=employees %}
+                    {% else %}
+                        <p>There are no employees at your hospital.</p>
+                    {% endif %}
+                </div>
+            </li>
         {% endif %}
 
         {% if not request.session.current_user_is_admin %}
@@ -47,7 +62,7 @@
         {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse or request.session.current_user_is_admin %}
             <li class="dashboard-item" data-dashboard-id="2">
                 <div class="dashboard-header clearfix">
-                    {% if request.session.current_user_is_admin %}<h1 class="pull-left">All Patients</h1>{% else %}<h1 class="pull-left">My Patients</h1>{% endif %}
+                    {% if request.session.current_user_is_admin %}<h1 class="pull-left">Hospital Patients</h1>{% else %}<h1 class="pull-left">My Patients</h1>{% endif %}
                     <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#patients-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
