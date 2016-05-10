@@ -8,145 +8,147 @@
 {% block content %}
     <div id="daterange" class="pull-right">
         <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
-        <span>{% if start and end %}{{ start }} - {{ end }}{% else %}Choose a date range...{% endif %}</span> <b class="caret"></b>
+        <span>{% if start and end %}{{ start }} - {{ end }}{% else %}Choose a date range...{% endif %}</span> <b
+            class="caret"></b>
     </div>
 
     <div class="clearfix"></div>
 
     <div id="row">
-        <div class="col-md-6">
-            <canvas id="patients_chart"></canvas>
-        </div>
-        <div class="col-md-6">
-            <canvas id="prescriptions_chart"></canvas>
-        </div>
-        <div class="col-md-6">
-            <canvas id="visits_chart"></canvas>
-        </div>
-        <div class="col-md-6">
-            <canvas id="visit_length_chart"></canvas>
-        </div>
-        <div class="cold-md-12">
-            <table id="patients" class="table" width="100%">
-                <thead>
-                <tr>
-                    <th>#</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Visits</th>
-                    <th>Average Visit Length</th>
-                    <th>Admitted?</th>
-                    <th>Last Admitted</th>
-                </tr>
-                </thead>
-                <tbody>
+    <div class="col-md-6">
+        <canvas id="patients_chart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="prescriptions_chart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="visits_chart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="visit_length_chart"></canvas>
+    </div>
+    <div class="cold-md-12">
+        <table id="patients" class="table" width="100%">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Visits</th>
+                <th>Average Visit Length</th>
+                <th>Admitted?</th>
+                <th>Last Admitted</th>
+            </tr>
+            </thead>
+            <tbody>
 
-                {% for p in patients %}
-                    <tr>
-                        <td>{{ p.pk }}</td>
-                        <td>{{ p.first_name }}</td>
-                        <td>{{ p.last_name }}</td>
-                        <td>{{ p.visits }}</td>
-                        <td>{{ p.get_average_visit_length_str }}</td>
-                        <td>{% if p.is_admitted  %}Yes{% else %}No{% endif %}</td>
-                        <td>{% if p.last_admit_date  %}{{ p.last_admit_date }}{% else %}Never{% endif %}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            {% for p in patients %}
+                <tr>
+                    <td>{{ p.pk }}</td>
+                    <td>{{ p.first_name }}</td>
+                    <td>{{ p.last_name }}</td>
+                    <td>{{ p.visits }}</td>
+                    <td>{{ p.get_average_visit_length_str }}</td>
+                    <td>{% if p.is_admitted %}Yes{% else %}No{% endif %}</td>
+                    <td>{% if p.last_admit_date %}{{ p.last_admit_date }}{% else %}Never{% endif %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
     </div>
 {% endblock content %}
 
 {% block scripts %}
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.0.1/Chart.bundle.min.js"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.0.1/Chart.bundle.min.js"></script>
     <script type="text/javascript">
-    new Chart($("#prescriptions_chart"), {
-        type: 'bar',
-        data: {
-            labels: {{ popular_scripts_names_json | safe }},
-            datasets: [
-                {
-                    label: "Popular Prescriptions",
-                    backgroundColor: "rgba(255,99,132,0.2)",
-                    borderColor: "rgba(255,99,132,1)",
-                    borderWidth: 1,
-                    hoverBackgroundColor: "rgba(255,99,132,0.4)",
-                    hoverBorderColor: "rgba(255,99,132,1)",
-                    data: {{ popular_scripts_values_json }}
-                }
-            ]
-        },
-        options: {}
-    });
-
-    new Chart($("#patients_chart"), {
-        type: 'bar',
-        data: {
-            labels: ['Admitted Patients', 'Discharged Patients', 'Total Patients'],
-            datasets: [
-                {
-                    label: "Patients",
-                    backgroundColor: "rgba(255,99,132,0.2)",
-                    borderColor: "rgba(255,99,132,1)",
-                    borderWidth: 1,
-                    hoverBackgroundColor: "rgba(255,99,132,0.4)",
-                    hoverBorderColor: "rgba(255,99,132,1)",
-                    data: [{{ num_patients_admitted }}, {{ num_patients_discharged }}, {{ number_patients }}]
-                }
-            ]
-        },
-        options: {scaleStartValue: 0,}
-    });
-
-    new Chart($("#visits_chart"), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                {
-                    label: "Number of Visits",
-                    backgroundColor: "rgba(255,99,132,0.2)",
-                    borderColor: "rgba(255,99,132,1)",
-                    borderWidth: 1,
-                    hoverBackgroundColor: "rgba(255,99,132,0.4)",
-                    hoverBorderColor: "rgba(255,99,132,1)",
-                    data: {{ average_visits | safe}}
-                }
-            ]
-        },
-        options: {}
-    });
-
-    new Chart($("#visit_length_chart"), {
-        type: 'line',
-        data: {
-            labels: [],
-            datasets: [
-                {
-                    label: "Visit Length",
-                    backgroundColor: "rgba(255,99,132,0.2)",
-                    borderColor: "rgba(255,99,132,1)",
-                    borderWidth: 1,
-                    hoverBackgroundColor: "rgba(255,99,132,0.4)",
-                    hoverBorderColor: "rgba(255,99,132,1)",
-                    data: {{ average_visit_length | safe}}
-                }
-            ]
-        },
-        options: {}
-    });
-
-
-    $(document).ready(function () {
-        $('#patients').DataTable({
-            "order": [[1, "desc"]],
-            "iDisplayLength": 25
+        new Chart($("#prescriptions_chart"), {
+            type: 'bar',
+            data: {
+                labels: {{ popular_scripts_names_json | safe }},
+                datasets: [
+                    {
+                        label: "Popular Prescriptions",
+                        backgroundColor: "rgba(255,99,132,0.2)",
+                        borderColor: "rgba(255,99,132,1)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(255,99,132,0.4)",
+                        hoverBorderColor: "rgba(255,99,132,1)",
+                        data: {{ popular_scripts_values_json }}
+                    }
+                ]
+            },
+            options: {}
         });
-    });
 
-    $('#daterange').daterangepicker({}, function(start, end, label) {
-        $('#daterange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
-        $(location).attr('href', '{% url 'statistics' hospital_pk '01-01-0001' '02-02-0002' %}'.replace('01-01-0001', start.format('MM-DD-YYYY')).replace('02-02-0002', end.format('MM-DD-YYYY')));
-    });
+        new Chart($("#patients_chart"), {
+            type: 'bar',
+            data: {
+                labels: ['Admitted Patients', 'Discharged Patients', 'Total Patients'],
+                datasets: [
+                    {
+                        label: "Patients",
+                        backgroundColor: "rgba(255,99,132,0.2)",
+                        borderColor: "rgba(255,99,132,1)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(255,99,132,0.4)",
+                        hoverBorderColor: "rgba(255,99,132,1)",
+                        data: [{{ num_patients_admitted }}, {{ num_patients_discharged }}, {{ number_patients }}]
+                    }
+                ]
+            },
+            options: {scaleStartValue: 0,}
+        });
+
+        new Chart($("#visits_chart"), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: "Number of Visits",
+                        backgroundColor: "rgba(255,99,132,0.2)",
+                        borderColor: "rgba(255,99,132,1)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(255,99,132,0.4)",
+                        hoverBorderColor: "rgba(255,99,132,1)",
+                        data: {{ average_visits | safe}}
+                    }
+                ]
+            },
+            options: {}
+        });
+
+        new Chart($("#visit_length_chart"), {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: "Visit Length",
+                        backgroundColor: "rgba(255,99,132,0.2)",
+                        borderColor: "rgba(255,99,132,1)",
+                        borderWidth: 1,
+                        hoverBackgroundColor: "rgba(255,99,132,0.4)",
+                        hoverBorderColor: "rgba(255,99,132,1)",
+                        data: {{ average_visit_length | safe}}
+                    }
+                ]
+            },
+            options: {}
+        });
+
+
+        $(document).ready(function () {
+            $('#patients').DataTable({
+                "order": [[1, "desc"]],
+                "iDisplayLength": 25
+            });
+        });
+
+        $('#daterange').daterangepicker({}, function (start, end, label) {
+            $('#daterange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+            $(location).attr('href', '{% url 'statistics' hospital_pk '01-01-0001' '02-02-0002' %}'.replace('01-01-0001', start.format('MM-DD-YYYY')).replace('02-02-0002', end.format('MM-DD-YYYY')));
+        });
     </script>
 {% endblock scripts %}

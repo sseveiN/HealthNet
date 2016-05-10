@@ -8,7 +8,8 @@
 {% block content %}
     <div id="daterange" class="pull-right">
         <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>&nbsp;
-        <span>{% if start and end %}{{ start }} - {{ end }}{% else %}Choose a date range...{% endif %}</span> <b class="caret"></b>
+        <span>{% if start and end %}{{ start }} - {{ end }}{% else %}Choose a date range...{% endif %}</span> <b
+            class="caret"></b>
     </div>
 
     <div class="clearfix"></div>
@@ -44,7 +45,7 @@
             });
         });
 
-        $('#daterange').daterangepicker({}, function(start, end, label) {
+        $('#daterange').daterangepicker({}, function (start, end, label) {
             $('#daterange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
             $(location).attr('href', '{% url 'log' '01-01-0001' '02-02-0002' %}'.replace('01-01-0001', start.format('MM-DD-YYYY')).replace('02-02-0002', end.format('MM-DD-YYYY')));
         });

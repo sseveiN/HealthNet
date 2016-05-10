@@ -36,16 +36,17 @@
                         <a href="{% url "views.result" patient.pk %}">
                             <button type="button" class="btn btn-primary btn-xs">Tests</button>
                         </a>
-                        {% if not request.session.current_user_is_nurse %}<a href="{% url "views.transfer" patient.pk %}">
+                        {% if not request.session.current_user_is_nurse %}
+                            <a href="{% url "views.transfer" patient.pk %}">
                             <button type="button" class="btn btn-primary btn-xs">Transfer</button>{% endif %}
-                        </a>
+                    </a>
                         <!-- Make nurses not see -->
                         {% if request.session.current_user_is_doctor %}
-                        <a href="{% url "views.toggle_admit" patient.pk %}">
-                            <button type="button"
-                                    class="btn {% if patient.is_admitted %}btn-danger{% else %}btn-success{% endif %} btn-xs">
-                                {% if patient.is_admitted %}Discharge{% else %}Admit{% endif %}</button>
-                        </a>
+                            <a href="{% url "views.toggle_admit" patient.pk %}">
+                                <button type="button"
+                                        class="btn {% if patient.is_admitted %}btn-danger{% else %}btn-success{% endif %} btn-xs">
+                                    {% if patient.is_admitted %}Discharge{% else %}Admit{% endif %}</button>
+                            </a>
                         {% endif %}
                     {% endif %}
                     {% if request.session.current_user_is_admin %}

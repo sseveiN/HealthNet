@@ -38,7 +38,8 @@ class Command(BaseCommand):
 
     def add_admin(self, username: str, password_hash: str, first_name: str, last_name: str, middle_name: str,
                   dob: date_type, addr: str, email: str, phone: str, primary_hospital_id: int, hospital_ids: list):
-        b, user = User.create_user(username=username, password="", usertype=UserType.Administrator, email=email, first_name=first_name, last_name=last_name, print_stdout=False)
+        b, user = User.create_user(username=username, password="", usertype=UserType.Administrator, email=email,
+                                   first_name=first_name, last_name=last_name, print_stdout=False)
         user.password = password_hash
         user.save(update_fields=["password"])
         user.save()
@@ -50,7 +51,8 @@ class Command(BaseCommand):
 
     def add_doctor(self, username: str, password_hash: str, first_name: str, last_name: str, middle_name: str,
                    dob: date_type, addr: str, email: str, phone: str, hospital_ids: list, patient_ids: list):
-        bool, user = User.create_user(username=username, password="", usertype=UserType.Doctor, email=email, first_name=first_name, last_name=last_name, print_stdout=False)
+        bool, user = User.create_user(username=username, password="", usertype=UserType.Doctor, email=email,
+                                      first_name=first_name, last_name=last_name, print_stdout=False)
         user.password = password_hash
         user.save(update_fields=["password"])
         user.is_pending = False
@@ -59,7 +61,8 @@ class Command(BaseCommand):
 
     def add_nurse(self, username: str, password_hash: str, first_name: str, last_name: str, middle_name: str,
                   dob: date_type, addr: str, email: str, phone: str, primary_hospital_id: list, doctor_ids: list):
-        b, user = User.create_user(username=username, password="", usertype=UserType.Nurse, email=email, first_name=first_name, last_name=last_name, print_stdout=False)
+        b, user = User.create_user(username=username, password="", usertype=UserType.Nurse, email=email,
+                                   first_name=first_name, last_name=last_name, print_stdout=False)
         user.password = password_hash
         user.save(update_fields=["password"])
         user = user.get_typed_user()
@@ -72,7 +75,10 @@ class Command(BaseCommand):
                     dob: date_type, addr: str, email: str, phone: str, emergency_contact: str, eye_color: str,
                     bloodtype: str, height: int, weight: int, primary_hospital_id: int, primary_doctor_id: int,
                     doctor_ids: list):
-        b, user = User.create_user(username=username, password="password", usertype=UserType.Patient, email=email, first_name=first_name, last_name=last_name, primary_care_provider_id=primary_doctor_id, hospital_id=primary_hospital_id, health_insurance_number=self.generate_insurance_number(), print_stdout=False)
+        b, user = User.create_user(username=username, password="password", usertype=UserType.Patient, email=email,
+                                   first_name=first_name, last_name=last_name,
+                                   primary_care_provider_id=primary_doctor_id, hospital_id=primary_hospital_id,
+                                   health_insurance_number=self.generate_insurance_number(), print_stdout=False)
         user.password = password_hash
         user.save(update_fields=["password"])
         user = user.get_typed_user()
@@ -99,29 +105,35 @@ class Command(BaseCommand):
             patient_ids = []
 
         attendees = User.objects.filter(pk__in=(doctor_ids + nurse_ids + patient_ids))
-        b, apt = Calendar.create_appointment(name=description, attendees=attendees, creator=attendees[0] if len(attendees) > 0 else None, desc=description, start=django.utils.timezone.make_aware(start), end=django.utils.timezone.make_aware(end))
+        b, apt = Calendar.create_appointment(name=description, attendees=attendees,
+                                             creator=attendees[0] if len(attendees) > 0 else None, desc=description,
+                                             start=django.utils.timezone.make_aware(start),
+                                             end=django.utils.timezone.make_aware(end))
 
     def add_prescription(self, name: str, dosage: int, notes: str, doctor_id: int, patient_id: int):
-        prescription = Prescription.objects.create(name=name, refills=dosage, description=notes, doctor_id=doctor_id, patient_id=patient_id, state=0, expiration_date=datetime.now())
+        prescription = Prescription.objects.create(name=name, refills=dosage, description=notes, doctor_id=doctor_id,
+                                                   patient_id=patient_id, state=0, expiration_date=datetime.now())
         prescription.save()
         return prescription.pk
 
     def add_test(self, name: str, date: date_type, description: str, results: str, released: bool, doctor_id: int,
                  patient_id: int):
-        result = Result.objects.create(test_type=name, test_date=date, description=description, comment=results, is_released=released, doctor_id=doctor_id, patient_id=patient_id)
+        result = Result.objects.create(test_type=name, test_date=date, description=description, comment=results,
+                                       is_released=released, doctor_id=doctor_id, patient_id=patient_id)
         result.save()
         return result.pk
 
     def add_log_entry(self, user_id: int, request_method: str, request_secure: bool, request_addr: str,
                       description: str, hospital_id: int):
-       Logging.info(description, print_stdout=False)
+        Logging.info(description, print_stdout=False)
 
     def generate_insurance_number(self):
         # FORMAT NO DOES HAS HEALTH INSURANCE NUMBERS :'(
         import string
         import random
 
-        num = ''.join(random.sample(string.ascii_uppercase, 1)).join(random.sample(string.ascii_uppercase + string.digits, 11))
+        num = ''.join(random.sample(string.ascii_uppercase, 1)).join(
+            random.sample(string.ascii_uppercase + string.digits, 11))
 
         if Patient.objects.filter(health_insurance_number=num).count() > 0:
             return self.generate_insurance_number()

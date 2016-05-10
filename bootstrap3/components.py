@@ -33,7 +33,7 @@ def render_alert(content, alert_type=None, dismissable=True):
                  'data-dismiss="alert" aria-hidden="true">&times;</button>'
     button_placeholder = '__BUTTON__'
     return mark_safe(render_tag(
-        'div',
-        attrs={'class': ' '.join(css_classes)},
-        content=button_placeholder + text_value(content),
+            'div',
+            attrs={'class': ' '.join(css_classes)},
+            content=button_placeholder + text_value(content),
     ).replace(button_placeholder, button))

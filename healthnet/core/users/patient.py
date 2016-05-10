@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 import django
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
@@ -38,7 +38,9 @@ class Patient(User):
     health_insurance_provider = models.CharField(max_length=30, blank=True,
                                                  null=True)  # All the provider codes ive seen are 5 + 10 numbers
     health_insurance_number = models.CharField(max_length=12,
-                                               unique=True, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',                                                                           message='Health insurance alphanumeric beginning with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
+                                               unique=True, validators=[
+            RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
+                           message='Health insurance alphanumeric beginning with a letter.')])  # All the insurance numbers ive seen are 5 + 5 characters
     primary_care_provider = models.ForeignKey('Doctor', related_name="primary_care_provider", unique=False)
     prescriptions = models.ForeignKey('Prescription', related_name="patient_prescriptions", blank=True, null=True)
 
@@ -46,11 +48,11 @@ class Patient(User):
     is_admitted = models.BooleanField(default=False)
     last_admit_date = models.DateTimeField(blank=True, null=True)
 
-    address_line_1 = models.CharField(max_length=255,blank=True)
+    address_line_1 = models.CharField(max_length=255, blank=True)
     address_line_2 = models.CharField(max_length=255, blank=True, default="")
     city = models.CharField(max_length=255, blank=True)
     state = models.IntegerField(choices=States.get_choices(), default=1)
-    zipcode = models.CharField(max_length=5,blank=True)
+    zipcode = models.CharField(max_length=5, blank=True)
 
     next_of_kin = models.CharField(max_length=255, blank=True)
     emergency_contact = models.CharField(max_length=255, blank=True)
@@ -63,9 +65,10 @@ class Patient(User):
     visits = models.IntegerField(default=0)
 
     def create_patient(health_id, email, username, password, first_name, last_name, dob, hospital, pcp):
-        patient = Patient(health_insurance_number=health_id, email=email, username=username, password=password, first_name=first_name, last_name=last_name, dob=dob, hospital=hospital, primary_care_provider=pcp)
+        patient = Patient(health_insurance_number=health_id, email=email, username=username, password=password,
+                          first_name=first_name, last_name=last_name, dob=dob, hospital=hospital,
+                          primary_care_provider=pcp)
         return patient
-
 
     def get_test_results(self, released=True):
         return Result.objects.filter(patient=self, is_released=released)

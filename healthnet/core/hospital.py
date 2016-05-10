@@ -3,7 +3,6 @@ import operator
 from django.db import models
 
 from healthnet.core.users.patient import Patient
-
 from healthnet.models import States
 
 

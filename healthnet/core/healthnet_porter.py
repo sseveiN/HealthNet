@@ -116,9 +116,11 @@ class HealthNetImport(object):
         for i in self.__data['admins']:
             try:
                 pk = self.__create_admin(username=i['username'], password_hash=i['password_hash'],
-                                         first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                         first_name=i['first_name'], middle_name=i['middle_name'],
+                                         last_name=i['last_name'],
                                          dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                         phone=i['phone'], primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
+                                         phone=i['phone'],
+                                         primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
                                          hospital_ids=self.__convert_pks('hospitals', i['hospital_ids']))
                 self.__pk_map['admins'][pk_map_index] = pk
                 pk_map_index += 1
@@ -133,9 +135,11 @@ class HealthNetImport(object):
         for i in self.__data['doctors']:
             try:
                 pk = self.__create_doctor(username=i['username'], password_hash=i['password_hash'],
-                                          first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                          first_name=i['first_name'], middle_name=i['middle_name'],
+                                          last_name=i['last_name'],
                                           dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                          phone=i['phone'], hospital_ids=self.__convert_pks('hospitals', i['hospital_ids']),
+                                          phone=i['phone'],
+                                          hospital_ids=self.__convert_pks('hospitals', i['hospital_ids']),
                                           patient_ids=self.__convert_pks('patients', i['patient_ids']))
                 self.__pk_map['doctors'][pk_map_index] = pk
                 pk_map_index += 1
@@ -150,9 +154,11 @@ class HealthNetImport(object):
         for i in self.__data['nurses']:
             try:
                 pk = self.__create_nurse(username=i['username'], password_hash=i['password_hash'],
-                                         first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                         first_name=i['first_name'], middle_name=i['middle_name'],
+                                         last_name=i['last_name'],
                                          dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                         phone=i['phone'], primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
+                                         phone=i['phone'],
+                                         primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
                                          doctor_ids=self.__convert_pks('doctors', i['doctor_ids']))
                 self.__pk_map['nurses'][pk_map_index] = pk
                 pk_map_index += 1
@@ -167,13 +173,15 @@ class HealthNetImport(object):
         for i in self.__data['patients']:
             try:
                 pk = self.__create_patient(username=i['username'], password_hash=i['password_hash'],
-                                           first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                           first_name=i['first_name'], middle_name=i['middle_name'],
+                                           last_name=i['last_name'],
                                            dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
                                            phone=i['phone'], emergency_contact=i['emergency_contact'],
                                            eye_color=i['eye_color'],
                                            bloodtype=i['bloodtype'], weight=i['weight'], height=i['height'],
                                            primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
-                                           primary_doctor_id=self.__convert_pk('doctors', i['primary_doctor_id']), doctor_ids=self.__convert_pks('doctors', i['doctor_ids']))
+                                           primary_doctor_id=self.__convert_pk('doctors', i['primary_doctor_id']),
+                                           doctor_ids=self.__convert_pks('doctors', i['doctor_ids']))
                 self.__pk_map['patients'][pk_map_index] = pk
                 pk_map_index += 1
             except:
@@ -187,7 +195,9 @@ class HealthNetImport(object):
             try:
                 self.__create_appointment(start=self.__parse_date(i['start']), end=self.__parse_date(i['end']),
                                           location=i['location'], description=i['description'],
-                                          doctor_ids=self.__convert_pks('doctors', i['doctor_ids']), nurse_ids=i['nurse_ids'], patient_ids=self.__convert_pks('patients', i['patient_ids']))
+                                          doctor_ids=self.__convert_pks('doctors', i['doctor_ids']),
+                                          nurse_ids=i['nurse_ids'],
+                                          patient_ids=self.__convert_pks('patients', i['patient_ids']))
             except:
                 pass
 
@@ -198,7 +208,8 @@ class HealthNetImport(object):
         for i in self.__data['prescriptions']:
             try:
                 self.__create_prescription(name=i['name'], dosage=i['dosage'], notes=i['notes'],
-                                       doctor_id=self.__convert_pk('doctors', i['doctor_id']), patient_id=self.__convert_pk('patients', i['patient_id']))
+                                           doctor_id=self.__convert_pk('doctors', i['doctor_id']),
+                                           patient_id=self.__convert_pk('patients', i['patient_id']))
             except:
                 pass
 
@@ -209,7 +220,8 @@ class HealthNetImport(object):
         for i in self.__data['tests']:
             try:
                 self.__create_test(name=i['name'], date=self.__parse_date(i['date']), description=i['description'],
-                                   results=i['results'], released=i['released'], doctor_id=self.__convert_pk('doctors', i['doctor_id']),
+                                   results=i['results'], released=i['released'],
+                                   doctor_id=self.__convert_pk('doctors', i['doctor_id']),
                                    patient_id=self.__convert_pk('patients', i['patient_id']))
             except:
                 pass
@@ -222,9 +234,11 @@ class HealthNetImport(object):
             try:
                 self.__create_log(user_id=i['user_id'], request_method=i['request_method'],
                                   request_secure=i['request_secure'],
-                                  request_addr=i['request_addr'], description=i['description'], hospital_id=self.__convert_pk('hospitals', i['hospital_id']))
+                                  request_addr=i['request_addr'], description=i['description'],
+                                  hospital_id=self.__convert_pk('hospitals', i['hospital_id']))
             except:
                 pass
+
 
 class HealthNetExport(object):
     """

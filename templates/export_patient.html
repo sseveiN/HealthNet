@@ -10,6 +10,7 @@
             float: none;
             background: #fff url(none);
         }
+
         #warning {
             color: red;
             font-weight: bold;
@@ -80,74 +81,75 @@
     </style>
 </head>
 <body>
-    <div id="warning">
-    <u>Disclaimer:</u> The information contained in this document is extremely confidential and should only be viewed by trusted parties.
-    </div>
+<div id="warning">
+    <u>Disclaimer:</u> The information contained in this document is extremely confidential and should only be viewed by
+    trusted parties.
+</div>
 
-    <h1>{{ patient.get_full_name }}</h1>
-    <p><b>Generated on: </b>{{ time }}</p>
+<h1>{{ patient.get_full_name }}</h1>
+<p><b>Generated on: </b>{{ time }}</p>
 
-    <h2>Basic Information</h2>
-    <ul>
-        <li><b>Username:</b> {{ patient.username }}</li>
-        <li><b>Date of Birth:</b> {{ patient.dob }}</li>
-        <li><b>Age:</b> {{ patient.get_age }}</li>
-        <li><b>Gender:</b> {{ patient.get_sex_str }}</li>
-        <li><b>Marital Status:</b> {{ patient.get_marital_status_str }}</li>
-        <li><b>Height:</b> {{ patient.height }} in</li>
-        <li><b>Weight:</b> {{ patient.weight }} lbs</li>
-        <li><b>Cholesterol:</b> {{ patient.cholesterol }} mg/dL</li>
+<h2>Basic Information</h2>
+<ul>
+    <li><b>Username:</b> {{ patient.username }}</li>
+    <li><b>Date of Birth:</b> {{ patient.dob }}</li>
+    <li><b>Age:</b> {{ patient.get_age }}</li>
+    <li><b>Gender:</b> {{ patient.get_sex_str }}</li>
+    <li><b>Marital Status:</b> {{ patient.get_marital_status_str }}</li>
+    <li><b>Height:</b> {{ patient.height }} in</li>
+    <li><b>Weight:</b> {{ patient.weight }} lbs</li>
+    <li><b>Cholesterol:</b> {{ patient.cholesterol }} mg/dL</li>
 
-        <li><b>Home Phone:</b> {{ patient.home_phone }}</li>
-        <li><b>Work Phone:</b> {{ patient.work_phone }}</li>
+    <li><b>Home Phone:</b> {{ patient.home_phone }}</li>
+    <li><b>Work Phone:</b> {{ patient.work_phone }}</li>
 
-        <li><b>Address:</b> {{ patient.get_address_str }}</li>
+    <li><b>Address:</b> {{ patient.get_address_str }}</li>
 
-        <li><b>Next Of Kin:</b> {{ patient.next_of_kin }}</li>
-        <li><b>Emergency Contact:</b> {{ patient.emergency_contact }}</li>
-        <li><b>Emergency Contact Number:</b> {{ patient.emergency_contact_number }}</li>
-    </ul>
+    <li><b>Next Of Kin:</b> {{ patient.next_of_kin }}</li>
+    <li><b>Emergency Contact:</b> {{ patient.emergency_contact }}</li>
+    <li><b>Emergency Contact Number:</b> {{ patient.emergency_contact_number }}</li>
+</ul>
 
-    <h2>Insurance Information</h2>
-    <ul>
-        <li><b>Health Insurance Provider:</b> {{ patient.health_insurance_provider }}</li>
-        <li><b>Health Insurance Number:</b> {{ patient.health_insurance_number }}</li>
-    </ul>
+<h2>Insurance Information</h2>
+<ul>
+    <li><b>Health Insurance Provider:</b> {{ patient.health_insurance_provider }}</li>
+    <li><b>Health Insurance Number:</b> {{ patient.health_insurance_number }}</li>
+</ul>
 
-    <h2>Hospital Information</h2>
-    <ul>
-        <li><b>Primary Care Provider:</b> {{ patient.primary_care_provider }}</li>
-        <li><b>Hospital Name:</b> {{ patient.hospital }}</li>
-        <li><b>Hospital Address:</b> {{ patient.hospital.get_address_str }}</li>
-        <li><b>Last Admitted:</b> {{ patient.last_admit_date }}</li>
-    </ul>
+<h2>Hospital Information</h2>
+<ul>
+    <li><b>Primary Care Provider:</b> {{ patient.primary_care_provider }}</li>
+    <li><b>Hospital Name:</b> {{ patient.hospital }}</li>
+    <li><b>Hospital Address:</b> {{ patient.hospital.get_address_str }}</li>
+    <li><b>Last Admitted:</b> {{ patient.last_admit_date }}</li>
+</ul>
 
-    <h2>Prescriptions</h2>
-    <ul>
-        {% for p in patient.get_prescriptions %}
-            <li>
-                <p>
-                    <b>{{ p.refills }} refills of {{ p.name }}</b><br/>
-                    Address: {{ p.get_address_str }}<br/>
-                    Expires: {{ p.expiration_date }}<br/>
-                    Issued: {{ p.issue_date }}<br/>
-                    Description: {{ p.description }}<br/>
-                </p>
-            </li>
-        {% endfor %}
-    </ul>
+<h2>Prescriptions</h2>
+<ul>
+    {% for p in patient.get_prescriptions %}
+        <li>
+            <p>
+                <b>{{ p.refills }} refills of {{ p.name }}</b><br/>
+                Address: {{ p.get_address_str }}<br/>
+                Expires: {{ p.expiration_date }}<br/>
+                Issued: {{ p.issue_date }}<br/>
+                Description: {{ p.description }}<br/>
+            </p>
+        </li>
+    {% endfor %}
+</ul>
 
-    <h2>Test Results</h2>
-    <ul>
-        {% for t in patient.get_test_results %}
-            <li>
-                <p>
-                    <b>{{ t.test_type }} on {{ t.test_date }} released {{ t.release_date }}</b><br/>
-                    Comment: {{ t.comment }}<br/>
-                    Description: {{ t.description }}<br/>
-                </p>
-            </li>
-        {% endfor %}
-    </ul>
+<h2>Test Results</h2>
+<ul>
+    {% for t in patient.get_test_results %}
+        <li>
+            <p>
+                <b>{{ t.test_type }} on {{ t.test_date }} released {{ t.release_date }}</b><br/>
+                Comment: {{ t.comment }}<br/>
+                Description: {{ t.description }}<br/>
+            </p>
+        </li>
+    {% endfor %}
+</ul>
 </body>
 </html>

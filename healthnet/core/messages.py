@@ -1,9 +1,8 @@
-from django.utils.html import linebreaks
-from vendor.markdown2 import markdown
-
 from django.db import models
+from django.utils.html import linebreaks
 
 from healthnet.core.enumfield import EnumField
+from vendor.markdown2 import markdown
 
 MessageType = EnumField('Normal', 'Emergency', 'Reminder', 'Call to Action')
 

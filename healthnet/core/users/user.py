@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import UserManager
 from django.db import models
-from django.db.models.query import EmptyQuerySet
 from django.shortcuts import render
 
 from healthnet.core.enumfield import EnumField
@@ -59,7 +58,8 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'username'
 
     @staticmethod
-    def create_user(username, password, usertype: UserType, email, first_name="", last_name="", print_stdout=True, primary_care_provider_id=None, hospital_id=None, health_insurance_number=None):
+    def create_user(username, password, usertype: UserType, email, first_name="", last_name="", print_stdout=True,
+                    primary_care_provider_id=None, hospital_id=None, health_insurance_number=None):
         """
         Creates the user with the specified parameters
         :param print_stdout: should we log this to stdout?
@@ -92,7 +92,9 @@ class User(AbstractBaseUser):
             user.is_nurse = True
         elif usertype == UserType.Patient:
             from healthnet.core.users.patient import Patient
-            user = Patient(username=username, first_name=first_name, last_name=last_name, hospital_id=hospital_id, primary_care_provider_id=primary_care_provider_id, health_insurance_number=health_insurance_number)
+            user = Patient(username=username, first_name=first_name, last_name=last_name, hospital_id=hospital_id,
+                           primary_care_provider_id=primary_care_provider_id,
+                           health_insurance_number=health_insurance_number)
             user.is_patient = True
         else:
             user = User(username=username, first_name=first_name, last_name=last_name)
@@ -301,7 +303,7 @@ class User(AbstractBaseUser):
     def generify_queryset(typed_user_set):
         out = User.objects.filter(pk=None)
         for u in typed_user_set:
-                out |= User.objects.filter(pk=u.pk)
+            out |= User.objects.filter(pk=u.pk)
         return out
 
     def __unicode__(self):

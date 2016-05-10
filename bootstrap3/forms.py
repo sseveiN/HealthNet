@@ -94,16 +94,16 @@ def render_button(
         pass
     elif size:
         raise BootstrapError(
-            'Parameter "size" should be "xs", "sm", "lg" or ' +
-            'empty ("{}" given).'.format(size))
+                'Parameter "size" should be "xs", "sm", "lg" or ' +
+                'empty ("{}" given).'.format(size))
     if button_type:
         if button_type == 'submit':
             if not any([c.startswith('btn-') for c in split_css_classes(classes)]):
                 classes = add_css_class(classes, 'btn-primary')
         elif button_type not in ('reset', 'button', 'link'):
             raise BootstrapError(
-                'Parameter "button_type" should be "submit", "reset", ' +
-                '"button", "link" or empty  ("{}" given).'.format(button_type))
+                    'Parameter "button_type" should be "submit", "reset", ' +
+                    '"button", "link" or empty  ("{}" given).'.format(button_type))
         attrs['type'] = button_type
     attrs['class'] = classes
     icon_content = render_icon(icon) if icon else ''
@@ -119,9 +119,9 @@ def render_button(
     if title:
         attrs['title'] = title
     return render_tag(
-        tag,
-        attrs=attrs,
-        content=mark_safe(text_concat(icon_content, content, separator=' ')),
+            tag,
+            attrs=attrs,
+            content=mark_safe(text_concat(icon_content, content, separator=' ')),
     )
 
 
@@ -142,10 +142,10 @@ def render_field_and_label(
     html = field
     if field_class:
         html = '<div class="{klass}">{html}</div>'.format(
-            klass=field_class, html=html)
+                klass=field_class, html=html)
     if label:
         html = render_label(
-            label, label_for=label_for, label_class=label_class) + html
+                label, label_for=label_for, label_class=label_class) + html
     return html
 
 
@@ -154,8 +154,8 @@ def render_form_group(content, css_class=FORM_GROUP_CLASS):
     Render a Bootstrap form group
     """
     return '<div class="{klass}">{content}</div>'.format(
-        klass=css_class,
-        content=content,
+            klass=css_class,
+            content=content,
     )
 
 

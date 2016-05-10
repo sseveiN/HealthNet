@@ -3,13 +3,12 @@ from getpass import getpass
 from io import StringIO
 
 import django
+from django.contrib.auth.models import User as SuperUser
 from django.core import management
 from django.core.management import BaseCommand
-from django.db import connection, transaction
+from django.db import connection
 
 from healthnet.core.users.user import User, UserType
-from django.contrib.auth.models import User as SuperUser
-
 from healthnet.models import Hospital, States
 
 

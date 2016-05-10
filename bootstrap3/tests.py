@@ -46,47 +46,47 @@ class TestForm(forms.Form):
     date = forms.DateField(required=False)
     datetime = forms.SplitDateTimeField(widget=AdminSplitDateTime(), required=False)
     subject = forms.CharField(
-        max_length=100,
-        help_text='my_help_text',
-        required=True,
-        widget=forms.TextInput(attrs={'placeholder': 'placeholdertest'}),
+            max_length=100,
+            help_text='my_help_text',
+            required=True,
+            widget=forms.TextInput(attrs={'placeholder': 'placeholdertest'}),
     )
     password = forms.CharField(widget=forms.PasswordInput)
     message = forms.CharField(required=False, help_text='<i>my_help_text</i>')
     sender = forms.EmailField(
-        label='Sender © unicode',
-        help_text='E.g., "me@example.com"')
+            label='Sender © unicode',
+            help_text='E.g., "me@example.com"')
     secret = forms.CharField(initial=42, widget=forms.HiddenInput)
     cc_myself = forms.BooleanField(
-        required=False,
-        help_text='cc stands for "carbon copy." You will get a copy in your mailbox.'
+            required=False,
+            help_text='cc stands for "carbon copy." You will get a copy in your mailbox.'
     )
     select1 = forms.ChoiceField(choices=RADIO_CHOICES)
     select2 = forms.MultipleChoiceField(
-        choices=RADIO_CHOICES,
-        help_text='Check as many as you like.',
+            choices=RADIO_CHOICES,
+            help_text='Check as many as you like.',
     )
     select3 = forms.ChoiceField(choices=MEDIA_CHOICES)
     select4 = forms.MultipleChoiceField(
-        choices=MEDIA_CHOICES,
-        help_text='Check as many as you like.',
+            choices=MEDIA_CHOICES,
+            help_text='Check as many as you like.',
     )
     category1 = forms.ChoiceField(
-        choices=RADIO_CHOICES, widget=forms.RadioSelect)
+            choices=RADIO_CHOICES, widget=forms.RadioSelect)
     category2 = forms.MultipleChoiceField(
-        choices=RADIO_CHOICES,
-        widget=forms.CheckboxSelectMultiple,
-        help_text='Check as many as you like.',
+            choices=RADIO_CHOICES,
+            widget=forms.CheckboxSelectMultiple,
+            help_text='Check as many as you like.',
     )
     category3 = forms.ChoiceField(
-        widget=forms.RadioSelect, choices=MEDIA_CHOICES)
+            widget=forms.RadioSelect, choices=MEDIA_CHOICES)
     category4 = forms.MultipleChoiceField(
-        choices=MEDIA_CHOICES,
-        widget=forms.CheckboxSelectMultiple,
-        help_text='Check as many as you like.',
+            choices=MEDIA_CHOICES,
+            widget=forms.CheckboxSelectMultiple,
+            help_text='Check as many as you like.',
     )
     addon = forms.CharField(
-        widget=forms.TextInput(attrs={'addon_before': 'before', 'addon_after': 'after'}),
+            widget=forms.TextInput(attrs={'addon_before': 'before', 'addon_after': 'after'}),
     )
 
     required_css_class = 'bootstrap3-req'
@@ -94,7 +94,7 @@ class TestForm(forms.Form):
     def clean(self):
         cleaned_data = super(TestForm, self).clean()
         raise forms.ValidationError(
-            "This error was added to show the non field errors styling.")
+                "This error was added to show the non field errors styling.")
         return cleaned_data
 
 
@@ -196,8 +196,8 @@ class SettingsTest(TestCase):
     def test_bootstrap_javascript_tag(self):
         res = render_template_with_form('{% bootstrap_javascript %}')
         self.assertEqual(
-            res.strip(),
-            '<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>'
+                res.strip(),
+                '<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>'
         )
 
     def test_bootstrap_css_tag(self):
@@ -240,10 +240,10 @@ class TemplateTest(TestCase):
 
     def test_bootstrap_template(self):
         res = render_template(
-            '{% extends "bootstrap3/bootstrap3.html" %}' +
-            '{% block bootstrap3_content %}' +
-            'test_bootstrap3_content' +
-            '{% endblock %}'
+                '{% extends "bootstrap3/bootstrap3.html" %}' +
+                '{% block bootstrap3_content %}' +
+                'test_bootstrap3_content' +
+                '{% endblock %}'
         )
         self.assertIn('test_bootstrap3_content', res)
 
@@ -289,20 +289,20 @@ class FormTest(TestCase):
     def test_exclude(self):
         form = TestForm()
         res = render_template_with_form(
-            '{% bootstrap_form form exclude="cc_myself" %}', {'form': form})
+                '{% bootstrap_form form exclude="cc_myself" %}', {'form': form})
         self.assertNotIn('cc_myself', res)
 
     def test_layout_horizontal(self):
         form = TestForm()
         res = render_template_with_form(
-            '{% bootstrap_form form layout="horizontal" %}', {'form': form})
+                '{% bootstrap_form form layout="horizontal" %}', {'form': form})
         self.assertIn('col-md-3', res)
         self.assertIn('col-md-9', res)
         res = render_template_with_form(
-            '{% bootstrap_form form layout="horizontal" ' +
-            'horizontal_label_class="hlabel" ' +
-            'horizontal_field_class="hfield" %}',
-            {'form': form}
+                '{% bootstrap_form form layout="horizontal" ' +
+                'horizontal_label_class="hlabel" ' +
+                'horizontal_field_class="hfield" %}',
+                {'form': form}
         )
         self.assertIn('hlabel', res)
         self.assertIn('hfield', res)
@@ -310,7 +310,7 @@ class FormTest(TestCase):
     def test_buttons_tag(self):
         form = TestForm()
         res = render_template_with_form(
-            '{% buttons layout="horizontal" %}{% endbuttons %}', {'form': form})
+                '{% buttons layout="horizontal" %}{% endbuttons %}', {'form': form})
         self.assertIn('col-md-3', res)
         self.assertIn('col-md-9', res)
 
@@ -320,8 +320,8 @@ class FormTest(TestCase):
         self.assertIn('bootstrap3-err', res)
 
         res = render_template_with_form(
-            '{% bootstrap_form form error_css_class="successful-test" %}',
-            {'form': form}
+                '{% bootstrap_form form error_css_class="successful-test" %}',
+                {'form': form}
         )
         self.assertIn('successful-test', res)
 
@@ -335,8 +335,8 @@ class FormTest(TestCase):
         self.assertIn('bootstrap3-req', res)
 
         res = render_template_with_form(
-            '{% bootstrap_form form required_css_class="successful-test" %}',
-            {'form': form}
+                '{% bootstrap_form form required_css_class="successful-test" %}',
+                {'form': form}
         )
         self.assertIn('successful-test', res)
 
@@ -351,14 +351,14 @@ class FormTest(TestCase):
         self.assertIn('bootstrap3-bound', res)
 
         res = render_template_with_form(
-            '{% bootstrap_form form bound_css_class="successful-test" %}',
-            {'form': form}
+                '{% bootstrap_form form bound_css_class="successful-test" %}',
+                {'form': form}
         )
         self.assertIn('successful-test', res)
 
         res = render_template_with_form(
-            '{% bootstrap_form form bound_css_class="" %}',
-            {'form': form}
+                '{% bootstrap_form form bound_css_class="" %}',
+                {'form': form}
         )
         self.assertNotIn('bootstrap3-bound', res)
 
@@ -405,7 +405,7 @@ class FieldTest(TestCase):
         # Required settings in field
         form_field = 'form.subject'
         rendered = render_template_with_form(
-            '{% bootstrap_field ' + form_field + ' required_css_class="test-required" %}')
+                '{% bootstrap_field ' + form_field + ' required_css_class="test-required" %}')
         self.assertIn('test-required', rendered)
 
     def test_empty_permitted(self):
@@ -451,7 +451,7 @@ class ComponentsTest(TestCase):
     def test_icon(self):
         res = render_template_with_form('{% bootstrap_icon "star" %}')
         self.assertEqual(
-            res.strip(), '<span class="glyphicon glyphicon-star"></span>')
+                res.strip(), '<span class="glyphicon glyphicon-star"></span>')
         res = render_template_with_form('{% bootstrap_icon "star" title="alpha centauri" %}')
         self.assertIn(res.strip(), [
             '<span class="glyphicon glyphicon-star" title="alpha centauri"></span>',
@@ -461,11 +461,11 @@ class ComponentsTest(TestCase):
     def test_alert(self):
         res = render_template_with_form('{% bootstrap_alert "content" alert_type="danger" %}')
         self.assertEqual(
-            res.strip(),
-            '<div class="alert alert-danger alert-dismissable">' +
-            '<button type="button" class="close" data-dismiss="alert" ' +
-            'aria-hidden="true">' +
-            '&times;</button>content</div>'
+                res.strip(),
+                '<div class="alert alert-danger alert-dismissable">' +
+                '<button type="button" class="close" data-dismiss="alert" ' +
+                'aria-hidden="true">' +
+                '&times;</button>content</div>'
         )
 
 
@@ -490,7 +490,7 @@ class MessagesTest(TestCase):
         pattern = re.compile(r'\s+')
         messages = [FakeMessage(DEFAULT_MESSAGE_LEVELS.WARNING, "hello")]
         res = render_template_with_form(
-            '{% bootstrap_messages messages %}', {'messages': messages})
+                '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
     <div class="alert alert-warning alert-dismissable">
         <button type="button" class="close" data-dismiss="alert"
@@ -499,13 +499,13 @@ class MessagesTest(TestCase):
     </div>
 """
         self.assertEqual(
-            re.sub(pattern, '', res),
-            re.sub(pattern, '', expected)
+                re.sub(pattern, '', res),
+                re.sub(pattern, '', expected)
         )
 
         messages = [FakeMessage(DEFAULT_MESSAGE_LEVELS.ERROR, "hello")]
         res = render_template_with_form(
-            '{% bootstrap_messages messages %}', {'messages': messages})
+                '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
     <div class="alert alert-danger alert-dismissable">
         <button type="button" class="close" data-dismiss="alert"
@@ -514,13 +514,13 @@ class MessagesTest(TestCase):
     </div>
         """
         self.assertEqual(
-            re.sub(pattern, '', res),
-            re.sub(pattern, '', expected)
+                re.sub(pattern, '', res),
+                re.sub(pattern, '', expected)
         )
 
         messages = [FakeMessage(None, "hello")]
         res = render_template_with_form(
-            '{% bootstrap_messages messages %}', {'messages': messages})
+                '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
     <div class="alert alert-danger alert-dismissable">
         <button type="button" class="close" data-dismiss="alert"
@@ -530,26 +530,26 @@ class MessagesTest(TestCase):
         """
 
         self.assertEqual(
-            re.sub(pattern, '', res),
-            re.sub(pattern, '', expected)
+                re.sub(pattern, '', res),
+                re.sub(pattern, '', expected)
         )
 
         messages = [FakeMessage(DEFAULT_MESSAGE_LEVELS.ERROR, "hello http://example.com")]
         res = render_template_with_form(
-            '{% bootstrap_messages messages %}', {'messages': messages})
+                '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
     <div class="alert alert-danger alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&#215;</button>
         hello http://example.com
     </div>        """
         self.assertEqual(
-            re.sub(pattern, '', res).replace('rel="nofollow"', ''),
-            re.sub(pattern, '', expected).replace('rel="nofollow"', '')
+                re.sub(pattern, '', res).replace('rel="nofollow"', ''),
+                re.sub(pattern, '', expected).replace('rel="nofollow"', '')
         )
 
         messages = [FakeMessage(DEFAULT_MESSAGE_LEVELS.ERROR, "hello\nthere")]
         res = render_template_with_form(
-            '{% bootstrap_messages messages %}', {'messages': messages})
+                '{% bootstrap_messages messages %}', {'messages': messages})
         expected = """
     <div class="alert alert-danger alert-dismissable">
         <button type="button" class="close" data-dismiss="alert"
@@ -558,8 +558,8 @@ class MessagesTest(TestCase):
     </div>
         """
         self.assertEqual(
-            re.sub(pattern, '', res),
-            re.sub(pattern, '', expected)
+                re.sub(pattern, '', res),
+                re.sub(pattern, '', expected)
         )
 
 
@@ -588,8 +588,8 @@ class UtilsTest(TestCase):
         self.assertEqual(render_tag('span'), '<span></span>')
         self.assertEqual(render_tag('span', content='foo'), '<span>foo</span>')
         self.assertEqual(
-            render_tag('span', attrs={'bar': 123}, content='foo'),
-            '<span bar="123">foo</span>'
+                render_tag('span', attrs={'bar': 123}, content='foo'),
+                '<span bar="123">foo</span>'
         )
 
 
@@ -597,20 +597,20 @@ class ButtonTest(TestCase):
     def test_button(self):
         res = render_template_with_form("{% bootstrap_button 'button' size='lg' %}")
         self.assertEqual(
-            res.strip(), '<button class="btn btn-lg">button</button>')
+                res.strip(), '<button class="btn btn-lg">button</button>')
         res = render_template_with_form("{% bootstrap_button 'button' size='lg' href='#' %}")
         self.assertIn(
-            res.strip(),
-            '<a class="btn btn-lg" href="#">button</a><a href="#" ' +
-            'class="btn btn-lg">button</a>')
+                res.strip(),
+                '<a class="btn btn-lg" href="#">button</a><a href="#" ' +
+                'class="btn btn-lg">button</a>')
 
 
 class ShowLabelTest(TestCase):
     def test_show_label(self):
         form = TestForm()
         res = render_template_with_form(
-            '{% bootstrap_form form show_label=False %}',
-            {'form': form}
+                '{% bootstrap_form form show_label=False %}',
+                {'form': form}
         )
         self.assertIn('sr-only', res)
 
@@ -618,16 +618,16 @@ class ShowLabelTest(TestCase):
         TestFormSet = formset_factory(TestForm, extra=1)
         test_formset = TestFormSet()
         res = render_template_with_form(
-            '{% bootstrap_formset formset show_label=False %}',
-            {'formset': test_formset}
+                '{% bootstrap_formset formset show_label=False %}',
+                {'formset': test_formset}
         )
         self.assertIn('sr-only', res)
 
     def test_button_with_icon(self):
         res = render_template_with_form(
-            "{% bootstrap_button 'test' icon='info-sign' %}"
+                "{% bootstrap_button 'test' icon='info-sign' %}"
         )
         self.assertEqual(
-            res.strip(),
-            '<button class="btn"><span class="glyphicon glyphicon-info-sign"></span> test</button>'
+                res.strip(),
+                '<button class="btn"><span class="glyphicon glyphicon-info-sign"></span> test</button>'
         )

@@ -43,7 +43,9 @@ class Command(BaseCommand):
         for i in Patient.objects.all():
             exp.add_patient(pk=i.pk, username=i.username, password_hash=i.password, first_name=i.first_name,
                             middle_name="", last_name=i.last_name, dob=i.dob, addr=i.get_address_str(), email=i.email,
-                            phone=i.home_phone, emergency_contact=i.emergency_contact + ' ' + i.emergency_contact_number, eye_color="", bloodtype="", height=i.height,
+                            phone=i.home_phone,
+                            emergency_contact=i.emergency_contact + ' ' + i.emergency_contact_number, eye_color="",
+                            bloodtype="", height=i.height,
                             weight=i.weight, primary_hospital_id=i.hospital.pk if i.hospital is not None else None,
                             primary_doctor_id=i.primary_care_provider.pk if i.primary_care_provider is not None else None,
                             doctor_ids=[i.primary_care_provider.pk] if i.primary_care_provider is not None else [])

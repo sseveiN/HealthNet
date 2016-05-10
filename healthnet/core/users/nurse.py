@@ -19,7 +19,7 @@ class Nurse(User):
         apts = Appointment.objects.filter(pk=None)
         for p in self.get_patients():
             for apt in p.get_appointments():
-                    apts |= Appointment.objects.filter(pk=apt.pk)
+                apts |= Appointment.objects.filter(pk=apt.pk)
         return apts
 
     def get_attendee_queryset(self):

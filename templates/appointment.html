@@ -47,7 +47,7 @@
                 {% if step == total_steps %}
                     {% bootstrap_icon "plus" %} Create Appointment
                 {% else %}
-                     {% bootstrap_icon "arrow-right" %} Next
+                    {% bootstrap_icon "arrow-right" %} Next
                 {% endif %}
             </button>
         {% endbuttons %}
@@ -63,8 +63,8 @@
                     </div>
                     <div class="modal-body">
                         <p>
-                            <h3 class="text-success">You selected the following appointment time:</h3>
-                            <b class="date_string">None</b>
+                        <h3 class="text-success">You selected the following appointment time:</h3>
+                        <b class="date_string">None</b>
                         </p>
                     </div>
                     <div class="modal-footer">
@@ -83,39 +83,39 @@
         <script type="text/javascript" src="http://momentjs.com/downloads/moment.min.js"></script>
 
         <script type="text/javascript">
-        $(document).ready(function () {
-            $('#calendar').fullCalendar({
-                header: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: ' agendaWeek,agendaDay'
-                },
-                defaultView: 'agendaWeek',
-                events: {{ appointments | safe }},
-                eventLimit: false,
-                dayClick: function(date, jsEvent, view) {
-                    if(view.name == 'month') {
-                        alert('Please select from week or day view.')
-                        return;
+            $(document).ready(function () {
+                $('#calendar').fullCalendar({
+                    header: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: ' agendaWeek,agendaDay'
+                    },
+                    defaultView: 'agendaWeek',
+                    events: {{ appointments | safe }},
+                    eventLimit: false,
+                    dayClick: function (date, jsEvent, view) {
+                        if (view.name == 'month') {
+                            alert('Please select from week or day view.')
+                            return;
+                        }
+
+                        var date_str = date.format();
+                        var pretty_date_str = moment(date_str).format('dddd, MMMM D YYYY h:mm A');
+                        $("#id_time").val(date_str);
+                        $(".date_string").text(pretty_date_str);
+                        $("#selected-modal").modal('show');
                     }
+                });
 
-                    var date_str = date.format();
-                    var pretty_date_str = moment(date_str).format('dddd, MMMM D YYYY h:mm A');
-                    $("#id_time").val(date_str);
-                    $(".date_string").text(pretty_date_str);
-                    $("#selected-modal").modal('show');
-                }
+                $('.fc-button-group').removeClass().addClass('btn-group');
+                $('.fc-button').removeClass().addClass('btn');
             });
-
-            $('.fc-button-group').removeClass().addClass('btn-group');
-            $('.fc-button').removeClass().addClass('btn');
-        });
         </script>
     {% endif %}
-{#    <script type="text/javascript">#}
-{#        $(function () {#}
-{#            $('#id_tstart').datetimepicker();#}
-{#            $('#id_tend').datetimepicker();#}
-{#        });#}
-{#    </script>#}
+    {#    <script type="text/javascript">#}
+    {#        $(function () {#}
+    {#            $('#id_tstart').datetimepicker();#}
+    {#            $('#id_tend').datetimepicker();#}
+    {#        });#}
+    {#    </script>#}
 {% endblock %}

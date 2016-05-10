@@ -2,8 +2,6 @@ from datetime import datetime
 
 from django.db import models
 
-from healthnet.core.users.doctor import Doctor
-
 
 class Result(models.Model):
     """

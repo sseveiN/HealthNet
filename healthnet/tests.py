@@ -10,6 +10,7 @@ class TestUser(TestCase):
     """
     Tests the User class
     """
+
     def test_create_user(self):
         """
         Tests the create user function on the

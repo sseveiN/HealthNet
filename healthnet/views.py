@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timedelta
-from itertools import chain
 
 from django.contrib import messages
 from django.core.urlresolvers import reverse
@@ -221,8 +220,9 @@ def create_appointment_3(request):
                 Logging.info("Created appointment '%s'" % name)
 
                 for a in attendees:
-                    a.notify("A new appointment has been created for you.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
-                                    apt.name, apt.description, apt.tstart.strftime('%c'), apt.tend.strftime('%c')))
+                    a.notify(
+                        "A new appointment has been created for you.\n\n**Name:** %s\n**Description:** %s\n**Start:** %s\n**End:** %s" % (
+                            apt.name, apt.description, apt.tstart.strftime('%c'), apt.tend.strftime('%c')))
 
                 return redirect('dashboard')
     else:
@@ -340,6 +340,7 @@ def registration(request):
     return render(request, 'register.html', context)
 """
 
+
 def registration1(request):
     """
     First page of registration for patient
@@ -409,12 +410,14 @@ def registration2(request):
 
         if registration_form.is_valid():
 
-
-            new_user = Patient.create_patient(request.session['health_id'], request.session['email'], request.session['username'], request.session['password'], request.session['first_name'], request.session['last_name'], request.session['dob'], request.session['hospital'], registration_form.cleaned_data['pcp'] )
+            new_user = Patient.create_patient(request.session['health_id'], request.session['email'],
+                                              request.session['username'], request.session['password'],
+                                              request.session['first_name'], request.session['last_name'],
+                                              request.session['dob'], request.session['hospital'],
+                                              registration_form.cleaned_data['pcp'])
 
             username = request.session['username']
             password = request.session['password']
-
 
             new_user.save()
 
@@ -449,7 +452,8 @@ def registration2(request):
 
             return HttpResponseRedirect('dashboard')
     else:
-        registration_form = RegistrationForm(qs=Doctor.objects.filter(hospitals=request.session['hospital']), initial={"sex": 2, "marital_status" : 6})
+        registration_form = RegistrationForm(qs=Doctor.objects.filter(hospitals=request.session['hospital']),
+                                             initial={"sex": 2, "marital_status": 6})
 
     context = {
         'registration_form': registration_form
@@ -1296,7 +1300,7 @@ def statistics(request, pk, start=None, end=None):
     popular_scripts = hospital.get_popular_prescriptions()
 
     # Bar graph prescription name and number scripts
-        # Average Prescription length
+    # Average Prescription length
     # Bar graph, patients vs admitted
     # Scatter average visit and length for all patients
     # Table of patient specifics
@@ -1359,7 +1363,8 @@ def create_test_result(request, pk, id=None):
     patient = Patient.objects.get(pk=pk)
 
     if request.method == 'POST':
-        result_form = ResultForm(request.POST, request.FILES, initial={'doctor': doctor, 'patient': patient, 'test_type': id})
+        result_form = ResultForm(request.POST, request.FILES,
+                                 initial={'doctor': doctor, 'patient': patient, 'test_type': id})
 
         if result_form.is_valid() and user.is_type(UserType.Doctor):
             new_result = result_form.save()
@@ -1445,7 +1450,10 @@ def create_prescription(request, pk, id=None):
             patient.notify("A new prescription for %s was issued to you by %s." % (new.name, new.doctor))
             return HttpResponseRedirect(reverse('prescription', kwargs={'pk': pk}))
     else:
-        prescription_form = PrescriptionForm(initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1, 'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state, 'zipcode': patient.zipcode, 'name': id})
+        prescription_form = PrescriptionForm(
+            initial={'doctor': doctor, 'patient': patient, 'address_line_1': patient.address_line_1,
+                     'address_line_2': patient.address_line_2, 'city': patient.city, 'state': patient.state,
+                     'zipcode': patient.zipcode, 'name': id})
 
     context = {
         'prescription_form': prescription_form

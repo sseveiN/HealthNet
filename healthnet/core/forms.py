@@ -1,10 +1,8 @@
-from datetime import datetime
-
 import django
 from django import forms
+from django.core.validators import RegexValidator
 from django.forms import SelectDateWidget
 from django.http import request
-from django.core.validators import RegexValidator
 
 from healthnet.core.enumfield import EnumField
 from healthnet.core.messages import MessageType
@@ -24,47 +22,47 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput())
 
 
-
 class RequiredRegistrationForm(forms.Form):
     """
     Form for required information of the patient
     """
 
-    health_id = forms.CharField(label="Health Insurance Number",max_length=12, validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
-                                                                                       message='Health insurance alphanumeric beginning with a letter.')])
+    health_id = forms.CharField(label="Health Insurance Number", max_length=12,
+                                validators=[RegexValidator(regex='^[a-zA-z]{1}[a-zA-z0-9]{11}$',
+                                                           message='Health insurance alphanumeric beginning with a letter.')])
     email = forms.EmailField(label="Email")
     username = forms.CharField(max_length=25, label="Username")
-    password = forms.CharField(label="Password",widget=forms.PasswordInput())
+    password = forms.CharField(label="Password", widget=forms.PasswordInput())
     first_name = forms.CharField(max_length=50, label="First Name")
     last_name = forms.CharField(max_length=50, label="Last Name")
-    dob = forms.DateField(label="Date Of Birth",widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
-    hospital = forms.ModelChoiceField(label="Hospital",queryset=Hospital.objects.all(), empty_label=None)
+    dob = forms.DateField(label="Date Of Birth", widget=SelectDateWidget(
+            years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)))
+    hospital = forms.ModelChoiceField(label="Hospital", queryset=Hospital.objects.all(), empty_label=None)
+
 
 class RegistrationForm(forms.Form):
-
     Gender = EnumField('Male', 'Female', 'Unspecified')
-    MaritalStatus = EnumField('Married', 'Living Common Law', 'Widowed', 'Separated', 'Divorced', 'Single', 'Unspecified')
+    MaritalStatus = EnumField('Married', 'Living Common Law', 'Widowed', 'Separated', 'Divorced', 'Single',
+                              'Unspecified')
 
-    pcp = forms.ModelChoiceField(label="Primary Care Provider",queryset=Doctor.objects.none(), empty_label=None)
+    pcp = forms.ModelChoiceField(label="Primary Care Provider", queryset=Doctor.objects.none(), empty_label=None)
 
-    health_insurance_provider = forms.CharField(label="Health Insurance Provider",max_length=30, required=False)
-    home_phone = forms.CharField(label="Home Phone Number",max_length=12, required=False)
-    work_phone = forms.CharField(label="Work Phone Number",max_length=12, required=False)
-    sex = forms.ChoiceField(label="Sex",choices=Gender.get_choices(), required=False)
-    marital_status = forms.ChoiceField(label="Marital Status",choices=MaritalStatus.get_choices(), required=False)
-    address_line_1 = forms.CharField(label="Address Line 1",max_length=255, required=False)
-    address_line_2 = forms.CharField(label="Address Line 2",max_length=255, required=False)
-    city = forms.CharField(label="City",max_length=255, required=False)
-    state = forms.ChoiceField(label="State",choices=States.get_choices(), required=False)
-    zipcode = forms.CharField(label="Zipcode",max_length=5, required=False)
-    next_of_kin = forms.CharField(label="Next Of Kin",max_length=255, required=False)
-    emergency_contact = forms.CharField(label="Emergency Contact",max_length=255, required=False)
-    emergency_contact_number = forms.CharField(label="Emergency Contact Number",max_length=12, required=False)
-    height = forms.IntegerField(label= "Height",max_value=96, min_value=0, required=False)
-    weight = forms.IntegerField(label="Weight",max_value=400, min_value=0, required=False)
-    cholesterol = forms.IntegerField(label="Cholesterol",max_value=300, min_value=0, required=False)
-
-
+    health_insurance_provider = forms.CharField(label="Health Insurance Provider", max_length=30, required=False)
+    home_phone = forms.CharField(label="Home Phone Number", max_length=12, required=False)
+    work_phone = forms.CharField(label="Work Phone Number", max_length=12, required=False)
+    sex = forms.ChoiceField(label="Sex", choices=Gender.get_choices(), required=False)
+    marital_status = forms.ChoiceField(label="Marital Status", choices=MaritalStatus.get_choices(), required=False)
+    address_line_1 = forms.CharField(label="Address Line 1", max_length=255, required=False)
+    address_line_2 = forms.CharField(label="Address Line 2", max_length=255, required=False)
+    city = forms.CharField(label="City", max_length=255, required=False)
+    state = forms.ChoiceField(label="State", choices=States.get_choices(), required=False)
+    zipcode = forms.CharField(label="Zipcode", max_length=5, required=False)
+    next_of_kin = forms.CharField(label="Next Of Kin", max_length=255, required=False)
+    emergency_contact = forms.CharField(label="Emergency Contact", max_length=255, required=False)
+    emergency_contact_number = forms.CharField(label="Emergency Contact Number", max_length=12, required=False)
+    height = forms.IntegerField(label="Height (in)", max_value=96, min_value=0, required=False)
+    weight = forms.IntegerField(label="Weight (lbs)", max_value=400, min_value=0, required=False)
+    cholesterol = forms.IntegerField(label="Cholesterol (mg/dL)", max_value=300, min_value=0, required=False)
 
     def __init__(self, *args, **kwargs):
         qs = kwargs.pop('qs', Doctor.objects.all())
@@ -78,6 +76,7 @@ class EditPatientInfoForm(forms.ModelForm):
     """
     Form to edit patient info
     """
+
     class Meta:
         """
         Meta class
@@ -183,11 +182,14 @@ class PrescriptionForm(forms.ModelForm):
     """
     expiration_date = forms.DateField(widget=forms.SelectDateWidget, initial=django.utils.timezone.now())
 
-    issue_date = forms.DateField(widget=SelectDateWidget(years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)), initial=django.utils.timezone.now())
+    issue_date = forms.DateField(widget=SelectDateWidget(
+            years=range(django.utils.timezone.now().year, django.utils.timezone.now().year - 110, -1)),
+            initial=django.utils.timezone.now())
 
     description = forms.CharField(widget=forms.Textarea)
     zipcode = forms.IntegerField(widget=forms.NumberInput)
     refills = forms.IntegerField(widget=forms.NumberInput, min_value=0)
+
     # TODO: add form validation
 
     class Meta:
@@ -277,7 +279,8 @@ class DoctorRegistrationForm(forms.ModelForm):
     Form to register a doctor
     """
 
-    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'),
+                                               widget=forms.CheckboxSelectMultiple)
     password = forms.CharField(widget=forms.PasswordInput())
 
     class Meta:
@@ -298,13 +301,12 @@ class DoctorRegistrationForm(forms.ModelForm):
 
 
 class EditDoctorInfoForm(forms.ModelForm):
-
-    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'), widget=forms.CheckboxSelectMultiple)
+    hospitals = forms.ModelMultipleChoiceField(queryset=Hospital.objects.all().order_by('name'),
+                                               widget=forms.CheckboxSelectMultiple)
 
     m2m_hospital = 'hospitals'
     m2m_hospitals = []
     m2m_nurses = []
-
 
     class Meta:
         """
@@ -312,7 +314,8 @@ class EditDoctorInfoForm(forms.ModelForm):
         """
         model = Doctor
         fields = ['email', 'first_name', 'last_name', 'hospitals']
-        exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+        exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient',
+                   'is_nurse', 'appointments']
 
     def save(self, commit=True):
         """
@@ -358,7 +361,6 @@ class NurseRegistrationForm(forms.ModelForm):
 
 
 class EditNurseInfoForm(forms.ModelForm):
-
     hospital = forms.ModelChoiceField(queryset=Hospital.objects.all().order_by('name'))
 
     class Meta:
@@ -367,7 +369,8 @@ class EditNurseInfoForm(forms.ModelForm):
         """
         model = Nurse
         fields = ['email', 'first_name', 'last_name', 'hospital']
-        exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments']
+        exclude = ['username', 'password', 'is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient',
+                   'is_nurse', 'appointments']
 
         def __init__(self, *args, **kwargs):
             """
@@ -401,7 +404,8 @@ class AdminRegistrationForm(forms.ModelForm):
         """
         model = Administrator
         fields = ['email', 'username', 'password', 'first_name', 'last_name']
-        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments', 'hospital']
+        exclude = ['is_doctor', 'is_pending', 'last_login', 'is_admin', 'is_patient', 'is_nurse', 'appointments',
+                   'hospital']
 
         def __init__(self, *args, **kwargs):
             """

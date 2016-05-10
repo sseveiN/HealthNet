@@ -9,12 +9,13 @@
 {% endblock css %}
 
 {% block content %}
-        <ul id="sortable" class="list-unstyled">
+    <ul id="sortable" class="list-unstyled">
         {% if request.session.current_user_is_admin %}
             <li class="dashboard-item">
                 <div class="dashboard-header clearfix">
                     <h1 class="pull-left">Accounts Pending Approval</h1>
-                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse"
+                            data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
                 <div id="accounts-section" class="collapse in">
@@ -29,7 +30,8 @@
             <li class="dashboard-item">
                 <div class="dashboard-header clearfix">
                     <h1 class="pull-left">Hospital Employees</h1>
-                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse"
+                            data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
                 <div id="accounts-section" class="collapse in">
@@ -46,7 +48,8 @@
             <li class="dashboard-item" data-dashboard-id="1">
                 <div class="dashboard-header clearfix">
                     <h1 class="pull-left">Today's Appointments</h1>
-                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#appointments-section"><span class="glyphicon glyphicon-minus"></span></button>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse"
+                            data-target="#appointments-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
                 <div id="appointments-section" class="collapse in">
@@ -62,8 +65,10 @@
         {% if request.session.current_user_is_doctor or request.session.current_user_is_nurse or request.session.current_user_is_admin %}
             <li class="dashboard-item" data-dashboard-id="2">
                 <div class="dashboard-header clearfix">
-                    {% if request.session.current_user_is_admin %}<h1 class="pull-left">Hospital Patients</h1>{% else %}<h1 class="pull-left">My Patients</h1>{% endif %}
-                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#patients-section"><span class="glyphicon glyphicon-minus"></span></button>
+                    {% if request.session.current_user_is_admin %}<h1 class="pull-left">Hospital Patients</h1>{% else %}
+                        <h1 class="pull-left">My Patients</h1>{% endif %}
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse"
+                            data-target="#patients-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
                 <div id="patients-section" class="collapse in">
@@ -80,7 +85,8 @@
             <li class="dashboard-item" data-dashboard-id="3">
                 <div class="dashboard-header clearfix">
                     <h1 class="pull-left">Calendar</h1>
-                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse" data-target="#calendar-section"><span class="glyphicon glyphicon-minus"></span></button>
+                    <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse"
+                            data-target="#calendar-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
                 <div id="calendar-section" class="collapse in">

@@ -30,4 +30,3 @@ class Administrator(User):
     def get_doctors(self):
         from healthnet.core.users.doctor import Doctor
         return Doctor.objects.all()
-

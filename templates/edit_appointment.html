@@ -17,9 +17,9 @@
 
         {% buttons %}
             {% if not apt.is_in_past %}
-            <a href="{% url "views.cancel_appointment" apt.pk %}">
-                <button type="button" class="btn btn-danger">Cancel This Appointment</button>
-            </a>
+                <a href="{% url "views.cancel_appointment" apt.pk %}">
+                    <button type="button" class="btn btn-danger">Cancel This Appointment</button>
+                </a>
             {% endif %}
             <button type="submit" class="btn btn-primary">
                 {% bootstrap_icon "save-file" %} Edit Appointment

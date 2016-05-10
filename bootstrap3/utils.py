@@ -56,7 +56,7 @@ def parse_token_contents(parser, token):
             match = kwarg_re.match(bit)
             if not match:
                 raise TemplateSyntaxError(
-                    'Malformed arguments to tag "{}"'.format(tag))
+                        'Malformed arguments to tag "{}"'.format(tag))
             name, value = match.groups()
             if name:
                 kwargs[name] = parser.compile_filter(value)
@@ -123,10 +123,10 @@ def render_tag(tag, attrs=None, content=None, close=True):
     if content or close:
         builder += '</{tag}>'
     return format_html(
-        builder,
-        tag=tag,
-        attrs=mark_safe(flatatt(attrs)) if attrs else '',
-        content=text_value(content),
+            builder,
+            tag=tag,
+            attrs=mark_safe(flatatt(attrs)) if attrs else '',
+            content=text_value(content),
     )
 
 
