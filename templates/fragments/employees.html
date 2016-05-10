@@ -1,4 +1,4 @@
-<table id="pending-users" class="table">
+<table id="employees" class="table">
     <thead>
     <tr>
         <th>#</th>
@@ -10,7 +10,7 @@
     </thead>
     <tbody>
     {% for user in employees %}
-        <tr class="patient">
+        <tr class="employee">
             <td>{{ user.pk }}</td>
             <td>{{ user.username }}</td>
             <td>{{ user.first_name }}</td>
@@ -20,6 +20,3 @@
     {% endfor %}
     </tbody>
 </table>
-
-</body>
-</html>

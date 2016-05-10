@@ -64,10 +64,14 @@ class Patient(User):
     average_visit_length = models.IntegerField(default=0)  # seconds
     visits = models.IntegerField(default=0)
 
-    def create_patient(self, health_id, email, username, password, first_name, last_name, dob, hospital, pcp):
+    @staticmethod
+    def create_patient(health_id, email, username, password, first_name, last_name, dob, hospital, pcp):
         patient = Patient(health_insurance_number=health_id, email=email, username=username, password=password,
                           first_name=first_name, last_name=last_name, dob=dob, hospital=hospital,
                           primary_care_provider=pcp)
+        patient.is_patient = True
+        patient.is_pending = False
+        patient.save()
         return patient
 
     def get_test_results(self, released=True):

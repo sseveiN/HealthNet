@@ -36,7 +36,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 INSTALLED_APPS = [
-    'autofixture',
     'bootstrap3',
     'healthnet',
     'django.contrib.admin',

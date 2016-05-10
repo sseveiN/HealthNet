@@ -31,10 +31,10 @@
                 <div class="dashboard-header clearfix">
                     <h1 class="pull-left">Hospital Employees</h1>
                     <button class="btn pull-right header-controls collapse-toggle" data-toggle="collapse"
-                            data-target="#accounts-section"><span class="glyphicon glyphicon-minus"></span></button>
+                            data-target="#employees-section"><span class="glyphicon glyphicon-minus"></span></button>
                 </div>
 
-                <div id="accounts-section" class="collapse in">
+                <div id="employees-section" class="collapse in">
                     {% if employees %}
                         {% include "fragments/employees.html" with employees=employees %}
                     {% else %}
@@ -137,6 +137,11 @@
                     "aoColumnDefs": [
                         {'bSortable': false, 'bSearchable': false, 'aTargets': [5]}
                     ]
+                });
+
+                $('#employees').DataTable({
+                    "order": [[3, "asc"]],
+                    "iDisplayLength": 10
                 });
             {% endif %}
 
