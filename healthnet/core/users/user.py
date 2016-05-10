@@ -59,7 +59,7 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'username'
 
     @staticmethod
-    def create_user(username, password, usertype: UserType, first_name="", last_name="", print_stdout=True):
+    def create_user(username, password, usertype: UserType, email, first_name="", last_name="", print_stdout=True):
         """
         Creates the user with the specified parameters
         :param print_stdout: should we log this to stdout?
@@ -97,6 +97,7 @@ class User(AbstractBaseUser):
         else:
             user = User(username=username, first_name=first_name, last_name=last_name)
 
+        user.email = email
         user.set_password(password)
         user.save()
 

@@ -23,30 +23,30 @@ class Command(BaseCommand):
 
         for i in Administrator.objects.all():
             exp.add_admin(pk=i.pk, username=i.username, password_hash=i.password, first_name=i.first_name,
-                          last_name=i.last_name, middle_name="", dob=datetime.datetime.now(), addr="", email="",
+                          last_name=i.last_name, middle_name="", dob=datetime.datetime.now(), addr="", email=i.email,
                           phone="",
                           primary_hospital_id=i.hospital.pk, hospital_ids=[i.hospital.pk])
 
         for i in Doctor.objects.all():
             exp.add_doctor(pk=i.pk, username=i.username, password_hash=i.password, first_name=i.first_name,
-                           last_name=i.last_name, middle_name="", dob=datetime.datetime.now(), addr="", email="",
+                           last_name=i.last_name, middle_name="", dob=datetime.datetime.now(), addr="", email=i.email,
                            phone="",
                            hospital_ids=[h.pk for h in i.get_hospitals()], patient_ids=[p.pk for p in i.get_patients()])
 
         for i in Nurse.objects.all():
             exp.add_nurse(pk=i.pk, username=i.username, password_hash=i.password, first_name=i.first_name,
-                          last_name=i.last_name, middle_name="", dob=datetime.datetime.now(), addr="", email="",
+                          last_name=i.last_name, middle_name="", dob=datetime.datetime.now(), addr="", email=i.email,
                           phone="",
                           primary_hospital_id=i.hospital.pk if i.hospital is not None else None,
                           doctor_ids=[])
 
         for i in Patient.objects.all():
             exp.add_patient(pk=i.pk, username=i.username, password_hash=i.password, first_name=i.first_name,
-                            middle_name="", last_name=i.last_name, dob=i.dob, addr=i.get_address_str(), email="",
-                            phone="", emergency_contact="", eye_color="", bloodtype="", height=i.height,
+                            middle_name="", last_name=i.last_name, dob=i.dob, addr=i.get_address_str(), email=i.email,
+                            phone=i.home_phone, emergency_contact=i.emergency_contact + ' ' + i.emergency_contact_number, eye_color="", bloodtype="", height=i.height,
                             weight=i.weight, primary_hospital_id=i.hospital.pk if i.hospital is not None else None,
                             primary_doctor_id=i.primary_care_provider.pk if i.primary_care_provider is not None else None,
-                            doctor_ids=[d.pk for d in i.doctors.all()] if len(i.doctors.all()) > 0 else [])
+                            doctor_ids=[i.primary_care_provider.pk] if i.primary_care_provider is not None else [])
 
         for i in Appointment.objects.all():
             exp.add_appointment(start=i.tstart, end=i.tend, location="", description=i.description,
@@ -61,11 +61,11 @@ class Command(BaseCommand):
 
         for i in Result.objects.all():
             exp.add_test(name=i.description, description=i.description, date=i.test_date, released=i.is_released,
-                         results=None, doctor_id=i.doctor.pk, patient_id=i.patient.pk)
+                         results=i.comment, doctor_id=i.doctor.pk, patient_id=i.patient.pk)
 
         for i in LogEntry.objects.all():
             exp.add_log_entry(user_id=None, request_method="", request_secure=False, request_addr="",
                               description=str(i.datetime) + " [" + i.get_level_str() + "] " + i.message,
                               hospital_id=None)
 
-        print(exp.export_json())
+        print(exp.export_json(), end="")

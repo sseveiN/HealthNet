@@ -2,12 +2,9 @@ import json
 from datetime import datetime, timedelta
 
 from django.contrib import messages
-from django.contrib.humanize.templatetags import humanize
 from django.core.urlresolvers import reverse
-from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
-from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
 
 from healthnet.core.forms import LoginForm, RegistrationForm, AppointmentForm, EditPatientInfoForm, SendMessageForm, \
     ReplyMessageForm, TransferForm, ResultForm, PrescriptionForm, DoctorRegistrationForm, NurseRegistrationForm, \
@@ -87,8 +84,8 @@ def dashboard(request):
 
     patients = user.get_patients()
 
-    if user.is_type(UserType.Doctor):
-        patients = Patient.objects.all()
+    # if user.is_type(UserType.Doctor):
+    #     patients = Patient.objects.all()
 
     if user.is_type(UserType.Administrator):
         admin = user.get_typed_user()

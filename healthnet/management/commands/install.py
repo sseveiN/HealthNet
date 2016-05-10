@@ -19,6 +19,7 @@ class Command(BaseCommand):
     creates a cleared database and creates an initial super user,
     admin user and hospital.
     """
+
     def confirm(self, s):
         """
         Asks user to confirm a request
@@ -74,7 +75,8 @@ class Command(BaseCommand):
         with connection.cursor() as c:
             for cmd in buf.getvalue().splitlines():
                 c.execute(cmd.strip())
-                c.commit()
+            connection.commit()
+            connection.close()
 
         # migrate
         management.call_command('makemigrations', interactive=False, stdout=None)
@@ -115,16 +117,17 @@ class Command(BaseCommand):
         self.print_ok("Create the admin user for this Hospital:")
         fn = input('First Name: ')
         ln = input('Last Name: ')
+        email = input('Email: ')
         username = input('Username: ')
         password = getpass('Password: ')
         success, admin = User.create_user(username, password, UserType.Administrator, first_name=fn, last_name=ln,
-                                          print_stdout=False)
+                                          email=email, print_stdout=False)
 
         if not success:
             print("Error creating admin: " + admin)
             return
 
-        admin.hospitals = hospital
+        admin.hospital = hospital
         admin.is_pending = False
         admin.save()
         print("\n")

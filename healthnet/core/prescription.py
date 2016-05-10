@@ -10,7 +10,7 @@ class Prescription(models.Model):
     """
 
     name = models.CharField(max_length=255)
-    issue_date = models.DateField(default=django.utils.timezone.now())
+    issue_date = models.DateField(default=django.utils.timezone.now)
     expiration_date = models.DateField()
     refills = models.IntegerField()
 
