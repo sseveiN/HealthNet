@@ -554,7 +554,7 @@ def cancel_appointment(request, pk):
         except:
             messages.error(request, "There was an error deleting this appointment!")
 
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    return redirect('dashboard')
 
 
 def edit_appointment(request, pk):
@@ -710,7 +710,7 @@ def toggle_read(request, pk):
     msg = Message.objects.get(pk=pk)
 
     # check user can see this message
-    if msg.recipient_id is not user.pk:
+    if msg.recipient.pk != user.pk:
         messages.error(request, "You aren't allowed to read this message!")
     else:
         msg.toggle_unread()
