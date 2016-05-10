@@ -59,7 +59,7 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'username'
 
     @staticmethod
-    def create_user(username, password, usertype: UserType, email, first_name="", last_name="", print_stdout=True):
+    def create_user(username, password, usertype: UserType, email, first_name="", last_name="", print_stdout=True, primary_care_provider_id=None, hospital_id=None, health_insurance_number=None):
         """
         Creates the user with the specified parameters
         :param print_stdout: should we log this to stdout?
@@ -92,7 +92,7 @@ class User(AbstractBaseUser):
             user.is_nurse = True
         elif usertype == UserType.Patient:
             from healthnet.core.users.patient import Patient
-            user = Patient(username=username, first_name=first_name, last_name=last_name)
+            user = Patient(username=username, first_name=first_name, last_name=last_name, hospital_id=hospital_id, primary_care_provider_id=primary_care_provider_id, health_insurance_number=health_insurance_number)
             user.is_patient = True
         else:
             user = User(username=username, first_name=first_name, last_name=last_name)

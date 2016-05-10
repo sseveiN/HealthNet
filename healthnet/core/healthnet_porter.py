@@ -23,36 +23,36 @@ class HealthNetImport(object):
         'patients': {},
     }
 
-    data = None
+    __data = None
 
     # The create_* variables below represent functions that
     # take the same arguments as their add_* counterparts in
     # HealthNetExport, however they should return the pk of the
     # object they created.
-    create_hospital = None
-    create_admin = None
-    create_doctor = None
-    create_nurse = None
-    create_patient = None
-    create_prescription = None
-    create_test = None
-    create_appointment = None
-    create_log = None
+    __create_hospital = None
+    __create_admin = None
+    __create_doctor = None
+    __create_nurse = None
+    __create_patient = None
+    __create_prescription = None
+    __create_test = None
+    __create_appointment = None
+    __create_log = None
 
     def __init__(self, json_data, create_hospital_func=None, create_admin_func=None, create_doctor_func=None,
                  create_nurse_func=None, create_patient_func=None, create_appointment_func=None,
                  create_prescription_func=None, create_test_func=None, create_log_func=None):
-        self.data = json.loads(json_data)
+        self.__data = json.loads(json_data)
 
-        self.create_hospital = create_hospital_func
-        self.create_admin = create_admin_func
-        self.create_doctor = create_doctor_func
-        self.create_nurse = create_nurse_func
-        self.create_patient = create_patient_func
-        self.create_appointment = create_appointment_func
-        self.create_prescription = create_prescription_func
-        self.create_test = create_test_func
-        self.create_log = create_log_func
+        self.__create_hospital = create_hospital_func
+        self.__create_admin = create_admin_func
+        self.__create_doctor = create_doctor_func
+        self.__create_nurse = create_nurse_func
+        self.__create_patient = create_patient_func
+        self.__create_appointment = create_appointment_func
+        self.__create_prescription = create_prescription_func
+        self.__create_test = create_test_func
+        self.__create_log = create_log_func
 
     @staticmethod
     def __parse_date(timestr):
@@ -61,7 +61,24 @@ class HealthNetImport(object):
         :param timestr: ISO 8061 formatted string
         :return: Datetime object representation of the string
         """
-        return datetime.strptime(timestr, "%Y-%m-%dT%H:%M:%S")
+
+        try:
+            return datetime.strptime(timestr.split('.')[0].split('+')[0], "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            pass
+        return datetime.strptime(timestr, '%Y-%m-%d')
+
+    def __convert_pk(self, pk_type: str, pk: int):
+        try:
+            return self.__pk_map[pk_type][pk]
+        except KeyError:
+            return pk
+
+    def __convert_pks(self, pk_type: str, pk_list: list):
+        out = []
+        for i in pk_list:
+            out += [self.__convert_pk(pk_type, i)]
+        return out
 
     def import_all(self):
         """
@@ -69,119 +86,145 @@ class HealthNetImport(object):
         :return: None
         """
         self.import_hospitals()
-        self.import_patients()
         self.import_admins()
         self.import_doctors()
         self.import_nurses()
+        self.import_patients()
         self.import_appointments()
         self.import_tests()
         self.import_prescriptions()
         self.import_log_entries()
 
     def import_hospitals(self):
-        if self.create_hospital is None:
+        if self.__create_hospital is None:
             return
 
         pk_map_index = 0
-        for i in self.data['hospitals']:
-            pk = self.create_hospital(name=i['name'], addr=i['addr'])
-            self.__pk_map[pk_map_index] = pk
-            pk_map_index += 1
+        for i in self.__data['hospitals']:
+            try:
+                pk = self.__create_hospital(name=i['name'], addr=i['addr'])
+                self.__pk_map['hospitals'][pk_map_index] = pk
+                pk_map_index += 1
+            except:
+                pass
 
     def import_admins(self):
-        if self.create_admin is None:
+        if self.__create_admin is None:
             return
 
         pk_map_index = 0
-        for i in self.data['admins']:
-            pk = self.create_admin(username=i['username'], password_hash=i['password_hash'],
-                                   first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
-                                   dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                   phone=i['phone'], primary_hospital_id=i['primary_hospital_id'],
-                                   hospital_ids=i['hospital_ids'])
-            self.__pk_map[pk_map_index] = pk
-            pk_map_index += 1
+        for i in self.__data['admins']:
+            try:
+                pk = self.__create_admin(username=i['username'], password_hash=i['password_hash'],
+                                         first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                         dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
+                                         phone=i['phone'], primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
+                                         hospital_ids=self.__convert_pks('hospitals', i['hospital_ids']))
+                self.__pk_map['admins'][pk_map_index] = pk
+                pk_map_index += 1
+            except:
+                pass
 
     def import_doctors(self):
-        if self.create_doctor is None:
+        if self.__create_doctor is None:
             return
 
         pk_map_index = 0
-        for i in self.data['doctors']:
-            pk = self.create_doctor(username=i['username'], password_hash=i['password_hash'],
-                                    first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
-                                    dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                    phone=i['phone'], hospital_ids=i['hospital_ids'],
-                                    patient_ids=i['patient_ids'])
-            self.__pk_map[pk_map_index] = pk
-            pk_map_index += 1
+        for i in self.__data['doctors']:
+            try:
+                pk = self.__create_doctor(username=i['username'], password_hash=i['password_hash'],
+                                          first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                          dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
+                                          phone=i['phone'], hospital_ids=self.__convert_pks('hospitals', i['hospital_ids']),
+                                          patient_ids=self.__convert_pks('patients', i['patient_ids']))
+                self.__pk_map['doctors'][pk_map_index] = pk
+                pk_map_index += 1
+            except:
+                pass
 
     def import_nurses(self):
-        if self.create_nurse is None:
+        if self.__create_nurse is None:
             return
 
         pk_map_index = 0
-        for i in self.data['doctors']:
-            pk = self.create_nurse(username=i['username'], password_hash=i['password_hash'],
-                                   first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
-                                   dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                   phone=i['phone'], primary_hospital_id=i['primary_hospital_id'],
-                                   doctor_ids=i['doctor_ids'])
-            self.__pk_map[pk_map_index] = pk
-            pk_map_index += 1
+        for i in self.__data['nurses']:
+            try:
+                pk = self.__create_nurse(username=i['username'], password_hash=i['password_hash'],
+                                         first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                         dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
+                                         phone=i['phone'], primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
+                                         doctor_ids=self.__convert_pks('doctors', i['doctor_ids']))
+                self.__pk_map['nurses'][pk_map_index] = pk
+                pk_map_index += 1
+            except:
+                pass
 
     def import_patients(self):
-        if self.create_patient is None:
+        if self.__create_patient is None:
             return
 
         pk_map_index = 0
-        for i in self.data['patients']:
-            pk = self.create_patient(username=i['username'], password_hash=i['password_hash'],
-                                     first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
-                                     dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
-                                     phone=i['phone'], emergency_contact=i['emergency_contact'],
-                                     eye_color=i['eye_color'],
-                                     bloodtype=i['bloodtype'], weight=i['weight'],
-                                     primary_hospital_id=i['primary_hospital_id'],
-                                     primary_doctor_id=i['primary_doctor_id'], doctor_ids=i['doctor_ids'])
-            self.__pk_map[pk_map_index] = pk
-            pk_map_index += 1
+        for i in self.__data['patients']:
+            try:
+                pk = self.__create_patient(username=i['username'], password_hash=i['password_hash'],
+                                           first_name=i['first_name'], middle_name=i['middle_name'], last_name=i['last_name'],
+                                           dob=self.__parse_date(i['dob']), addr=i['addr'], email=i['email'],
+                                           phone=i['phone'], emergency_contact=i['emergency_contact'],
+                                           eye_color=i['eye_color'],
+                                           bloodtype=i['bloodtype'], weight=i['weight'], height=i['height'],
+                                           primary_hospital_id=self.__convert_pk('hospitals', i['primary_hospital_id']),
+                                           primary_doctor_id=self.__convert_pk('doctors', i['primary_doctor_id']), doctor_ids=self.__convert_pks('doctors', i['doctor_ids']))
+                self.__pk_map['patients'][pk_map_index] = pk
+                pk_map_index += 1
+            except:
+                pass
 
     def import_appointments(self):
-        if self.create_appointment is None:
+        if self.__create_appointment is None:
             return
 
-        for i in self.data['appointments']:
-            self.create_appointment(start=self.__parse_date(i['start']), end=self.__parse_date(i['end']),
-                                    location=i['location'], description=i['description'],
-                                    doctor_ids=i['doctor_ids'], nurse_ids=i['nurse_ids'], patient_ids=i['patient_ids'])
+        for i in self.__data['appointments']:
+            try:
+                self.__create_appointment(start=self.__parse_date(i['start']), end=self.__parse_date(i['end']),
+                                          location=i['location'], description=i['description'],
+                                          doctor_ids=self.__convert_pks('doctors', i['doctor_ids']), nurse_ids=i['nurse_ids'], patient_ids=self.__convert_pks('patients', i['patient_ids']))
+            except:
+                pass
 
     def import_prescriptions(self):
-        if self.create_prescription is None:
+        if self.__create_prescription is None:
             return
 
-        for i in self.data['appointments']:
-            self.create_prescription(name=i['name'], dosage=i['dosage'], notes=i['notes'],
-                                     doctor_id=i['doctor_id'], patient_id=i['patient_id'])
+        for i in self.__data['prescriptions']:
+            try:
+                self.__create_prescription(name=i['name'], dosage=i['dosage'], notes=i['notes'],
+                                       doctor_id=self.__convert_pk('doctors', i['doctor_id']), patient_id=self.__convert_pk('patients', i['patient_id']))
+            except:
+                pass
 
     def import_tests(self):
-        if self.create_test is None:
+        if self.__create_test is None:
             return
 
-        for i in self.data['tests']:
-            self.create_test(nmae=i['name'], date=self.__parse_date(i['date']), description=i['description'],
-                             results=i['results'], released=i['released'], doctor_id=i['doctor_id'],
-                             patient_id=i['patient_id'])
+        for i in self.__data['tests']:
+            try:
+                self.__create_test(name=i['name'], date=self.__parse_date(i['date']), description=i['description'],
+                                   results=i['results'], released=i['released'], doctor_id=self.__convert_pk('doctors', i['doctor_id']),
+                                   patient_id=self.__convert_pk('patients', i['patient_id']))
+            except:
+                pass
 
     def import_log_entries(self):
-        if self.create_log is None:
+        if self.__create_log is None:
             return
 
-        for i in self.data['log_entries']:
-            self.create_log(user_id=i['user_id'], request_method=i['request_method'],
-                            request_secure=i['request_secure'],
-                            request_addr=i['request_addr'], description=i['description'], hospital_id=i['hospital_id'])
-
+        for i in self.__data['log_entries']:
+            try:
+                self.__create_log(user_id=i['user_id'], request_method=i['request_method'],
+                                  request_secure=i['request_secure'],
+                                  request_addr=i['request_addr'], description=i['description'], hospital_id=self.__convert_pk('hospitals', i['hospital_id']))
+            except:
+                pass
 
 class HealthNetExport(object):
     """
