@@ -108,6 +108,8 @@ class AppointmentForm(forms.ModelForm):
     """
     attendees = forms.ModelMultipleChoiceField(queryset=None, widget=forms.CheckboxSelectMultiple)
     description = forms.CharField(widget=forms.Textarea)
+    tstart = forms.DateTimeField(input_formats=['%Y/%m/%d %H:%M', '%Y-%m-%d %H:%M:%S'])
+    tend = forms.DateTimeField(input_formats=['%Y/%m/%d %H:%M', '%Y-%m-%d %H:%M:%S'])
 
     class Meta:
         """
@@ -499,15 +501,3 @@ class AppointmentThree(forms.ModelForm):
         """
 
         super(AppointmentThree, self).__init__(*args, **kwargs)
-
-    @staticmethod
-    def edit_appointment(pk):
-        """
-        Edit the appointment
-        :param pk: pk of the appointment
-        :return: the appointment form
-        """
-        appointment = Appointment.objects.get(pk)
-        appointment_form = AppointmentForm(request.POST, instance=appointment)
-        appointment_form.save()
-        return appointment_form
